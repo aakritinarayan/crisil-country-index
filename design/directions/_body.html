@@ -1,0 +1,32 @@
+<a class="skip" href="#scores">Skip to scores</a>
+<div class="banner" role="note">Sample data — not a Crisil assessment</div>
+<div class="top">
+<header class="site-header"><div class="wrap">
+  <a class="brand" href="#"><span class="mark" aria-hidden="true"></span><span>Country Index</span></a>
+  <nav class="nav" aria-label="Main"><a href="#" aria-current="page">Overview</a><a href="#" class="hide-sm">Countries</a><a href="#">Methodology</a></nav>
+</div></header>
+<section class="hero"><div class="wrap">
+  <p class="eyebrow">Data as of <span data-asof></span></p>
+  <h1 data-index-name></h1>
+  <p id="intro" class="intro"></p>
+</div></section>
+</div>
+<main>
+  <div class="wrap tiles-wrap"><div id="tiles" class="tiles"></div></div>
+  <section class="wrap block" id="scores" aria-labelledby="scores-h">
+    <div class="sec-h"><h2 id="scores-h">Scores by country and pillar</h2><p>Select any score to see the reasoning and sources.</p></div>
+    <div id="matrix" class="matrix-wrap"></div>
+    <div id="cards" class="cards"></div>
+    <div id="legend" aria-label="Score bands"></div>
+  </section>
+  <section class="wrap block" aria-labelledby="spread-h">
+    <div class="sec-h"><h2 id="spread-h">How countries compare on each pillar</h2><p>Point at a country to follow it across pillars.</p></div>
+    <div id="spread" class="spread"></div>
+  </section>
+</main>
+<footer class="site-footer"><div class="wrap"><h2>Disclaimer</h2><p id="disclaimer"></p><p class="muted" style="margin-top:12px">Data as of <span data-asof></span></p></div></footer>
+<div id="scrim" hidden></div>
+<aside id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" hidden>
+  <div class="drawer-top"><span>Score detail</span><button type="button" class="drawer-close" aria-label="Close score detail">×</button></div>
+  <div class="drawer-body"></div><div class="drawer-nav"></div><div class="drawer-foot"></div>
+</aside>

@@ -1,0 +1,36 @@
+/* Direction A — "Clear": light, editorial, calm. The matrix is the hero. */
+:root {
+  --font-display: "Jost", system-ui, sans-serif; --font-body: "Jost", system-ui, sans-serif;
+  --bg: #FAFAF7; --surface: #FFFFFF; --ink: #353535; --muted: #5E5E5A; --line: #E3E3DC;
+  --link: #00706D; --focus: #0069B3; --radius: 14px;
+  --banner-bg: #F2C900; --banner-fg: #353535; --nav-active: #EEF0E6;
+  --iso-bg: #353535; --iso-fg: #FFFFFF; --btn-bg: #353535; --btn-fg: #FFFFFF;
+  --lime: #95C11F; --teal: #00AAA6;
+}
+.top { background: var(--surface); border-bottom: 1px solid var(--line); }
+.mark { width: 28px; height: 28px; border-radius: 8px; background: conic-gradient(from 200deg, var(--lime), var(--teal), var(--lime)); }
+.hero .wrap { padding: 56px 0 64px; }
+.hero h1 { font-size: clamp(34px, 5.4vw, 60px); font-weight: 500; letter-spacing: -.01em; max-width: 18ch; margin: 14px 0 18px; }
+.hero h1::after { content: ""; display: block; width: 72px; height: 6px; border-radius: 3px; background: var(--lime); margin-top: 22px; }
+.intro { font-size: 19px; max-width: 62ch; color: var(--muted); }
+.tiles-wrap { margin-top: -36px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; box-shadow: 0 6px 24px rgb(53 53 53 / .06); }
+.block { margin-top: 64px; }
+
+/* cell: white card, band pill, position bar */
+.cell { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 14px 12px; box-shadow: inset 5px 0 0 var(--bg); }
+.matrix .cell { min-height: 92px; }
+.cell .cell-num { color: var(--ink); }
+.cell .cell-label { justify-self: start; background: var(--bg); color: var(--fg); padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+.cell { --track: #EDEDE7; }
+.cell-bar { background: var(--track); }
+.cell-bar span { background: var(--ink); }
+.cell:hover { transform: translateY(-2px); box-shadow: inset 5px 0 0 var(--bg), 0 8px 20px rgb(53 53 53 / .1); }
+.matrix td.hl .cell { border-color: #B9C98A; background: #FBFDF4; }
+.matrix tr.hl th .country-link { color: var(--link); }
+.card .cell { border: 0; box-shadow: none; padding: 6px 0; background: transparent; }
+.card .cell:hover { transform: none; }
+.spread { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 24px; }
+.dot { background: var(--ink); }
+.dot.on { background: var(--link); }
+.site-footer { border-top: 1px solid var(--line); background: var(--surface); }

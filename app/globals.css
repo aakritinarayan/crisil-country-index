@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+/* dark: follows the theme switch (data-theme), not only the OS setting */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ── Design tokens ──────────────────────────────────────────────────────────
+ * One place for every colour and type decision (TECH_SPEC §10), so a brand kit
+ * is applied here. Colours: GRA guideline — lime #95C11F, teal #00AAA6, charcoal
+ * #353535, blue #0069B3, sky #00BCF3. Layout and type rhythm follow the InovaFint
+ * site. Score-band colours live in lib/bands.ts (they are data-driven).
+ * Text tokens are checked for WCAG AA against the backgrounds they sit on. */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f5f6f1;
+  --bg-raised: #ffffff;
+  --bg-sunken: #eceee6;
+  --ink: #1f211c;
+  --ink-2: #353535;
+  --muted: #5c6057;
+  --line: #dfe2d8;
+  --line-strong: #c4c8bb;
+  --brand: #95c11f;
+  --brand-ink: #4f6e00; /* lime dark enough to use as text */
+  --teal: #00aaa6;
+  --link: #00706d;
+  --focus: #0069b3;
+  --grad-from: #5b8a00;
+  --grad-to: #00807c;
+  --map-empty: #dcdfd5;
+  --map-stroke: #f5f6f1;
+  --banner-bg: #f2c900;
+  --banner-ink: #1f211c;
+  --btn-bg: #353535;
+  --btn-ink: #ffffff;
+  --btn-box: rgb(255 255 255 / 0.14);
+  --shadow-soft: 0 1px 2px rgb(31 33 28 / 0.04), 0 12px 32px -14px rgb(31 33 28 / 0.16);
+  --shadow-lift: 0 1px 2px rgb(31 33 28 / 0.05), 0 28px 60px -24px rgb(31 33 28 / 0.24);
+  --scrim: rgb(20 22 18 / 0.45);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d0f0c;
+  --bg-raised: #171a15;
+  --bg-sunken: #121410;
+  --ink: #f1f3ec;
+  --ink-2: #dfe2d8;
+  --muted: #a3a89c;
+  --line: #2a2e27;
+  --line-strong: #3d4238;
+  --brand: #a6d12f;
+  --brand-ink: #b8dc54;
+  --teal: #2fd0c9;
+  --link: #5fd8d2;
+  --focus: #00bcf3;
+  --grad-from: #b8dc54;
+  --grad-to: #2fd0c9;
+  --map-empty: #262a23;
+  --map-stroke: #0d0f0c;
+  --banner-bg: #f2c900;
+  --banner-ink: #1f211c;
+  --btn-bg: #a6d12f;
+  --btn-ink: #12140f;
+  --btn-box: rgb(0 0 0 / 0.14);
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -14px rgb(0 0 0 / 0.6);
+  --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.3), 0 28px 60px -24px rgb(0 0 0 / 0.8);
+  --scrim: rgb(0 0 0 / 0.6);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-raised: var(--bg-raised);
+  --color-sunken: var(--bg-sunken);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-teal: var(--teal);
+  --color-link: var(--link);
+  --color-focus: var(--focus);
+  --font-sans: var(--font-open-sans), system-ui, sans-serif;
+  --shadow-soft: var(--shadow-soft);
+  --shadow-lift: var(--shadow-lift);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+::selection { background: var(--brand); color: #12140f; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* ── Type scale (InovaFint rhythm, tuned for Open Sans' wider set) ───────── */
+@utility t-display { font-size: clamp(2.5rem, 5.4vw, 4.75rem); line-height: 1.02; letter-spacing: -0.035em; font-weight: 700; }
+@utility t-h2 { font-size: clamp(2rem, 3.6vw, 3.25rem); line-height: 1.08; letter-spacing: -0.03em; font-weight: 700; }
+@utility t-h3 { font-size: clamp(1.375rem, 2vw, 1.75rem); line-height: 1.2; letter-spacing: -0.02em; font-weight: 700; }
+@utility t-lead { font-size: clamp(1rem, 1.15vw, 1.125rem); line-height: 1.75; }
+@utility t-stat { font-size: clamp(2.25rem, 3.6vw, 3.25rem); line-height: 1; letter-spacing: -0.03em; font-weight: 600; }
+@utility num { font-variant-numeric: tabular-nums lining-nums; }
+@utility section-pad { padding-block: clamp(4.5rem, 10vh, 7.5rem); }
+@utility wrap { width: min(1280px, 100% - 32px); margin-inline: auto; }
+
+/* gradient word in headings (InovaFint "that Converges") */
+.grad-text { background: linear-gradient(100deg, var(--grad-from), var(--grad-to)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* quiet pill label above section headings */
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-2); border: 1px solid var(--line-strong); border-radius: 999px; padding: 6px 14px; background: var(--bg-raised); }
+.eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
+
+/* InovaFint button: label + square arrow box */
+.btn { display: inline-flex; align-items: center; gap: 14px; padding: 6px 6px 6px 16px; font-weight: 600; font-size: 0.9375rem; text-decoration: none;
+  background: var(--btn-bg); color: var(--btn-ink); border: 1px solid transparent; transition: box-shadow .2s, transform .2s; cursor: pointer; }
+.btn .box { display: grid; place-items: center; width: 32px; height: 32px; background: var(--btn-box); }
+.btn:hover { box-shadow: var(--shadow-lift); }
+.btn-outline { background: var(--bg-raised); color: var(--ink); border-color: var(--line-strong); }
+.btn-outline .box { background: var(--bg-sunken); }
+
+/* score chip — numeral + band label + band colour, never colour alone */
+.chip { display: inline-flex; align-items: baseline; gap: 6px; padding: 3px 9px; border-radius: 999px; font-weight: 600; white-space: nowrap;
+  background: var(--chip-fill); color: var(--chip-ink); }
+.chip .n { font-variant-numeric: tabular-nums; }
+.chip .l { font-size: 0.75em; font-weight: 600; opacity: .92; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Score drawer: the only transition on the public site besides focus (TECH_SPEC §10) */
+.drawer[open] { animation: drawer-in 0.28s var(--ease-out-expo); }
+.drawer[open]::backdrop { animation: fade-in 0.2s ease-out; }
+@keyframes drawer-in { from { transform: translateX(100%); } }
+@keyframes fade-in { from { opacity: 0; } }
