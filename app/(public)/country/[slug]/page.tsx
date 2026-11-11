@@ -8,7 +8,7 @@ import type { Reference } from "@/lib/types";
 import { ArrowLeft, ArrowRight } from "@/components/ui/icons";
 import { CountryShape } from "@/components/public/explorer/CountryShape";
 import ALPHA2 from "@/data/iso-alpha3-to-alpha2.json";
-import { CountryInsights, type PillarRow } from "@/components/public/country/CountryInsights";
+import { PillarExplorer, type PillarRow } from "@/components/public/country/PillarExplorer";
 import { NotPublished } from "@/components/public/NotPublished";
 import { ShareButton } from "@/components/public/country/ShareButton";
 import { CompositeHistogram, HISTOGRAM_MIN_COUNTRIES } from "@/components/public/country/CompositeHistogram";
@@ -219,7 +219,7 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
           </section>
         )}
 
-        <CountryInsights rows={rows} min={meta.score_min} max={meta.score_max} legend={allBands(meta.score_bands).map((b) => ({ label: b.label, min: b.min, max: b.max, fill: b.fill }))} />
+        <PillarExplorer key={country.country_id} rows={rows} min={meta.score_min} max={meta.score_max} legend={allBands(meta.score_bands).map((b) => ({ label: b.label, min: b.min, max: b.max, fill: b.fill }))} />
 
         {/* ── continue exploring ── */}
         <section id="explore" aria-labelledby="explore-more-h" className="scroll-mt-32 border-t border-line py-12">

@@ -476,12 +476,24 @@ button.score-cell[data-active] .rank-score { outline: 2px solid var(--teal); out
 .country-map-card:hover { box-shadow: inset 0 0 0 1px rgb(159 227 214 / .35); transform: translateY(-2px); }
 @media (prefers-reduced-motion: reduce) { .country-map-card:hover { transform: none; } }
 /* pillar rows and assessment cards: soft surfaces, quiet hover */
-.perf-card { border-radius: 8px; background: color-mix(in srgb, var(--bg-raised) 70%, transparent); transition: background-color .15s, box-shadow .15s; }
-button.perf-card:hover { background: var(--bg-raised); box-shadow: 0 1px 2px rgb(0 0 0 / .04), 0 6px 18px -10px rgb(16 28 26 / .18); }
-.assess-card { border-radius: 10px; background: color-mix(in srgb, var(--bg-raised) 70%, transparent); box-shadow: inset 0 0 0 1px var(--line); transition: background-color .15s, box-shadow .15s; }
-.assess-card:hover, .assess-card.is-open { background: var(--bg-raised); }
-.assess-card.is-open { box-shadow: inset 0 0 0 1px var(--line-strong), 0 8px 24px -16px rgb(16 28 26 / .22); }
-.assess-card > button { border-radius: 10px; }
+/* pillar explorer: the chart rows are the navigation. Hover tints, the active row adds a
+ * thin teal rule on the left and a slightly deeper tint; the bar fill carries the band. */
+.pillar-row { position: relative; border-radius: 6px; transition: background-color .15s; }
+.pillar-row::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 2px; border-radius: 2px; background: var(--teal); opacity: 0; transition: opacity .15s; }
+.pillar-row:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.pillar-row.is-active { background: color-mix(in srgb, var(--teal) 9%, transparent); }
+.pillar-row.is-active::before { opacity: 1; }
+.pillar-track { background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.pillar-fill { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent); transition: filter .15s; }
+.pillar-row:hover .pillar-fill, .pillar-row.is-active .pillar-fill { filter: saturate(1.15) brightness(.97); }
+.pillar-detail { animation: pillar-in .18s ease-out; }
+@keyframes pillar-in { from { opacity: 0; } to { opacity: 1; } }
+.pillar-tip { animation: pillar-in .12s ease-out; }
+.pillar-m { border-radius: 8px; transition: background-color .15s; }
+.pillar-m.is-open { background: color-mix(in srgb, var(--teal) 5%, var(--bg-raised) 60%); box-shadow: inset 0 0 0 1px var(--line); }
+.pillar-m > button { border-radius: 8px; }
+.band-dot { display: inline-block; flex-shrink: 0; width: 10px; height: 10px; border-radius: 2px; background: var(--chip); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 16%, transparent); }
+@media (prefers-reduced-motion: reduce) { .pillar-detail, .pillar-tip { animation: none; } }
 .perf-row.is-on { box-shadow: inset 2px 0 0 var(--teal); }
 
 /* rankings score cells: the number is the content. Two treatments, one markup:
