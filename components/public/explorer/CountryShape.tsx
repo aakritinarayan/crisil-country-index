@@ -47,9 +47,10 @@ export function CountryShape({ iso, name, fill, variant = "tile" }: { iso: strin
   if (variant === "solo") {
     // only the country: no neighbours, borders or sea; fitted (never stretched) on a dark ground
     return (
-      <svg viewBox={`0 0 ${SW} ${SH}`} preserveAspectRatio="xMidYMid meet" className="block size-full" role="img" aria-label={`Outline of ${name}`}>
-        <path d={drawing.d} fill="rgb(95 211 196 / 0.22)" stroke="#7fd6cb" strokeWidth="1.1" strokeLinejoin="round" />
-        {drawing.ring && <circle cx={drawing.ring[0]} cy={drawing.ring[1]} r="10" fill="none" stroke="#7fd6cb" strokeWidth="1.25" />}
+      <svg viewBox={`0 0 ${SW} ${SH}`} preserveAspectRatio="xMidYMid meet" className="block size-full overflow-visible" role="img" aria-label={`Outline of ${name}`}>
+        {/* transparent ground; the selection teal (theme token) as one thin line and a faint fill */}
+        <path d={drawing.d} style={{ fill: "color-mix(in srgb, var(--sel-outer) 16%, transparent)", stroke: "var(--sel-outer)" }} strokeWidth="1.1" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+        {drawing.ring && <circle cx={drawing.ring[0]} cy={drawing.ring[1]} r="10" fill="none" style={{ stroke: "var(--sel-outer)" }} strokeWidth="1.25" />}
       </svg>
     );
   }

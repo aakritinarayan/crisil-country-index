@@ -49,8 +49,8 @@ export function CountryPanel({ view }: { view: "globe" | "flat" }) {
         <button type="button" onClick={() => select(null)} className="grid size-9 shrink-0 place-items-center text-muted transition-colors hover:bg-sunken hover:text-ink" aria-label={`Clear selection: ${c.name}`}><Close size={16} /></button>
       </div>
 
-      {/* minimal preview: the country's own silhouette on dark ground (same in both themes) */}
-      <div className="mt-4 h-[200px] w-full overflow-hidden rounded-[4px] bg-[#101819]">
+      {/* minimal preview: only the country's own silhouette, straight on the panel */}
+      <div className="mt-4 h-[200px] w-full">
         <CountryShape key={c.iso_code} iso={c.iso_code} name={c.name} fill="" variant="solo" />
       </div>
 
