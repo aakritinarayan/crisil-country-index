@@ -3,7 +3,7 @@ import { getPublishedSnapshot, summarise } from "@/lib/data";
 import { allBands, bandFor, fmtScore, formatAsOf } from "@/lib/bands";
 import { ArrowRight } from "@/components/ui/icons";
 import { ExplorerProvider } from "@/components/public/explorer/ExplorerContext";
-import { MapSection } from "@/components/public/explorer/MapSection";
+import { ExploreWorkspace } from "@/components/public/explorer/ExploreWorkspace";
 import { Rankings } from "@/components/public/explorer/Rankings";
 import { NotPublished } from "@/components/public/NotPublished";
 
@@ -71,7 +71,7 @@ export default async function Landing() {
         </dl>
       </section>
 
-      <MapSection />
+      <ExploreWorkspace />
 
       <div className="section-pad"><Rankings /></div>
 

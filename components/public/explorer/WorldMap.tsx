@@ -32,8 +32,10 @@ export function WorldMap({ items, bands, activeBands, selectedId, onSelect, metr
   onSelect: (id: string) => void; metricLabel: string;
 }) {
   const [topo, setTopo] = useState<Topology | null>(null);
-  const [view, setView] = useState<View>(IDENTITY);
-  const [hover, setHover] = useState<{ item: MapItem; x: number; y: number } | null>(null);
+  // The visitor's own zoom/pan, remembered for the selection it was made under.
+  // Changing the selection hands control back to the selection's own view.
+  const [manual, setManual] = useState<{ for: string | null; view: View } | null>(null);
+  const [hover, setHover] = useState<{ item: MapItem; x: number; y: number; flip: boolean } | null>(null);
   const [dragging, setDragging] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const drag = useRef<{ px: number; py: number; v: View; moved: boolean } | null>(null);
@@ -83,11 +85,11 @@ export function WorldMap({ items, bands, activeBands, selectedId, onSelect, metr
     return { fill: b.fill, dim: !!activeBands && !activeBands.has(b.index) };
   };
 
-  // fly to the selected country (user-initiated motion only)
-  useEffect(() => {
-    if (!selectedId || !projection) return;
+  // the view a selection calls for: zoomed to its country (motion is user-initiated)
+  const selectionView = useMemo<View>(() => {
+    if (!selectedId || !projection) return IDENTITY;
     const it = items.find((i) => i.id === selectedId);
-    if (!it) return;
+    if (!it) return IDENTITY;
     const s = shapes.find((x) => x.num === ISO_TO_NUM[it.iso]);
     let cx: number, cy: number, k: number;
     if (s) {
@@ -96,15 +98,15 @@ export function WorldMap({ items, bands, activeBands, selectedId, onSelect, metr
       k = Math.min(5, 0.45 / Math.max((x1 - x0) / W, (y1 - y0) / H));
     } else {
       const d = dots.find((x) => x.item.id === selectedId);
-      if (!d) return;
+      if (!d) return IDENTITY;
       cx = d.x; cy = d.y; k = 5;
     }
     k = Math.max(1.6, k);
-    // on wide screens the info panel floats over the left of the map: centre the
-    // country in the uncovered area to its right
-    const panelShift = (box.current?.clientWidth ?? 0) >= 1024 ? W * 0.16 : 0;
-    setView(clampView({ k, x: W / 2 + panelShift - cx * k, y: H / 2 - cy * k }));
+    return clampView({ k, x: W / 2 - cx * k, y: H / 2 - cy * k });
   }, [selectedId, projection, shapes, dots, items]);
+  const view = manual && manual.for === selectedId ? manual.view : selectionView;
+  const setView = (next: View | ((v: View) => View)) =>
+    setManual({ for: selectedId, view: typeof next === "function" ? next(view) : next });
 
   const zoomBy = (f: number) => setView((v) => {
     const k = Math.min(MAX_K, Math.max(1, v.k * f));
@@ -114,7 +116,8 @@ export function WorldMap({ items, bands, activeBands, selectedId, onSelect, metr
 
   const tip = (e: React.PointerEvent, it: MapItem) => {
     const r = box.current!.getBoundingClientRect();
-    setHover({ item: it, x: e.clientX - r.left, y: e.clientY - r.top });
+    const x = e.clientX - r.left;
+    setHover({ item: it, x, y: e.clientY - r.top, flip: x > r.width - 200 });
   };
   const selected = items.find((i) => i.id === selectedId);
   const sel = selected ? shapes.find((s) => s.num === ISO_TO_NUM[selected.iso]) : undefined;
@@ -166,7 +169,7 @@ export function WorldMap({ items, bands, activeBands, selectedId, onSelect, metr
 
       {hover && (
         <div className="pointer-events-none absolute z-10 min-w-44 border border-line bg-raised px-3 py-2 shadow-lift"
-          style={{ left: hover.x, top: hover.y, transform: `translate(${hover.x > (box.current?.clientWidth ?? 0) - 200 ? "calc(-100% - 14px)" : "14px"}, -50%)` }}>
+          style={{ left: hover.x, top: hover.y, transform: `translate(${hover.flip ? "calc(-100% - 14px)" : "14px"}, -50%)` }}>
           <p className="text-sm font-semibold text-ink">{hover.item.name}</p>
           <p className="mt-1 flex items-center gap-2 text-xs text-muted">
             {hover.item.value != null && (() => { const b = bandFor(hover.item.value, bands); return (

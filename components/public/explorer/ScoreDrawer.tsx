@@ -20,9 +20,11 @@ export function ScoreDrawer({ target, onClose, onNavigate }: {
 }) {
   const { summary, byId } = useExplorer();
   const ref = useRef<HTMLDialogElement>(null);
-  const [detail, setDetail] = useState<Detail | null>(null);
-  const [error, setError] = useState(false);
+  // fetch result keyed by country slug; only written from the async callbacks
+  const [result, setResult] = useState<{ slug: string; detail?: Detail; failed?: boolean } | null>(null);
   const country = target ? byId.get(target.countryId) : undefined;
+  const detail = result && country && result.slug === country.slug ? result.detail ?? null : null;
+  const error = !!(result && country && result.slug === country.slug && result.failed);
 
   useEffect(() => {
     const d = ref.current;
@@ -34,8 +36,8 @@ export function ScoreDrawer({ target, onClose, onNavigate }: {
   useEffect(() => {
     if (!country) return;
     let live = true;
-    setError(false);
-    load(country.slug).then((x) => live && setDetail(x)).catch(() => live && setError(true));
+    const slug = country.slug;
+    load(slug).then((x) => live && setResult({ slug, detail: x })).catch(() => live && setResult({ slug, failed: true }));
     return () => { live = false; };
   }, [country]);
 

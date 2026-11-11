@@ -1,155 +1,174 @@
 "use client";
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import { allBands, bandFor, fmtScore } from "@/lib/bands";
+import { Fragment, useMemo, useState } from "react";
+import { bandFor, fmtScore } from "@/lib/bands";
 import { ChevronDown, Search } from "@/components/ui/icons";
 import { ScoreChip } from "../ScoreChip";
-import { useExplorer, type SummaryCountry } from "./ExplorerContext";
+import { COMPOSITE, useExplorer, type SummaryCountry } from "./ExplorerContext";
 
 const PAGE = 25;
-type SortKey = "rank" | "name" | string; // string = pillar_id
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
+/** Bring the map + panel into view after choosing a country from the list. */
+function revealMap() {
+  const el = document.getElementById("map");
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  if (r.top >= 0 && r.top < window.innerHeight * 0.5) return;
+  el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+}
+
+/** Compact, searchable, sortable grid of every country. Selection, the active measure
+ *  and the band filter are shared with the map (ExplorerContext); only the text query,
+ *  sort column and "show all" are local to the list. */
 export function Rankings() {
-  const { summary, openScore } = useExplorer();
+  const { summary, selectedId, select, measure, measureLabel, valueOf, rankOf, passesFilter, bandFilter, openScore } = useExplorer();
   const { meta, pillars, countries } = summary;
-  const bands = allBands(meta.score_bands);
   const [q, setQ] = useState("");
-  const [band, setBand] = useState<string>("all");
-  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "rank", dir: 1 });
+  // null = follow the measure chosen above the map
+  const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null);
   const [showAll, setShowAll] = useState(false);
-  const [open, setOpen] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const sortKey = sort?.key ?? measure;
+  const dir = sort?.dir ?? 1;
 
   const rows = useMemo(() => {
     const n = norm(q.trim());
-    const val = (c: SummaryCountry): number | string =>
-      sort.key === "rank" ? c.rank : sort.key === "name" ? c.name : c.scores[sort.key] ?? -1;
+    const val = (c: SummaryCountry): number | string | null =>
+      sortKey === "name" ? c.name : sortKey === COMPOSITE ? c.composite_score : c.scores[sortKey] ?? null;
     return countries
       .filter((c) => !n || norm(c.name).includes(n) || c.iso_code.toLowerCase() === n)
-      .filter((c) => band === "all" || (c.composite_score != null && String(bandFor(c.composite_score, meta.score_bands).index) === band))
+      .filter(passesFilter)
       .sort((a, b) => {
         const x = val(a), y = val(b);
-        const r = typeof x === "string" ? x.localeCompare(String(y)) : (x as number) - (y as number);
-        // scores sort high→low first; rank and name low→high first
-        return (sort.key === "rank" || sort.key === "name" ? r : -r) * sort.dir || a.rank - b.rank;
+        if (typeof x === "string" || typeof y === "string") return String(x).localeCompare(String(y)) * dir;
+        return ((y ?? -Infinity) - (x ?? -Infinity)) * dir || a.name.localeCompare(b.name); // high → low first
       });
-  }, [countries, q, band, sort, meta.score_bands]);
+  }, [countries, q, passesFilter, sortKey, dir]);
 
-  const filtered = q.trim() !== "" || band !== "all";
-  const visible = showAll || filtered ? rows : rows.slice(0, PAGE);
-  const setSortKey = (key: SortKey) => setSort((s) => ({ key, dir: s.key === key ? (s.dir === 1 ? -1 : 1) : 1 }));
-  const ariaSort = (key: SortKey) => (sort.key === key ? ((sort.key === "rank" || sort.key === "name") === (sort.dir === 1) ? "ascending" : "descending") : undefined);
+  const narrowed = q.trim() !== "" || !!bandFilter;
+  const head = showAll || narrowed ? rows : rows.slice(0, PAGE);
+  // keep the selected country visible even when it sits below the first page
+  const pinned = selectedId && !head.some((c) => c.country_id === selectedId) ? rows.find((c) => c.country_id === selectedId) : undefined;
 
-  const SortHead = ({ k, children, className = "" }: { k: SortKey; children: React.ReactNode; className?: string }) => (
-    <th scope="col" aria-sort={ariaSort(k)} className={`px-2 pb-3 align-bottom text-left text-[13px] font-semibold text-ink-2 ${className}`}>
-      <button type="button" onClick={() => setSortKey(k)} className="group inline-flex items-end gap-1 text-left hover:text-ink">
-        <span>{children}</span>
-        <ChevronDown size={14} className={`mb-0.5 shrink-0 transition-transform ${sort.key === k ? "text-ink" : "text-transparent group-hover:text-muted"} ${sort.key === k && ariaSort(k) === "ascending" && k !== "rank" && k !== "name" ? "rotate-180" : ""} ${sort.key === k && ariaSort(k) === "descending" && (k === "rank" || k === "name") ? "rotate-180" : ""}`} />
-      </button>
-    </th>
-  );
+  const choose = (id: string) => { select(id); revealMap(); };
+  const setSortKey = (key: string) => setSort((s) => ({ key, dir: (s?.key ?? measure) === key ? (((s?.dir ?? 1) * -1) as 1 | -1) : 1 }));
+  const ariaSort = (key: string): "ascending" | "descending" | undefined =>
+    sortKey !== key ? undefined : (key === "name") === (dir === 1) ? "ascending" : "descending";
+
+  const columns = [
+    ...pillars.map((p) => ({ key: p.pillar_id, label: p.name })),
+    ...(meta.show_composite ? [{ key: COMPOSITE, label: "Composite" }] : []),
+  ];
+
+  const renderRow = (c: SummaryCountry) => {
+    const sel = c.country_id === selectedId;
+    return (
+      <tr key={c.country_id} className={`border-b border-line ${sel ? "bg-sunken" : "hover:bg-raised"}`}>
+        <td className={`w-12 border-l-[3px] py-1.5 pl-2 text-[13px] text-muted num ${sel ? "border-l-[var(--brand)]" : "border-l-transparent"}`}>{rankOf(c.country_id) || "–"}</td>
+        <th scope="row" className="py-1.5 pr-2 text-left font-normal">
+          <button type="button" onClick={() => choose(c.country_id)} aria-pressed={sel} aria-label={`${c.name}: show on map`}
+            className={`text-left text-[14.5px] hover:text-link hover:underline hover:underline-offset-4 ${sel ? "font-bold text-ink" : "font-semibold text-ink"}`}>
+            {c.name}
+          </button>
+        </th>
+        {columns.map((col) => {
+          const v = col.key === COMPOSITE ? c.composite_score : c.scores[col.key];
+          if (v == null) return <td key={col.key} className="px-1 text-muted">–</td>;
+          const b = bandFor(v, meta.score_bands);
+          const active = col.key === measure;
+          if (col.key === COMPOSITE) return <td key={col.key} className={`px-2 py-1 text-right ${active ? "bg-sunken/70" : ""}`}><ScoreChip score={v} bands={meta.score_bands} size="sm" /></td>;
+          return (
+            <td key={col.key} className={`px-0.5 py-0.5 ${active ? "bg-sunken/70" : ""}`}>
+              <button type="button" onClick={(e) => openScore(c.country_id, col.key, e.currentTarget)}
+                aria-label={`${c.name}, ${col.label}: ${fmtScore(v)}, ${b.label}. Open rationale and sources`}
+                className="flex w-full items-center gap-1.5 px-1.5 py-1 text-left hover:bg-bg hover:ring-1 hover:ring-line-strong">
+                <span className="size-2.5 shrink-0 rounded-full" style={{ background: b.fill, boxShadow: "inset 0 0 0 1px rgb(0 0 0 / .14)" }} aria-hidden />
+                <span className="text-[14px] font-semibold text-ink num">{fmtScore(v)}</span>
+                <span className="truncate text-[11.5px] text-muted">{b.label}</span>
+              </button>
+            </td>
+          );
+        })}
+      </tr>
+    );
+  };
 
   return (
     <section id="rankings" aria-labelledby="rankings-h" className="wrap scroll-mt-20">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <span className="eyebrow">Rankings</span>
           <h2 id="rankings-h" className="t-h2 mt-4">Every country, <span className="grad-text">every pillar</span></h2>
-          <p className="mt-3 max-w-[60ch] text-muted">Sort by any column. Select a score to read why it was given and the sources behind it.</p>
+          <p className="mt-3 max-w-[60ch] text-muted">Ranked on <span className="font-semibold text-ink-2">{measureLabel.toLowerCase()}</span>. Select a country to show it on the map, or a score for its rationale and sources.</p>
+        </div>
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center md:w-auto">
+          <label className="flex h-10 items-center gap-2.5 border border-line-strong bg-raised px-3 focus-within:outline-3 focus-within:outline-focus sm:w-64">
+            <Search size={17} className="shrink-0 text-muted" /><span className="sr-only">Filter the rankings</span>
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filter by country" className="min-w-0 flex-1 bg-transparent text-[14.5px] text-ink placeholder:text-muted focus:outline-none" />
+          </label>
+          <p className="text-[13px] text-muted num" aria-live="polite">{rows.length} of {countries.length}{bandFilter && " · band filter on"}</p>
         </div>
       </div>
 
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-        <label className="flex h-11 flex-1 items-center gap-3 border border-line-strong bg-raised px-4 focus-within:outline-3 focus-within:outline-focus sm:max-w-sm">
-          <Search className="text-muted" /><span className="sr-only">Filter countries</span>
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filter by country" className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-muted focus:outline-none" />
-        </label>
-        <label className="flex items-center gap-2 text-sm text-muted">
-          <span className="whitespace-nowrap">Composite band</span>
-          <select value={band} onChange={(e) => setBand(e.target.value)} className="h-11 flex-1 border border-line-strong bg-raised px-3 text-[15px] text-ink">
-            <option value="all">All bands</option>
-            {bands.map((b) => <option key={b.label} value={String(b.index)}>{b.label} ({b.min}–{b.max})</option>)}
-          </select>
-        </label>
-        <p className="self-center text-sm text-muted sm:ml-auto num" aria-live="polite">{rows.length} of {countries.length} countries</p>
-      </div>
+      {rows.length === 0 && <p className="mt-6 border border-dashed border-line-strong p-8 text-center text-muted">No countries match. Clear the filter or the band selection above the map.</p>}
 
-      {rows.length === 0 && <p className="mt-8 border border-dashed border-line-strong p-8 text-center text-muted">No countries match. Clear the filter to see all {countries.length}.</p>}
-
-      {/* desktop / tablet: table */}
       {rows.length > 0 && (
         <div className="mt-6 hidden overflow-x-auto md:block lg:overflow-visible">
           <table className="w-full border-collapse">
-            <caption className="sr-only">{meta.index_name}: scores by country and pillar</caption>
+            <caption className="sr-only">{meta.index_name}: scores by country and pillar, ranked on {measureLabel}</caption>
             <thead className="z-10 bg-bg lg:sticky lg:top-16">
               <tr className="border-b border-line-strong">
-                <SortHead k="rank" className="w-14">#</SortHead>
-                <SortHead k="name">Country</SortHead>
-                {pillars.map((p) => <SortHead key={p.pillar_id} k={p.pillar_id} className="min-w-[124px]">{p.name}</SortHead>)}
-                {meta.show_composite && <SortHead k="rank" className="min-w-[132px] text-right">Composite</SortHead>}
+                <th scope="col" className="w-12 pb-2 pl-2 text-left text-[12px] font-semibold text-muted">#</th>
+                <th scope="col" aria-sort={ariaSort("name")} className="pb-2 text-left">
+                  <SortButton active={sortKey === "name"} flipped={ariaSort("name") === "descending"} onClick={() => setSortKey("name")}>Country</SortButton>
+                </th>
+                {columns.map((col) => (
+                  <th key={col.key} scope="col" aria-sort={ariaSort(col.key)} className={`px-1.5 pb-2 align-bottom ${col.key === COMPOSITE ? "text-right" : "text-left"} ${col.key === measure ? "bg-sunken/70" : ""}`}>
+                    <SortButton active={sortKey === col.key} flipped={ariaSort(col.key) === "ascending"} onClick={() => setSortKey(col.key)}>{col.label}</SortButton>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {visible.map((c) => (
-                <tr key={c.country_id} className="group border-b border-line hover:bg-raised">
-                  <td className="px-2 py-2.5 text-sm text-muted num">{c.rank}</td>
-                  <th scope="row" className="px-2 py-2.5 text-left font-semibold">
-                    <Link href={`/country/${c.slug}`} className="text-ink hover:text-link hover:underline hover:underline-offset-4">{c.name}</Link>
-                  </th>
-                  {pillars.map((p) => {
-                    const v = c.scores[p.pillar_id];
-                    const b = bandFor(v, meta.score_bands);
-                    return (
-                      <td key={p.pillar_id} className="px-1 py-1.5">
-                        <button type="button" onClick={(e) => openScore(c.country_id, p.pillar_id, e.currentTarget)}
-                          aria-label={`${c.name}, ${p.name}: ${fmtScore(v)}, ${b.label}. Open rationale and sources`}
-                          className="flex w-full items-baseline gap-1.5 px-2 py-1.5 text-left hover:bg-sunken hover:ring-1 hover:ring-line-strong">
-                          <span className="inline-block size-2.5 shrink-0 self-center rounded-full" style={{ background: b.fill, boxShadow: "inset 0 0 0 1px rgb(0 0 0 / .12)" }} aria-hidden />
-                          <span className="text-[15px] font-semibold text-ink num">{fmtScore(v)}</span>
-                          <span className="truncate text-xs text-muted">{b.label}</span>
-                        </button>
-                      </td>
-                    );
-                  })}
-                  {meta.show_composite && c.composite_score != null && (
-                    <td className="px-2 py-2.5 text-right"><ScoreChip score={c.composite_score} bands={meta.score_bands} /></td>
-                  )}
-                </tr>
-              ))}
+              {head.map(renderRow)}
+              {pinned && (
+                <Fragment>
+                  <tr aria-hidden><td colSpan={columns.length + 2} className="py-1 text-center text-xs text-muted">· · ·</td></tr>
+                  {renderRow(pinned)}
+                </Fragment>
+              )}
             </tbody>
           </table>
         </div>
       )}
 
-      {/* phone: ranked list, tap to expand pillars */}
+      {/* phone: compact ranked list on the active measure */}
       {rows.length > 0 && (
-        <ol className="mt-6 grid gap-2 md:hidden">
-          {visible.map((c) => {
-            const isOpen = open === c.country_id;
+        <ol className="mt-5 grid border-t border-line md:hidden">
+          {[...head, ...(pinned ? [pinned] : [])].map((c) => {
+            const sel = c.country_id === selectedId;
+            const open = expanded === c.country_id;
+            const v = valueOf(c);
             return (
-              <li key={c.country_id} className="border border-line bg-raised">
-                <button type="button" aria-expanded={isOpen} onClick={() => setOpen(isOpen ? null : c.country_id)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
-                  <span className="w-8 text-sm text-muted num">#{c.rank}</span>
-                  <span className="flex-1 font-semibold text-ink">{c.name}</span>
-                  {c.composite_score != null && <ScoreChip score={c.composite_score} bands={meta.score_bands} size="sm" />}
-                  <ChevronDown size={16} className={`text-muted transition-transform ${isOpen ? "rotate-180" : ""}`} />
-                </button>
-                {isOpen && (
-                  <div className="border-t border-line px-4 pb-4 pt-2">
-                    <ul>
-                      {pillars.map((p) => {
-                        const v = c.scores[p.pillar_id];
-                        return (
-                          <li key={p.pillar_id} className="border-b border-line last:border-0">
-                            <button type="button" onClick={(e) => openScore(c.country_id, p.pillar_id, e.currentTarget)} className="flex w-full items-center justify-between gap-3 py-2.5 text-left">
-                              <span className="text-sm text-ink-2">{p.name}</span><ScoreChip score={v} bands={meta.score_bands} size="sm" />
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                    <Link href={`/country/${c.slug}`} className="mt-3 inline-block text-sm font-semibold text-link underline underline-offset-4">Open {c.name} profile</Link>
-                  </div>
+              <li key={c.country_id} className={`border-b border-line ${sel ? "bg-sunken" : ""}`}>
+                <div className={`flex items-center gap-2 border-l-[3px] py-2 pl-2 pr-1 ${sel ? "border-l-[var(--brand)]" : "border-l-transparent"}`}>
+                  <span className="w-8 shrink-0 text-[13px] text-muted num">#{rankOf(c.country_id) || "–"}</span>
+                  <button type="button" onClick={() => choose(c.country_id)} aria-pressed={sel} className="min-w-0 flex-1 truncate text-left text-[15px] font-semibold text-ink">{c.name}</button>
+                  {v != null && <ScoreChip score={v} bands={meta.score_bands} size="sm" />}
+                  <button type="button" aria-expanded={open} aria-label={`${open ? "Hide" : "Show"} ${c.name} pillar scores`} onClick={() => setExpanded(open ? null : c.country_id)} className="grid size-9 shrink-0 place-items-center text-muted">
+                    <ChevronDown size={16} className={open ? "rotate-180" : ""} />
+                  </button>
+                </div>
+                {open && (
+                  <ul className="px-3 pb-3">
+                    {pillars.map((p) => (
+                      <li key={p.pillar_id}>
+                        <button type="button" onClick={(e) => openScore(c.country_id, p.pillar_id, e.currentTarget)} className="flex w-full items-center justify-between gap-3 border-t border-line py-2 text-left">
+                          <span className="min-w-0 truncate text-[13.5px] text-ink-2">{p.name}</span><ScoreChip score={c.scores[p.pillar_id]} bands={meta.score_bands} size="sm" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </li>
             );
@@ -157,7 +176,7 @@ export function Rankings() {
         </ol>
       )}
 
-      {!filtered && rows.length > PAGE && (
+      {!narrowed && rows.length > PAGE && (
         <div className="mt-6 flex justify-center">
           <button type="button" onClick={() => setShowAll((s) => !s)} className="btn btn-outline">
             {showAll ? `Show top ${PAGE} only` : `Show all ${rows.length} countries`}<span className="box"><ChevronDown size={16} className={showAll ? "rotate-180" : ""} /></span>
@@ -165,5 +184,14 @@ export function Rankings() {
         </div>
       )}
     </section>
+  );
+}
+
+function SortButton({ active, flipped, onClick, children }: { active: boolean; flipped: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" onClick={onClick} className={`group inline-flex items-end gap-1 text-left text-[12.5px] font-semibold leading-tight hover:text-ink ${active ? "text-ink" : "text-ink-2"}`}>
+      <span>{children}</span>
+      <ChevronDown size={13} className={`mb-px shrink-0 ${active ? "text-ink" : "text-transparent group-hover:text-muted"} ${flipped ? "rotate-180" : ""}`} />
+    </button>
   );
 }
