@@ -459,9 +459,28 @@ button.score-cell[data-active] .score-chip { outline: 2px solid var(--teal); out
 .sel-option.is-hi { background: var(--bg-sunken); }
 .sel-option[aria-selected="true"] { box-shadow: inset 2px 0 0 var(--teal); }
 
-/* country profile hero (country/[slug]/page.tsx): the homepage's charcoal → deep teal */
-.country-hero { --focus: #45d0c6; color: #f1f4f2;
-  background: radial-gradient(55% 80% at 82% 45%, rgb(117 201 186 / .14), transparent 70%), linear-gradient(100deg, #101819 0%, #101819 42%, #12302d 72%, #154e46 100%); }
-.country-hero-shape { transition: transform .4s var(--ease-out-expo), filter .4s; }
-.country-hero-shape:hover, .country-hero-shape:focus-visible { transform: scale(1.025); filter: brightness(1.12); }
+/* country profile header (country/[slug]/page.tsx): compact, calm charcoal with the hero
+ * grid and only a soft teal air on the right; the map card uses dark map tokens. */
+.country-hero { --focus: #45d0c6; position: relative; isolation: isolate; overflow: hidden; color: #f1f4f2;
+  background: radial-gradient(55% 90% at 85% 40%, rgb(21 78 70 / .32), transparent 70%), #101819; }
+.country-hero-grid { position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-image: linear-gradient(rgb(255 255 255 / .035) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / .035) 1px, transparent 1px);
+  background-size: 80px 80px; background-position: center top;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent); mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent); }
+.country-flag { display: grid; place-items: center; width: 44px; height: 32px; border-radius: 5px; font-size: 30px; line-height: 1;
+  background: rgb(255 255 255 / .06); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .1);
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
+.hero-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 3px; font-size: 12.5px; font-weight: 600; color: #f1f4f2;
+  background: color-mix(in srgb, var(--chip) 30%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chip) 60%, transparent); }
+.country-map-card { --tile-bg: #142321; --globe-land: #24332f; --globe-border: #3a4d48; --sel-outer: #9fe3d6;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .08); transition: box-shadow .2s, transform .3s var(--ease-out-expo); }
+.country-map-card:hover { box-shadow: inset 0 0 0 1px rgb(159 227 214 / .35); transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) { .country-map-card:hover { transform: none; } }
+/* pillar rows and assessment cards: soft surfaces, quiet hover */
+.perf-card { border-radius: 8px; background: color-mix(in srgb, var(--bg-raised) 70%, transparent); transition: background-color .15s, box-shadow .15s; }
+button.perf-card:hover { background: var(--bg-raised); box-shadow: 0 1px 2px rgb(0 0 0 / .04), 0 6px 18px -10px rgb(16 28 26 / .18); }
+.assess-card { border-radius: 10px; background: color-mix(in srgb, var(--bg-raised) 70%, transparent); box-shadow: inset 0 0 0 1px var(--line); transition: background-color .15s, box-shadow .15s; }
+.assess-card:hover, .assess-card.is-open { background: var(--bg-raised); }
+.assess-card.is-open { box-shadow: inset 0 0 0 1px var(--line-strong), 0 8px 24px -16px rgb(16 28 26 / .22); }
+.assess-card > button { border-radius: 10px; }
 .perf-row.is-on { box-shadow: inset 2px 0 0 var(--teal); }

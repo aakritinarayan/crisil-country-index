@@ -5,10 +5,10 @@ import { notFound } from "next/navigation";
 import { countryDetail, getPublishedSnapshot, summarise } from "@/lib/data";
 import { allBands, bandFor, fmtScore, formatAsOf } from "@/lib/bands";
 import type { Reference } from "@/lib/types";
-import { ArrowLeft, ArrowRight, ChevronDown } from "@/components/ui/icons";
+import { ArrowLeft, ArrowRight } from "@/components/ui/icons";
 import { CountryShape } from "@/components/public/explorer/CountryShape";
+import ALPHA2 from "@/data/iso-alpha3-to-alpha2.json";
 import { CountryInsights, type PillarRow } from "@/components/public/country/CountryInsights";
-import { SectionNav } from "@/components/public/country/SectionNav";
 import { NotPublished } from "@/components/public/NotPublished";
 import { ShareButton } from "@/components/public/country/ShareButton";
 import { CompositeHistogram, HISTOGRAM_MIN_COUNTRIES } from "@/components/public/country/CompositeHistogram";
@@ -133,104 +133,93 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
       references: (sc?.references ?? []).map((r: Reference) => ({ title: r.title, publisher: r.publisher, date: fmtDate(r.published_date), url: safeUrl(r.url) })),
     };
   });
-  const pct = (v: number) => ((v - meta.score_min) / (meta.score_max - meta.score_min)) * 100;
   const period = formatAsOf(meta.as_of);
   const sample = process.env.SHOW_SAMPLE_DATA_BANNER !== "false";
+  // flag from the 2-letter code (regional-indicator pair); decorative, the name carries meaning
+  const a2 = (ALPHA2 as Record<string, string>)[country.iso_code];
+  const flag = a2 ? String.fromCodePoint(...[...a2].map((ch) => 0x1f1e6 + ch.charCodeAt(0) - 65)) : null;
 
   return (
     <article>
-      {/* ── hero: identity, composite, rank and the country itself ── */}
+      {/* ── compact summary header: identity, the numbers, one line, actions; map card right ── */}
       <header data-header-tone="dark" className="country-hero">
-        <div className="wrap grid gap-10 pb-12 pt-8 sm:pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(280px,420px)] lg:items-center lg:gap-14 lg:pb-16">
+        <div aria-hidden className="country-hero-grid" />
+        <div className="wrap relative grid gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center lg:gap-12 lg:py-10">
           <div className="min-w-0">
-            <nav aria-label="Breadcrumb" className="text-[13.5px]">
-              <ol className="flex flex-wrap items-center gap-2 text-[rgb(232_239_236/0.62)]">
-                <li><Link href="/#map" className="hover:text-white hover:underline hover:underline-offset-4">Explore countries</Link></li>
+            <nav aria-label="Breadcrumb" className="text-[13px]">
+              <ol className="flex flex-wrap items-center gap-2 text-[rgb(232_239_236/0.6)]">
+                <li><Link href="/#map" className="transition-colors hover:text-white">Explore countries</Link></li>
                 <li aria-hidden>/</li>
-                <li aria-current="page" className="text-white">{country.name}</li>
+                <li aria-current="page" className="text-[rgb(232_239_236/0.9)]">{country.name}</li>
               </ol>
             </nav>
-            <p className="mt-8 text-[13px] uppercase tracking-[0.08em] text-[rgb(232_239_236/0.62)] num">
+            <div className="mt-5 flex items-center gap-3.5">
+              {flag && <span aria-hidden className="country-flag">{flag}</span>}
+              <h1 className="text-[clamp(2rem,4vw,2.9rem)] font-semibold leading-[1.05] tracking-[-0.03em] text-white">{country.name}</h1>
+            </div>
+            <p className="mt-2 text-[13px] text-[rgb(232_239_236/0.6)] num">
               <abbr title="ISO 3166-1 alpha-3 code" className="no-underline">{country.iso_code}</abbr><span aria-hidden> · </span>Reporting period {period}
+              {sample && <><span aria-hidden> · </span>Sample data — not a Crisil assessment</>}
             </p>
-            <h1 className="mt-2 text-[clamp(2.5rem,6vw,4.5rem)] font-bold leading-[1] tracking-[-0.035em] text-white">{country.name}</h1>
-            {sample && <p className="mt-3 inline-block border border-white/15 px-2 py-0.5 text-[12px] text-[rgb(232_239_236/0.75)]">Sample data — not a Crisil assessment</p>}
 
             {showComposite && compositeBand ? (
-              <dl className="mt-8 grid grid-cols-[auto_auto] gap-x-10 gap-y-5 sm:grid-cols-[auto_auto_auto] sm:items-end">
+              <dl className="mt-6 flex flex-wrap items-end gap-x-9 gap-y-4">
                 <div>
-                  <dt className="text-[13px] text-[rgb(232_239_236/0.62)]">Composite score</dt>
-                  <dd className="mt-1 flex items-end gap-3">
-                    <span className="text-[64px] font-semibold leading-[.85] tracking-[-0.04em] text-white num">{fmtScore(country.composite_score!)}</span>
-                    <span className="pb-1 text-[15px] font-semibold text-white"><span aria-hidden className="mr-1.5 inline-block size-2.5" style={{ background: compositeBand.fill }} />{compositeBand.label}</span>
+                  <dt className="text-[12.5px] text-[rgb(232_239_236/0.6)]">Composite score</dt>
+                  <dd className="mt-1 flex items-center gap-2.5">
+                    <span className="text-[40px] font-semibold leading-none tracking-[-0.03em] text-white num">{fmtScore(country.composite_score!)}</span>
+                    <span className="hero-chip" style={{ "--chip": compositeBand.fill } as React.CSSProperties}>{compositeBand.label}</span>
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-[13px] text-[rgb(232_239_236/0.62)]">Global rank</dt>
-                  <dd className="mt-1 text-[22px] font-semibold text-white num"><Link href="/#rankings" className="hover:underline hover:underline-offset-4">{me.rank}<span className="text-[15px] font-normal text-[rgb(232_239_236/0.62)]"> of {composites.length}</span></Link></dd>
+                  <dt className="text-[12.5px] text-[rgb(232_239_236/0.6)]">Global rank</dt>
+                  <dd className="mt-1 text-[22px] font-semibold text-white num"><Link href="/#rankings" className="transition-colors hover:text-[#9fe3d6]">#{me.rank}<span className="text-[14px] font-normal text-[rgb(232_239_236/0.6)]"> of {composites.length}</span></Link></dd>
                 </div>
                 {compositeMedian != null && (
                   <div>
-                    <dt className="text-[13px] text-[rgb(232_239_236/0.62)]">Index median</dt>
+                    <dt className="text-[12.5px] text-[rgb(232_239_236/0.6)]">Index median</dt>
                     <dd className="mt-1 text-[22px] font-semibold text-white num">{fmtScore(compositeMedian)}</dd>
                   </div>
                 )}
               </dl>
-            ) : <p className="mt-8 text-[15px] text-[rgb(232_239_236/0.75)]">No composite score is published for {country.name}.</p>}
+            ) : <p className="mt-6 text-[14.5px] text-[rgb(232_239_236/0.75)]">No composite score is published for {country.name}.</p>}
 
-            {takeaway && <p className="mt-7 max-w-[60ch] text-[16.5px] leading-relaxed text-[rgb(232_239_236/0.82)]">{takeaway}</p>}
+            {takeaway && <p className="mt-5 max-w-[64ch] text-[15px] leading-relaxed text-[rgb(232_239_236/0.8)]">{takeaway}</p>}
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={`/?select=${encodeURIComponent(country.country_id)}#map`} className="hero-btn hero-btn-primary">View on map<span className="box" aria-hidden><ArrowRight size={16} /></span></Link>
-              <ShareButton title={`${country.name} · ${meta.index_name}`} path={`/country/${country.slug}`} />
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link href={`/?select=${encodeURIComponent(country.country_id)}#map`} className="hero-btn hero-btn-primary !h-11 !min-w-0">View on map<span className="box" aria-hidden><ArrowRight size={15} /></span></Link>
+              <ShareButton title={`${country.name} · ${meta.index_name}`} path={`/country/${country.slug}`} className="hero-btn hero-btn-ghost !h-11 !min-w-0 gap-2.5" />
             </div>
           </div>
-          <Link href={`/?select=${encodeURIComponent(country.country_id)}#map`} aria-label={`Show ${country.name} on the world map`} className="country-hero-shape mx-auto block aspect-square w-full max-w-[300px] lg:max-w-none">
-            <CountryShape iso={country.iso_code} name={country.name} fill="" variant="hero" />
+
+          {/* a small map card: the country in its region */}
+          <Link href={`/?select=${encodeURIComponent(country.country_id)}#map`} aria-label={`Show ${country.name} on the world map`}
+            className="country-map-card hidden aspect-[4/3] w-full overflow-hidden rounded-[10px] sm:block lg:aspect-square">
+            <CountryShape iso={country.iso_code} name={country.name} fill={compositeBand?.fill ?? "var(--sel-fill)"} />
           </Link>
         </div>
       </header>
 
-      <SectionNav items={[{ id: "performance", label: "Performance" }, { id: "assessments", label: "Assessment details" }, { id: "explore", label: "Explore more" }]} />
-
       <div className="wrap">
-        {/* ── composite benchmark: the country and the index median on one scale ── */}
+        {/* ── against the index ── */}
         {showComposite && compositeBand && (
-          <section aria-labelledby="bench-h" className="border-b border-line py-10">
-            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-              <h2 id="bench-h" className="text-[20px] font-bold tracking-[-0.02em] text-ink">Against the index</h2>
-              <p className="text-[13.5px] text-ink-2 num">Higher than <strong className="font-semibold text-ink">{Math.round((below / composites.length) * 100)}%</strong> of {composites.length} countries</p>
-            </div>
-            <div role="img" className="relative mt-8 pb-10" aria-label={`Composite ${fmtScore(country.composite_score!)} (${compositeBand.label}) on a ${meta.score_min}–${meta.score_max} scale; index median ${compositeMedian != null ? fmtScore(compositeMedian) : "not available"}.`}>
-              <div aria-hidden className="flex h-2.5 gap-px">
-                {allBands(meta.score_bands).map((b) => <span key={b.label} title={`${b.label} ${b.min}–${b.max}`} style={{ flex: b.max - b.min + 1, background: b.fill, opacity: b.index === compositeBand.index ? 1 : 0.5 }} />)}
+          <section aria-labelledby="bench-h" className="py-10">
+            <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-1">
+              <div>
+                <h2 id="bench-h" className="text-[22px] font-semibold tracking-[-0.02em] text-ink">Against the index</h2>
+                <p className="mt-1 text-[14px] text-muted">Composite scores of every country in the index.</p>
               </div>
-              <span aria-hidden className="absolute -top-6 flex -translate-x-1/2 flex-col items-center" style={{ left: `${pct(country.composite_score!)}%` }}>
-                <span className="text-[12.5px] font-semibold text-ink num">{country.name} {fmtScore(country.composite_score!)}</span>
-                <span className="mt-0.5 h-5 w-[3px] bg-ink" />
-              </span>
-              {compositeMedian != null && (
-                <span aria-hidden className="absolute top-[-2px] flex -translate-x-1/2 flex-col items-center" style={{ left: `${pct(compositeMedian)}%` }}>
-                  <span className="h-4 w-0 border-l-2 border-dashed border-muted" />
-                  <span className="mt-1 whitespace-nowrap text-[12px] text-muted num">Median {fmtScore(compositeMedian)}</span>
-                </span>
-              )}
-              <div aria-hidden className="absolute inset-x-0 bottom-0 flex justify-between text-[11.5px] text-muted num"><span>{meta.score_min}</span><span>{meta.score_max}</span></div>
+              <p className="text-[14px] text-ink-2 num">Higher than <strong className="font-semibold text-ink">{Math.round((below / composites.length) * 100)}%</strong> of {composites.length} countries</p>
             </div>
-            {composites.length >= HISTOGRAM_MIN_COUNTRIES && (
-              <details className="group mt-2">
-                <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-[13.5px] font-semibold text-link [&::-webkit-details-marker]:hidden">
-                  <ChevronDown size={14} className="transition-transform group-open:rotate-180 motion-reduce:transition-none" />Show the full distribution
-                </summary>
-                <div className="mt-5 max-w-[760px]">
-                  <CompositeHistogram values={composites} score={country.composite_score!} bands={meta.score_bands} min={meta.score_min} max={meta.score_max} countryName={country.name} />
-                </div>
-              </details>
-            )}
+            <div className="mt-6">
+              {composites.length >= HISTOGRAM_MIN_COUNTRIES
+                ? <CompositeHistogram values={composites} score={country.composite_score!} median={compositeMedian} bands={meta.score_bands} min={meta.score_min} max={meta.score_max} countryName={country.name} />
+                : <p className="text-[14px] text-muted">Too few countries are published for a distribution; rank {me.rank} of {composites.length}.</p>}
+            </div>
           </section>
         )}
 
-        <CountryInsights rows={rows} min={meta.score_min} max={meta.score_max} />
+        <CountryInsights rows={rows} min={meta.score_min} max={meta.score_max} legend={allBands(meta.score_bands).map((b) => ({ label: b.label, min: b.min, max: b.max, fill: b.fill }))} />
 
         {/* ── continue exploring ── */}
         <section id="explore" aria-labelledby="explore-more-h" className="scroll-mt-32 border-t border-line py-12">
