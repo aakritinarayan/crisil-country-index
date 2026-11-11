@@ -1,0 +1,5 @@
+:HL["/crisil-country-index/_next/static/chunks/3bdyu5_emvavz.css","style"]
+:HL["/crisil-country-index/_next/static/media/db4845a53d7a5ff7-s.p.1wc2mf9hp9pav.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+2:[["children",{"s":"__PAGE__","h":128}]]
+1:[["children",{"s":"(public)","h":32,"c":"$Q2"}]]
+0:{"b":"3691v9orPbMIyuD9KAQxR","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
