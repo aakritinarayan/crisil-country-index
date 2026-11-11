@@ -10,7 +10,6 @@ import { CountryShape } from "@/components/public/explorer/CountryShape";
 import ALPHA2 from "@/data/iso-alpha3-to-alpha2.json";
 import { PillarExplorer, type PillarRow } from "@/components/public/country/PillarExplorer";
 import { NotPublished } from "@/components/public/NotPublished";
-import { ShareButton } from "@/components/public/country/ShareButton";
 import { CompositeHistogram, HISTOGRAM_MIN_COUNTRIES } from "@/components/public/country/CompositeHistogram";
 
 /* Country profile. Everything here is derived from the published snapshot: pillar
@@ -188,7 +187,6 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href={`/?select=${encodeURIComponent(country.country_id)}#map`} className="hero-btn hero-btn-primary !h-11 !min-w-0">View on map<span className="box" aria-hidden><ArrowRight size={15} /></span></Link>
-              <ShareButton title={`${country.name} · ${meta.index_name}`} path={`/country/${country.slug}`} className="hero-btn hero-btn-ghost !h-11 !min-w-0 gap-2.5" />
             </div>
           </div>
 
