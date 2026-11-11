@@ -10,10 +10,10 @@ const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCa
 
 /** Accessible country search (ARIA 1.2 combobox). Matches name or ISO code. */
 export function CountryCombobox({
-  countries, bands, onSelect, autoFocus, placeholder = "Find a country", className = "", size = "md",
+  countries, bands, onSelect, autoFocus, placeholder = "Find a country", className = "", size = "md", showCount = true,
 }: {
   countries: CountryOption[]; bands: ScoreBand[]; onSelect: (c: CountryOption) => void;
-  autoFocus?: boolean; placeholder?: string; className?: string; size?: "md" | "lg";
+  autoFocus?: boolean; placeholder?: string; className?: string; size?: "md" | "lg" | "toolbar"; showCount?: boolean;
 }) {
   const id = useId();
   const [q, setQ] = useState("");
@@ -34,7 +34,7 @@ export function CountryCombobox({
   return (
     <div className={`relative ${className}`}>
       <label htmlFor={`${id}-in`} className="sr-only">{placeholder}</label>
-      <div className={`flex items-center gap-3 border border-line-strong bg-raised px-4 shadow-soft focus-within:outline-3 focus-within:outline-focus ${size === "lg" ? "h-14" : "h-11"}`}>
+      <div className={`field flex items-center gap-3 bg-raised px-4 ${size === "lg" ? "h-14" : size === "toolbar" ? "h-12" : "h-11"}`}>
         <Search className="shrink-0 text-muted" />
         <input
           id={`${id}-in`} role="combobox" aria-expanded={showList} aria-controls={`${id}-list`} aria-autocomplete="list"
@@ -51,7 +51,7 @@ export function CountryCombobox({
             else if (e.key === "Escape" && q) { e.stopPropagation(); setQ(""); }
           }}
         />
-        <span className="hidden text-xs text-muted sm:inline num">{countries.length} countries</span>
+        {showCount && <span className="hidden text-xs text-muted sm:inline num">{countries.length} countries</span>}
       </div>
       {showList && (
         <ul id={`${id}-list`} role="listbox" aria-label="Countries" className="absolute inset-x-0 top-full z-30 mt-1 max-h-80 overflow-auto border border-line bg-raised py-1 shadow-lift">

@@ -1,110 +1,95 @@
 "use client";
 import Link from "next/link";
-import { allBands, bandFor, fmtScore } from "@/lib/bands";
+import { bandFor, fmtScore } from "@/lib/bands";
 import { ArrowRight, Close } from "@/components/ui/icons";
-import { ScoreChip } from "../ScoreChip";
+import { CountryShape } from "./CountryShape";
 import { useExplorer } from "./ExplorerContext";
 
-/** Contextual insight panel beside the map. Nothing is pre-selected. Without a selection
- *  it explains how to explore (Overview) or summarises the active measure; with one it
- *  shows that country's assessment. */
-export function CountryPanel() {
-  const { summary, byId, selectedId, select, valueOf, rankOf, overview, measure, measureLabel, openScore } = useExplorer();
+/** Contextual country assessment beside the geographic viewer. Nothing is pre-selected:
+ *  until then it is a single invitation. With a selection it reads like a short profile —
+ *  name, the country's shape, composite and band, every pillar as a scored bar (each opens
+ *  the rationale drawer), and the way to the full profile. No cards, hairlines only. */
+export function CountryPanel({ view }: { view: "globe" | "flat" }) {
+  const { summary, byId, selectedId, select, rankOf, overview, measure, measureLabel, openScore } = useExplorer();
   const { meta, pillars, countries } = summary;
   const c = selectedId ? byId.get(selectedId) : undefined;
 
   if (!c) {
-    const ranked = countries.filter((x) => valueOf(x) != null).sort((a, b) => rankOf(a.country_id) - rankOf(b.country_id));
-    const counts = allBands(meta.score_bands).map((b) => ({ b, n: ranked.filter((x) => bandFor(valueOf(x)!, meta.score_bands).index === b.index).length }));
-    const list = (title: string, items: typeof ranked, className = "") => (
-      <div className={className}>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{title}</h3>
-        <ol className="mt-2 grid">
-          {items.map((x) => (
-            <li key={x.country_id}>
-              <button type="button" onClick={() => select(x.country_id)} className="flex w-full items-center gap-3 border-b border-line py-2 text-left last:border-0 hover:bg-sunken">
-                <span className="w-8 shrink-0 text-xs text-muted num">#{rankOf(x.country_id)}</span>
-                <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-ink">{x.name}</span>
-                <ScoreChip score={valueOf(x)!} bands={meta.score_bands} size="sm" />
-              </button>
+    return (
+      <div className="lg:pt-6">
+        <p className="label text-muted">Country assessment</p>
+        <h3 className="mt-3 text-[28px] font-bold leading-tight tracking-[-0.02em] text-ink">Choose a country</h3>
+        <p className="mt-3 max-w-[36ch] text-[15px] leading-relaxed text-muted">Its score, performance band and every pillar will appear here.</p>
+        {/* three ways in, kept short */}
+        <ol className="mt-7 grid gap-3 border-t border-line pt-5 text-[14px] text-ink-2">
+          {[
+            `Select a country on the ${view === "globe" ? "globe" : "map"}`,
+            "Or search by name or ISO code",
+            "Colour the map by a pillar to compare",
+          ].map((t, i) => (
+            <li key={t} className="flex items-baseline gap-3">
+              <span className="w-4 shrink-0 text-[12px] font-semibold text-[var(--teal)] num">{i + 1}</span>{t}
             </li>
           ))}
         </ol>
       </div>
     );
-    return (
-      <div className="flex h-full flex-col p-5 sm:p-6">
-        <h3 className="text-[19px] font-bold tracking-tight text-ink">Explore country performance</h3>
-        <p className="mt-2 text-[14px] leading-relaxed text-muted">
-          Select a country on the map or use Find a country to see its scores.{overview ? " Choose Composite or a pillar above to colour the map by score." : ""}
-        </p>
-        <dl className="mt-5 flex gap-8 border-t border-line pt-4">
-          <div><dt className="text-[12px] text-muted">Countries assessed</dt><dd className="mt-1 text-[28px] font-semibold leading-none text-ink num">{countries.length}</dd></div>
-          <div><dt className="text-[12px] text-muted">Pillars</dt><dd className="mt-1 text-[28px] font-semibold leading-none text-ink num">{pillars.length}</dd></div>
-        </dl>
-        {!overview && (
-          <>
-            {/* distribution of the active measure across bands */}
-            <div className="mt-6 border-t border-line pt-4">
-              <h4 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{measureLabel} by band</h4>
-              <div className="mt-2.5 flex h-2 gap-px" aria-hidden>
-                {counts.filter((x) => x.n > 0).map((x) => <span key={x.b.label} style={{ flex: x.n, background: x.b.fill, boxShadow: "inset 0 0 0 1px rgb(0 0 0 / .08)" }} />)}
-              </div>
-              <p className="mt-1.5 text-[12px] text-muted num">{counts.map((x) => `${x.b.label} ${x.n}`).join(" · ")}</p>
-            </div>
-            {list(`Highest on ${measureLabel.toLowerCase()}`, ranked.slice(0, 5), "mt-6")}
-          </>
-        )}
-      </div>
-    );
   }
 
-  const rank = rankOf(c.country_id);
+  const composite = meta.show_composite && c.composite_score != null ? bandFor(c.composite_score, meta.score_bands) : null;
   return (
-    <div className="flex h-full flex-col p-5" aria-live="polite">
-      <div className="flex items-start justify-between gap-3">
+    <div aria-live="polite">
+      <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold tracking-wider text-muted num">
-            {c.iso_code} · #{rank} of {countries.length} on {measureLabel.toLowerCase()}
+          <p className="label text-muted num">
+            {c.iso_code}<span className="mx-2 text-line-strong">/</span>#{rankOf(c.country_id)} of {countries.length} · {measureLabel}
           </p>
-          <h3 className="mt-1 text-2xl font-bold tracking-tight text-ink">{c.name}</h3>
+          <h3 className="mt-2 text-[36px] font-bold leading-[1.05] tracking-[-0.025em] text-ink">{c.name}</h3>
         </div>
-        <button type="button" onClick={() => select(null)} className="grid size-9 shrink-0 place-items-center border border-line-strong bg-raised text-muted hover:text-ink" aria-label={`Clear selection: ${c.name}`}><Close size={16} /></button>
+        <button type="button" onClick={() => select(null)} className="grid size-9 shrink-0 place-items-center text-muted transition-colors hover:bg-sunken hover:text-ink" aria-label={`Clear selection: ${c.name}`}><Close size={16} /></button>
       </div>
 
-      {meta.show_composite && c.composite_score != null && (() => {
-        const b = bandFor(c.composite_score, meta.score_bands);
-        return (
-          <div className="mt-4 flex items-center gap-4 px-4 py-3" style={{ background: b.fill, color: b.ink }}>
-            <span className="text-[34px] font-semibold leading-none tracking-tight num">{fmtScore(c.composite_score)}</span>
-            <span className="leading-tight"><span className="block text-xs opacity-90">Composite score</span><strong className="text-[17px]">{b.label}</strong></span>
-          </div>
-        );
-      })()}
+      {/* square preview tile: the country as it is selected on the globe */}
+      <div className="mt-4 aspect-square w-full max-w-[260px] overflow-hidden rounded-[6px] ring-1 ring-inset ring-line">
+        <CountryShape key={c.iso_code} iso={c.iso_code} name={c.name} fill="var(--sel-fill)" />
+      </div>
 
-      <h4 className="mt-5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Pillar breakdown</h4>
-      <ul className="mt-1.5 grid">
+      {composite && (
+        <div className="mt-5 flex items-center gap-5 border-y border-line py-5">
+          <span className="text-[56px] font-semibold leading-[.9] tracking-[-0.04em] text-ink num">{fmtScore(c.composite_score!)}</span>
+          <span className="leading-tight">
+            <span className="block label text-muted">Composite</span>
+            <span className="mt-1.5 inline-flex items-center gap-2 text-[17px] font-semibold text-ink">
+              <span aria-hidden className="size-2.5 ring-1 ring-black/10" style={{ background: composite.fill }} />{composite.label}
+            </span>
+          </span>
+        </div>
+      )}
+
+      <h4 className="mt-6 label text-muted">Pillars</h4>
+      <ul className="mt-2 grid gap-1">
         {pillars.map((p) => {
           const v = c.scores[p.pillar_id];
           const b = bandFor(v, meta.score_bands);
           const active = !overview && measure === p.pillar_id;
           return (
             <li key={p.pillar_id}>
+              {/* the whole row opens the rationale drawer */}
               <button type="button" onClick={(e) => openScore(c.country_id, p.pillar_id, e.currentTarget)}
                 aria-label={`${p.name}: ${fmtScore(v)}, ${b.label}. Open rationale and sources`}
-                className={`grid w-full grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 border-b border-line px-1.5 py-2 text-left last:border-0 hover:bg-sunken ${active ? "bg-sunken" : ""}`}>
-                <span className={`truncate text-[13.5px] ${active ? "font-semibold text-ink" : "text-ink-2"}`}>{p.name}</span>
-                <span className="text-[13.5px] font-semibold text-ink num">{fmtScore(v)} <span className="text-xs font-normal text-muted">{b.label}</span></span>
-                <span className="col-span-2 h-1.5 bg-sunken" aria-hidden>
-                  <span className="block h-full" style={{ width: `${((v - meta.score_min) / (meta.score_max - meta.score_min)) * 100}%`, background: b.fill, boxShadow: "inset 0 0 0 1px rgb(0 0 0 / .14)" }} />
+                className="group -mx-2 grid w-[calc(100%+16px)] grid-cols-[1fr_auto] items-baseline gap-x-3 gap-y-2 px-2 py-2.5 text-left transition-colors hover:bg-sunken">
+                <span className={`truncate text-[14px] ${active ? "font-semibold text-ink" : "text-ink-2 group-hover:text-ink"}`}>{p.name}</span>
+                <span className="text-[14px] font-semibold text-ink num">{fmtScore(v)}<span className="ml-1.5 text-[12px] font-normal text-muted">{b.label}</span></span>
+                <span className="col-span-2 h-[3px] bg-[var(--line)]" aria-hidden>
+                  <span className="block h-full transition-[width] duration-500" style={{ width: `${((v - meta.score_min) / (meta.score_max - meta.score_min)) * 100}%`, background: b.fill, boxShadow: "inset 0 0 0 .5px rgb(0 0 0 / .18)" }} />
                 </span>
               </button>
             </li>
           );
         })}
       </ul>
-      <p className="mt-2 text-xs text-muted">Select a pillar for the rationale and sources.</p>
-      <Link href={`/country/${c.slug}`} className="btn mt-auto w-full justify-between max-lg:mt-4">View country profile<span className="box"><ArrowRight size={16} /></span></Link>
+      <p className="mt-2 text-[12px] text-muted">Select a pillar for its rationale and sources.</p>
+      <Link href={`/country/${c.slug}`} className="btn mt-7 w-full justify-between">View country profile<span className="box"><ArrowRight size={16} /></span></Link>
     </div>
   );
 }

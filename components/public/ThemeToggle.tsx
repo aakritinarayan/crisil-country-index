@@ -12,7 +12,7 @@ const subscribe = (cb: () => void) => {
 };
 const read = (): Theme => (document.documentElement.dataset.theme === "dark" ? "dark" : "light");
 
-export function ThemeToggle() {
+export function ThemeToggle({ className = "grid size-10 place-items-center border border-line-strong bg-raised text-ink hover:shadow-soft" }: { className?: string } = {}) {
   const theme = useSyncExternalStore<Theme | null>(subscribe, read, () => null);
   const next: Theme = theme === "dark" ? "light" : "dark";
   return (
@@ -22,7 +22,7 @@ export function ThemeToggle() {
         document.documentElement.dataset.theme = next;
         try { localStorage.setItem("theme", next); } catch { /* storage blocked: still switches for this visit */ }
       }}
-      className="grid size-10 place-items-center border border-line-strong bg-raised text-ink hover:shadow-soft"
+      className={className}
       aria-label={theme ? `Switch to ${next} theme` : "Switch theme"}
     >
       {theme === "dark" ? <Sun /> : <Moon />}

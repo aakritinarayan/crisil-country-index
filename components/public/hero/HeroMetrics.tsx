@@ -9,19 +9,20 @@ export type HeroMetricData = {
   top: { id: string; name: string; score: string; tied: number } | null;
 };
 
-/** Three live metrics in the dark hero: editorial numerals, hairline dividers, no cards. */
+/** Three live metrics in the dark hero, kept quiet so the headline and globe lead:
+ *  modest numerals, small muted labels, hairline dividers, no cards. */
 export function HeroMetrics({ count, average, top }: HeroMetricData) {
   const { select } = useExplorer();
   const [explain, setExplain] = useState(false);
   const tipId = useId();
-  const cell = "relative flex min-w-0 flex-col items-center px-3 py-4 text-center sm:px-6";
-  const value = "text-[30px] font-semibold leading-none tracking-tight text-[var(--h-ink)] num sm:text-[38px]";
-  const label = "mt-2.5 text-[12.5px] text-[var(--h-muted)] sm:text-[13px]";
+  const cell = "relative flex min-w-0 flex-col items-center px-3 py-3 text-center sm:px-5";
+  const value = "text-[25px] font-medium leading-none tracking-tight text-[var(--h-ink)]/90 num sm:text-[30px]";
+  const label = "mt-2 text-[12.5px] tracking-wide text-[var(--h-muted)] sm:text-[13.5px]";
   const hit = "hero-metric outline-none";
 
   return (
-    <dl className="grid grid-cols-2 border-y border-[var(--h-line-strong)] sm:grid-cols-3">
-      <div className={`${cell} border-r border-[var(--h-line-strong)]`}>
+    <dl className="grid grid-cols-2 sm:grid-cols-3">
+      <div className={`${cell} border-r border-white/[0.07]`}>
         <dt className="order-2"><span className={label}>Countries assessed</span></dt>
         <dd className="order-1">
           <a href="#map" onClick={(e) => { e.preventDefault(); enterExplorer(); }} className={`${hit} ${value} block`}
@@ -29,7 +30,7 @@ export function HeroMetrics({ count, average, top }: HeroMetricData) {
         </dd>
       </div>
 
-      <div className={`${cell} border-[var(--h-line-strong)] sm:border-r`}>
+      <div className={`${cell} border-white/[0.07] sm:border-r`}>
         <dt className="order-2"><span className={label}>Average score</span></dt>
         <dd className="order-1">
           {average ? (
@@ -49,13 +50,15 @@ export function HeroMetrics({ count, average, top }: HeroMetricData) {
         {!average && <dd className="mt-1 text-[11.5px] text-[var(--h-muted)]">Composite not published</dd>}
       </div>
 
-      <div className={`${cell} col-span-2 border-t border-[var(--h-line-strong)] sm:col-span-1 sm:border-t-0`}>
-        <dt className="order-2"><span className={label}>Top performer</span></dt>
+      <div className={`${cell} col-span-2 border-t border-white/[0.07] sm:col-span-1 sm:border-t-0`}>
+        <dt className="order-2">
+          <span className={label}>Top performer{top && <> · <span className="font-semibold text-[var(--h-accent)] num">{top.score}</span></>}</span>
+        </dt>
         <dd className="order-1">
           {top ? (
-            <button type="button" onClick={() => { select(top.id); enterExplorer(); }} className={`${hit} ${value} max-w-full text-balance !text-[24px] sm:!text-[30px] lg:!text-[34px]`}
+            <button type="button" onClick={() => { select(top.id); enterExplorer(); }} className={`${hit} ${value} max-w-full whitespace-nowrap`}
               aria-label={`Top performer: ${top.name}, composite ${top.score}${top.tied ? `, tied with ${top.tied} other${top.tied > 1 ? "s" : ""}` : ""}. Show on the map`}>
-              {top.name} <span className="text-[var(--h-accent)]">· {top.score}</span>
+              {top.name}
               {top.tied > 0 && <span className="ml-1 align-middle text-[14px] font-normal text-[var(--h-muted)]">+{top.tied}</span>}
             </button>
           ) : <span className={`${value} text-[var(--h-muted)]`}>—</span>}

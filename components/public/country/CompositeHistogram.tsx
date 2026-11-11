@@ -26,7 +26,7 @@ export function CompositeHistogram({ values, score, bands, min, max, countryName
   return (
     <figure>
       <figcaption className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <span className="text-[13px] font-semibold uppercase tracking-[0.14em] text-muted">Where {countryName} sits</span>
+        <span className="label text-muted">Where {countryName} sits</span>
         <span className="text-[13px] text-ink-2">Higher than <strong className="font-semibold text-ink num">{pctBelow}%</strong> of {n} countries</span>
       </figcaption>
       <div role="img" className="mt-4"

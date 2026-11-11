@@ -4,10 +4,12 @@ import { COMPOSITE, useExplorer } from "./ExplorerContext";
 
 const OVERVIEW = "__overview";
 
-/** "Colour map by": one row of segments — Overview, the workbook's composite (when
- *  enabled), then every pillar. Native radios, so arrow keys move between options.
- *  The row never wraps: on narrow screens it scrolls sideways, with edge fades that
- *  show there is more, and the checked option is kept in view. */
+/** Assessment tabs ("Colour map by", a screen-reader group label): Overview, the
+ *  workbook's composite (when enabled), then every pillar by its workbook name. Plain text
+ *  tabs, muted when inactive, with a 2px teal underline on the active one. Native radios,
+ *  so arrow keys move between options. Labels never wrap or truncate: if they need more
+ *  room than the toolbar has, only this tab strip scrolls sideways (with soft edge fades),
+ *  and the active tab is kept in view. */
 export function PillarSelector() {
   const { summary, overview, showOverview, measure, setMeasure } = useExplorer();
   const options = [
@@ -29,9 +31,8 @@ export function PillarSelector() {
     return () => { ro.disconnect(); el.removeEventListener("scroll", update); };
   }, []);
 
-  // keep the checked segment visible when it changes (arrow keys, or a deep link)
+  // keep the active tab visible (scrollLeft only: scrollIntoView would move the page)
   useEffect(() => {
-    // scrollLeft only: scrollIntoView would also scroll the page vertically on load
     const r = row.current;
     const el = r?.querySelector<HTMLElement>("input:checked")?.parentElement;
     if (!r || !el) return;
@@ -40,29 +41,25 @@ export function PillarSelector() {
   }, [current]);
 
   const fade = (on: boolean, side: "l" | "r") =>
-    <span aria-hidden className={`pointer-events-none absolute inset-y-0 w-10 transition-opacity ${side === "l" ? "left-0 bg-gradient-to-r" : "right-0 bg-gradient-to-l"} from-bg to-transparent ${on ? "opacity-100" : "opacity-0"}`} />;
+    <span aria-hidden className={`pointer-events-none absolute inset-y-0 w-8 transition-opacity ${side === "l" ? "left-0 bg-gradient-to-r" : "right-0 bg-gradient-to-l"} from-[var(--explore-bg)] to-transparent ${on ? "opacity-100" : "opacity-0"}`} />;
 
   return (
-    <div role="radiogroup" aria-labelledby="colour-by" className="flex min-w-0 flex-col gap-2 lg:flex-row lg:items-center lg:gap-4">
-      <span id="colour-by" className="shrink-0 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Colour map by</span>
-      <div className="relative min-w-0 flex-1">
-        <div ref={row} className="flex flex-nowrap gap-1.5 overflow-x-auto py-1 [scrollbar-width:thin]">
-          {options.map((o) => (
-            <label key={o.id} className="relative shrink-0 cursor-pointer">
-              <input type="radio" name="measure" value={o.id} checked={current === o.id}
-                onChange={() => (o.id === OVERVIEW ? showOverview() : setMeasure(o.id))} className="peer sr-only" />
-              <span className="inline-flex h-9 items-center whitespace-nowrap border border-line-strong bg-raised px-3.5 text-[13.5px] font-medium text-ink-2
-                hover:border-[var(--teal)] hover:text-ink
-                peer-checked:border-[var(--seg-on-bg)] peer-checked:bg-[var(--seg-on-bg)] peer-checked:font-semibold peer-checked:text-[var(--seg-on-ink)]
-                peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus">
-                {o.name}
-              </span>
-            </label>
-          ))}
-        </div>
-        {fade(edges.start, "l")}
-        {fade(edges.end, "r")}
+    <div className="relative min-w-0">
+      <span id="colour-by" className="sr-only">Colour map by</span>
+      <div ref={row} role="radiogroup" aria-labelledby="colour-by" className="flex h-12 flex-nowrap items-stretch gap-5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {options.map((o) => (
+          <label key={o.id} className="relative flex shrink-0 cursor-pointer">
+            <input type="radio" name="measure" value={o.id} checked={current === o.id}
+              onChange={() => (o.id === OVERVIEW ? showOverview() : setMeasure(o.id))} className="peer sr-only" />
+            <span className="relative inline-flex items-center whitespace-nowrap text-[13.5px] text-muted transition-colors hover:text-ink
+              after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:scale-x-0 after:bg-[var(--teal)] after:transition-transform after:duration-200
+              peer-checked:font-medium peer-checked:text-ink peer-checked:after:scale-x-100
+              peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus">{o.name}</span>
+          </label>
+        ))}
       </div>
+      {fade(edges.start, "l")}
+      {fade(edges.end, "r")}
     </div>
   );
 }

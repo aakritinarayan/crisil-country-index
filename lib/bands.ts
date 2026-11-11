@@ -5,15 +5,18 @@ import type { ScoreBand } from "./types";
  * of bands needs no component changes. TODO(decision): score format — numeric
  * 0–100 in five bands is the CONTEXT §5 default; a 1–5 scale is a workbook edit.
  *
- * Ramp: sequential, built from the GRA palette (light lime → lime → teal → deep
- * blue), lightness strictly decreasing so order reads without hue. Each step names
- * the text colour that passes WCAG AA on it. Not red-to-green, per TECH_SPEC §10. */
+ * Ramp: one calm five-step sequence, the same in both themes — mist sage → soft green →
+ * sage green → muted teal → deep teal. Lightness strictly decreases so order reads without
+ * hue; nothing is a saturated lime or a bright blue. Each step names the text colour that
+ * passes WCAG AA on it (Advanced/white 4.6:1, Leading/white 7.0:1). The maps keep Limited
+ * apart from the sea and from unassessed land by hue, coastlines and a hatch, not by
+ * changing the band. Not red-to-green, per TECH_SPEC §10. */
 const RAMP = [
-  { fill: "#EEF5D6", ink: "#1F211C" },
-  { fill: "#C5DE7A", ink: "#1F211C" },
-  { fill: "#95C11F", ink: "#1F211C" },
-  { fill: "#007A77", ink: "#FFFFFF" },
-  { fill: "#0B4F7A", ink: "#FFFFFF" },
+  { fill: "#DCE8D6", ink: "#1F211C" },
+  { fill: "#B5D4A0", ink: "#1F211C" },
+  { fill: "#86B988", ink: "#1F211C" },
+  { fill: "#378176", ink: "#FFFFFF" },
+  { fill: "#17645E", ink: "#FFFFFF" },
 ] as const;
 
 export type Band = ScoreBand & { index: number; fill: string; ink: string };

@@ -183,8 +183,8 @@ Template hardening: named Excel tables (`tbl_meta`, …), dropdowns for IDs, num
 | Colours | **GRA guideline**: primary lime `#95C11F`, teal `#00AAA6`, charcoal `#353535`; secondary blue `#0069B3`, orange `#FF6300`, green `#18AD2B`, sky `#00BCF3`, yellow `#F2C900` |
 | Font | **Open Sans** (the GRA guideline names Futura PT; the user chose Open Sans) |
 | Themes | **Light and dark**, with a switch in the header; follows the visitor's system setting until they choose |
-| Map | **Interactive flat 2D world map** is the functional geography. The homepage hero adds a static, decorative half-globe (SVG, d3-geo orthographic; no 3D library) that hands off to the map. No scroll animations, no smooth-scroll library, no ambient motion |
-| Motion | Only the drawer slide-in, map zoom when a visitor selects a country, the hero globe → map hand-off (user-initiated, ~0.6s), hover and focus states. Everything respects reduced motion |
+| Map | **One continuous geographic experience** (changed 11 Nov 2026 at the user's request): the dark hero shows a photographic half-globe (WebGL shader over a Solar System Scope CC BY 4.0 texture, credited in the hero; no 3D library) that, on lg screens, travels on scroll into the light Country Explorer and becomes its interactive globe (d3-geo orthographic SVG). The explorer has a **Globe / Flat map** switch; both views share selection, measure and band filter. No pinning, no scroll-jacking, no smooth-scroll library, no autoplay rotation |
+| Motion | The drawer slide-in; globe turn / map zoom to a selected country; the scroll-linked hero → explorer globe hand-off (deviates from TECH_SPEC §10 "nothing ambient" — user-requested; it moves only with the visitor's scroll); hero stars that respond to the pointer only; hover and focus states. Reduced motion: the hand-off jumps between states, stars do not shift |
 | Rejected | Two earlier directions ("Clear" light editorial and "Bold" charcoal heat map, in `design/directions/`) |
 
 ### Score-band colours
@@ -192,11 +192,11 @@ A sequential ramp built from the GRA palette, getting darker at each step so the
 
 | Band (sample workbook) | Fill | Text |
 |---|---|---|
-| Limited (0–39) | `#EEF5D6` | dark |
-| Developing (40–59) | `#C5DE7A` | dark |
+| Limited (0–39) | `#E3EADC` | dark |
+| Developing (40–59) | `#BCD39B` | dark |
 | Established (60–74) | `#95C11F` | dark |
-| Advanced (75–89) | `#007A77` | white |
-| Leading (90–100) | `#0B4F7A` | white |
+| Advanced (75–89) | `#2F7F78` | white |
+| Leading (90–100) | `#174A4B` | white |
 
 Thresholds and labels always come from the workbook. If the number of bands changes, the colours are spread across the ramp automatically.
 
@@ -206,10 +206,13 @@ Thresholds and labels always come from the workbook. If the number of bands chan
 
 | Area | Design |
 |---|---|
-| Landing | World map as the centrepiece, coloured by composite score or any pillar |
+| Landing | Dark hero (headline, CTAs, three live metrics, half-globe) handing off to the Country Explorer: search, Globe / Flat map switch, "Colour map by", viewer left, country panel right |
 | Finding a country | Search on the map, in the header (press `/` or Ctrl/⌘ K), and in the rankings |
-| Score overview | Ranked table: filter by name or band, sort by any column, header stays visible while scrolling, top 25 shown first with "Show all" |
-| Small states | Countries too small for the map shapes (Singapore, Bahrain, Maldives, Pacific islands) are drawn as dots |
+| Score overview | Rankings (`Rankings.tsx`): Ranked / A–Z, search by name or ISO code, band filter and "Rank by" on the explorer's active measure (shared with the map), sortable column headers (asc/desc). Competition ranks (1, 1, 3) over the full dataset, ties alphabetical, missing scores unranked and last ("Not available"). A–Z has letter groups and a jump row (renders more rows when needed). Score cells: numeral + band label + 3px band edge; every pillar score opens the rationale drawer; country names open the profile; a row action locates the country on the map. 25 rows at a time (more / all / fewer); the section's state and scroll survive a trip to a profile and back. Phones get a country list with expandable pillars |
+| Map colours | Visualisation-only tokens in `globals.css` (light / dark): ocean centre `#EAF3F1` → edge `#BFCFCD`, assessed land `#F8FAF6`, unassessed `#D9E2DF`, borders `#96B0AA`, coasts `#718F89`, hover `#C9E9E3` / `#00AAA6`, selected fill (Overview) `#D8EEE8`, selected outline `#245F5C` + white inner line, teal halo at ≤10%. Depth comes from the sea gradient, a soft grounding shadow and the halo only — nothing is laid over the land, so band colours read true. The flat map uses one flat sea tone |
+| Map navigation | Viewer ~70% / country panel ~30%, 520–750px tall on desktop. Globe 1–6×, flat map 1–12×: drag, wheel, trackpad and touch pinch, double-click (all zoom around the pointer), arrow keys and +/−. One control group: zoom, fit to selected country, reset, expand (full-screen workspace; Close or Escape). A plain mouse wheel zooms only after the visitor clicks into the map (or when expanded); otherwise the page scrolls and a hint shows Ctrl/⌘ + scroll — so the large map never traps page scrolling |
+| Score distribution | "Where countries stand" after the rankings (`ScoreDistribution.tsx`, counting in `lib/distribution.ts`). Tabs: Global overview (default) — an aligned 100% bar per assessment (composite when enabled + every pillar), each counted independently, one country one score, missing scores outside the denominator and reported per row; shared legend highlights (hover/focus) or locks (click) a band across rows; one deterministic insight sentence (largest leader-vs-runner-up gap among top band / bottom band / top-two share, ≥2 points, else a neutral line). Assessment tabs — a large bar with a per-band breakdown. Selecting never navigates; "View countries" sets rank-by + band filter (shared state) and scrolls to the rankings. A screen-reader table carries every count and share |
+| Small states | Countries too small for the map shapes (Singapore, Bahrain, Maldives, Pacific islands) are drawn as markers on the globe and dots on the flat map; search and the rankings list are the accessible route |
 | Phones | Map plus a ranked list; tap a country to expand its pillars |
 | Country page | Rank ("#12 of 196") instead of "links to the other two countries" (still to build) |
 | Page weight | The landing page ships scores only; rationale and references load per country when a score is opened |
@@ -243,7 +246,9 @@ app/globals.css                     all design tokens (GRA, light + dark)
 app/(public)/layout.tsx             banner, header, footer
 app/(public)/page.tsx               landing page
 app/data/country/[slug]/route.ts    per-country rationale + references (static)
-components/public/explorer/         WorldMap, MapSection, Rankings, ScoreDrawer, ExplorerContext
+components/public/explorer/         ExploreWorkspace (explorer, expanded mode, hero hand-off), Globe, WorldMap, MapControls, CountryPanel, CountryShape, PillarSelector, Rankings, ScoreDistribution, ScoreDrawer, ExplorerContext
+components/public/hero/             Hero, HeroMetrics, HeroActions (CTAs, phone half-globe), HeroStars, EarthCanvas (WebGL photo layer)
+public/globe/                       earth-day-2k.webp, earth-clouds-2k.webp (Solar System Scope, CC BY 4.0)
 components/public/                  ScoreChip, CountryCombobox, HeaderSearch, ThemeToggle, NotPublished
 components/ui/icons.tsx             inline icon set
 lib/types.ts                        payload types (DATA_MODEL §4)

@@ -24,6 +24,8 @@ type Ctx = {
   measureLabel: string;
   bandFilter: Set<number> | null; // null = all bands
   toggleBand: (index: number) => void;
+  /** Replace the band filter outright (the distribution's "View countries"). */
+  setBands: (bands: Set<number> | null) => void;
   clearBands: () => void;
   /** value of the active measure for a country */
   valueOf: (c: SummaryCountry) => number | null;
@@ -33,6 +35,8 @@ type Ctx = {
   passesFilter: (c: SummaryCountry) => boolean;
   // ── score drawer ──
   openScore: (countryId: string, pillarId: string, from?: HTMLElement | null) => void;
+  /** the score the drawer is showing (marked in the table behind it) */
+  activeScore: { countryId: string; pillarId: string } | null;
 };
 const ExplorerCtx = createContext<Ctx | null>(null);
 export const useExplorer = () => {
@@ -81,7 +85,8 @@ export function ExplorerProvider({ summary, children }: { summary: IndexSummary;
   const measureLabel = measure === COMPOSITE ? "Composite score" : pillars.find((p) => p.pillar_id === measure)?.name ?? "";
 
   const openScore = useCallback((countryId: string, pillarId: string, from?: HTMLElement | null) => {
-    setSelectedId(countryId); // opening a score also selects its country
+    // a rationale is a lookup: it does not change the explorer selection (which would
+    // resize the panel above and move the page under the reader)
     setTarget((t) => ({ countryId, pillarId, from: from ?? t?.from ?? null }));
     const url = new URL(window.location.href);
     url.searchParams.set("country", countryId);
@@ -91,7 +96,7 @@ export function ExplorerProvider({ summary, children }: { summary: IndexSummary;
 
   const close = useCallback(() => {
     setTarget((t) => {
-      if (t?.from && document.contains(t.from)) requestAnimationFrame(() => t.from?.focus());
+      if (t?.from && document.contains(t.from)) requestAnimationFrame(() => t.from?.focus({ preventScroll: true }));
       return null;
     });
     const url = new URL(window.location.href);
@@ -102,12 +107,15 @@ export function ExplorerProvider({ summary, children }: { summary: IndexSummary;
 
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
+    // ?select=<country id> (a country page's "View on map"): select it in the explorer
+    // Reading the URL has to wait until after hydration: useSearchParams would push
+    // the page out of static rendering (see CLAUDE.md). One-off sync from the URL.
+    const sel = q.get("select");
     const c = q.get("country"), p = q.get("pillar");
+    const pick = sel && byId.has(sel) ? sel : c && byId.has(c) ? c : null;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (pick) setSelectedId(pick);
     if (c && p && byId.has(c) && pillars.some((x) => x.pillar_id === p)) {
-      // Reading the URL has to wait until after hydration: useSearchParams would push
-      // the page out of static rendering (see CLAUDE.md). One-off sync from the URL.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSelectedId(c);
       setTarget({ countryId: c, pillarId: p });
     }
   }, [byId, pillars]);
@@ -115,7 +123,8 @@ export function ExplorerProvider({ summary, children }: { summary: IndexSummary;
   return (
     <ExplorerCtx.Provider value={{
       summary, byId, selectedId, select: setSelectedId, overview, showOverview, measure, setMeasure, measureLabel,
-      bandFilter, toggleBand, clearBands: () => setBandFilter(null), valueOf, rankOf, passesFilter, openScore,
+      bandFilter, toggleBand, setBands: setBandFilter, clearBands: () => setBandFilter(null), valueOf, rankOf, passesFilter, openScore,
+      activeScore: target ? { countryId: target.countryId, pillarId: target.pillarId } : null,
     }}>
       {children}
       <ScoreDrawer target={target} onClose={close} onNavigate={(pillarId) => target && openScore(target.countryId, pillarId)} />

@@ -22,7 +22,7 @@ export function BandScale({ score, bands, min, max, subject }: { score: number; 
   return (
     <figure className="max-w-[560px]">
       <figcaption className="flex items-baseline justify-between gap-3 text-[13px]">
-        <span className="font-semibold uppercase tracking-[0.12em] text-muted">Position on the scale</span>
+        <span className="label">Position on the scale</span>
         <span className="text-ink-2"><span className="font-semibold text-ink num">{fmtScore(score)}</span> · {b.label}</span>
       </figcaption>
       <div role="img" aria-label={`${subject}: ${fmtScore(score)} on a ${min} to ${max} scale, in the ${b.label} band (${b.min} to ${b.max}).`} className="mt-3">
