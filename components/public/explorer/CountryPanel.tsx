@@ -44,14 +44,14 @@ export function CountryPanel({ view }: { view: "globe" | "flat" }) {
           <p className="label text-muted num">
             {c.iso_code}<span className="mx-2 text-line-strong">/</span>#{rankOf(c.country_id)} of {countries.length} · {measureLabel}
           </p>
-          <h3 className="mt-2 text-[36px] font-bold leading-[1.05] tracking-[-0.025em] text-ink">{c.name}</h3>
+          <h3 className="mt-2 text-[clamp(1.6rem,2.2vw,1.875rem)] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">{c.name}</h3>
         </div>
         <button type="button" onClick={() => select(null)} className="grid size-9 shrink-0 place-items-center text-muted transition-colors hover:bg-sunken hover:text-ink" aria-label={`Clear selection: ${c.name}`}><Close size={16} /></button>
       </div>
 
-      {/* square preview tile: the country as it is selected on the globe */}
-      <div className="mt-4 aspect-square w-full max-w-[260px] overflow-hidden rounded-[6px] ring-1 ring-inset ring-line">
-        <CountryShape key={c.iso_code} iso={c.iso_code} name={c.name} fill="var(--sel-fill)" />
+      {/* minimal preview: the country's own silhouette on dark ground (same in both themes) */}
+      <div className="mt-4 h-[200px] w-full overflow-hidden rounded-[4px] bg-[#101819]">
+        <CountryShape key={c.iso_code} iso={c.iso_code} name={c.name} fill="" variant="solo" />
       </div>
 
       {composite && (

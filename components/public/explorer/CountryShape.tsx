@@ -7,6 +7,8 @@ import type { Feature, Geometry } from "geojson";
 import { ISO_TO_NUM, SMALL_AREA, loadTopo } from "../geo";
 
 const W = 320, H = 320, PAD = 36;
+// the explorer panel preview: wide and short, the country alone
+const SW = 400, SH = 210, SPAD = 22;
 
 /** The selected country drawn from the same world-atlas 50m geometry as the maps.
  *  Mercator, rotated to the country's own longitude so countries across the date line
@@ -16,7 +18,7 @@ const W = 320, H = 320, PAD = 36;
  *  geometry to describe well (Singapore, Bahrain…) are shown in their region instead,
  *  with a ring marking them, rather than blown up into a crude polygon. Countries missing
  *  from the geometry get no shape and the panel reads fine without it. */
-export function CountryShape({ iso, name, fill, variant = "tile" }: { iso: string; name: string; fill: string; variant?: "tile" | "hero" }) {
+export function CountryShape({ iso, name, fill, variant = "tile" }: { iso: string; name: string; fill: string; variant?: "tile" | "hero" | "solo" }) {
   const [topo, setTopo] = useState<Topology | null>(null);
   useEffect(() => { loadTopo("50m").then(setTopo); }, []);
 
@@ -30,7 +32,8 @@ export function CountryShape({ iso, name, fill, variant = "tile" }: { iso: strin
     const centre = geoCentroid(f) as [number, number];
     const small = geoArea(f) < SMALL_AREA;
     const frame = small ? geoCircle().center(centre).radius(5)() : f;
-    const proj = geoMercator().rotate([-centre[0], 0]).fitExtent([[PAD, PAD], [W - PAD, H - PAD]], frame);
+    const solo = variant === "solo";
+    const proj = geoMercator().rotate([-centre[0], 0]).fitExtent(solo ? [[SPAD, SPAD], [SW - SPAD, SH - SPAD]] : [[PAD, PAD], [W - PAD, H - PAD]], frame);
     const path = geoPath(proj);
     return {
       d: path(f) ?? "",
@@ -38,9 +41,18 @@ export function CountryShape({ iso, name, fill, variant = "tile" }: { iso: strin
       land: path({ type: "FeatureCollection", features: all.filter((x) => x !== f) }) ?? "",
       borders: path(mesh(topo, kept, (a, b) => a !== b)) ?? "",
     };
-  }, [topo, iso]);
+  }, [topo, iso, variant]);
 
   if (!drawing) return <div aria-hidden className="h-4" />;
+  if (variant === "solo") {
+    // only the country: no neighbours, borders or sea; fitted (never stretched) on a dark ground
+    return (
+      <svg viewBox={`0 0 ${SW} ${SH}`} preserveAspectRatio="xMidYMid meet" className="block size-full" role="img" aria-label={`Outline of ${name}`}>
+        <path d={drawing.d} fill="rgb(95 211 196 / 0.22)" stroke="#7fd6cb" strokeWidth="1.1" strokeLinejoin="round" />
+        {drawing.ring && <circle cx={drawing.ring[0]} cy={drawing.ring[1]} r="10" fill="none" stroke="#7fd6cb" strokeWidth="1.25" />}
+      </svg>
+    );
+  }
   if (variant === "hero") {
     // the hero: the country alone, softly lit, on the dark band (neighbours barely there)
     return (

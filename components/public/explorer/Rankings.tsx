@@ -146,7 +146,7 @@ export function Rankings() {
     const b = bandFor(v, meta.score_bands);
     // a softly tinted chip: the number is the content, the band only tints it (named in
     // the shared legend above, in the hover title and in the accessible name)
-    const chip = <ScoreChipCell value={fmtScore(v)} fill={b.fill} composite={composite} />;
+    const chip = <ScoreChipCell value={fmtScore(v)} fill={b.fill} ink={b.ink} composite={composite} />;
     const hint = `${label}: ${fmtScore(v)} · ${b.label} (${b.min}–${b.max})`;
     if (key === COMPOSITE) return <span className="score-cell flex px-1 py-0.5" title={hint} aria-label={`${c.name}, composite score ${fmtScore(v)}, ${b.label} band`} role="img">{chip}</span>;
     return (
@@ -191,7 +191,7 @@ export function Rankings() {
     sortedCol !== key ? undefined : dir === "desc" ? "descending" : "ascending";
 
   return (
-    <section id="rankings" aria-labelledby="rankings-h" className="wrap scroll-mt-20">
+    <section id="rankings" aria-labelledby="rankings-h" data-cells="accent" className="wrap scroll-mt-20">
       <p className="eyebrow">Country rankings</p>
       <h2 id="rankings-h" tabIndex={-1} className="t-h2 mt-3 outline-none">Every country, <span className="grad-text">every pillar</span></h2>
       <p className="mt-4 max-w-[64ch] text-muted">
@@ -237,7 +237,7 @@ export function Rankings() {
         <li className="text-muted">Readiness</li>
         {bands.map((b) => (
           <li key={b.label} className="flex items-center gap-1.5">
-            <span aria-hidden className="score-chip h-4 w-6" style={{ "--chip": b.fill } as React.CSSProperties} />
+            <span aria-hidden className="legend-accent" style={{ "--chip": b.fill } as React.CSSProperties} />
             <span className="text-ink-2">{b.label}</span><span className="text-muted num">{b.min}–{b.max}</span>
           </li>
         ))}
@@ -321,7 +321,7 @@ export function Rankings() {
                     {mode === "ranked" && <span className="w-8 shrink-0 text-right text-[13px] text-muted num">{ranks.get(c.country_id) ?? "–"}</span>}
                     <Link href={`/country/${c.slug}`} onClick={remember} className="min-w-0 flex-1 pl-1 text-[15px] font-medium leading-snug text-ink">{c.name}</Link>
                     <span className="shrink-0" title={b ? `${b.label} (${b.min}–${b.max})` : undefined}>
-                      {v != null && b ? <><ScoreChipCell value={fmtScore(v)} fill={b.fill} composite={measure === COMPOSITE} /><span className="sr-only">, {b.label} band</span></> : <span className="text-[12px] text-muted">Not available</span>}
+                      {v != null && b ? <><ScoreChipCell value={fmtScore(v)} fill={b.fill} ink={b.ink} composite={measure === COMPOSITE} /><span className="sr-only">, {b.label} band</span></> : <span className="text-[12px] text-muted">Not available</span>}
                     </span>
                     <button type="button" aria-expanded={open} aria-label={`${open ? "Hide" : "Show"} ${c.name} pillar scores`} onClick={() => setExpanded(open ? null : c.country_id)} className="grid size-11 shrink-0 place-items-center text-muted">
                       <ChevronDown size={16} className={open ? "rotate-180" : ""} />
@@ -367,10 +367,11 @@ export function Rankings() {
 }
 
 /** A compact numeric chip tinted by its readiness band (theme-aware tint, readable ink). */
-function ScoreChipCell({ value, fill, composite }: { value: string; fill: string; composite: boolean }) {
+function ScoreChipCell({ value, fill, ink, composite }: { value: string; fill: string; ink: string; composite: boolean }) {
+  // .rank-score: the number first. Styling (accent bar or solid chip) comes from the
+  // table's data-cells attribute, so both treatments share one markup.
   return (
-    <span className={`score-chip inline-flex h-7 min-w-[46px] items-center justify-end px-2 num ${composite ? "is-composite text-[14.5px] font-semibold" : "text-[13.5px] font-medium"}`}
-      style={{ "--chip": fill } as React.CSSProperties}>{value}</span>
+    <span className={`rank-score num ${composite ? "is-composite" : ""}`} style={{ "--chip": fill, "--chip-ink": ink } as React.CSSProperties}>{value}</span>
   );
 }
 
