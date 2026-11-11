@@ -3,8 +3,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { geoEqualEarth, geoPath, type GeoPermissibleObjects } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
+import { ISO_TO_NUM, loadTopo } from "../geo";
 import type { Feature, Geometry } from "geojson";
-import isoTable from "@/data/iso-alpha3-to-numeric.json";
 import smallStates from "@/data/small-states.json";
 import { bandFor, fmtScore } from "@/lib/bands";
 import type { ScoreBand } from "@/lib/types";
@@ -13,7 +13,6 @@ import { Minus, Plus, Reset } from "@/components/ui/icons";
 export type MapItem = { id: string; iso: string; name: string; value: number | null; rank: number };
 
 const W = 960, H = 480, MAX_K = 8;
-const ISO_TO_NUM = isoTable as Record<string, string>;
 const SMALL = smallStates as unknown as Record<string, [number, number]>;
 type Shape = { num: string; d: string; b: [[number, number], [number, number]] };
 type View = { k: number; x: number; y: number };
@@ -24,8 +23,6 @@ const clampView = (v: View): View => {
   return { k, x: Math.min(0, Math.max(W - W * k, v.x)), y: Math.min(0, Math.max(H - H * k, v.y)) };
 };
 
-let topoPromise: Promise<Topology> | null = null;
-const loadTopo = () => (topoPromise ??= import("world-atlas/countries-110m.json").then((m) => (m.default ?? m) as unknown as Topology));
 
 /** Flat 2D world map. In Overview (`neutral`) assessed countries share one quiet grey
  *  and nothing is band-coloured; otherwise fills come from the workbook bands. Hover is

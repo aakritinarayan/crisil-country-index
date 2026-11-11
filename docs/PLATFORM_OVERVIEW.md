@@ -183,8 +183,8 @@ Template hardening: named Excel tables (`tbl_meta`, …), dropdowns for IDs, num
 | Colours | **GRA guideline**: primary lime `#95C11F`, teal `#00AAA6`, charcoal `#353535`; secondary blue `#0069B3`, orange `#FF6300`, green `#18AD2B`, sky `#00BCF3`, yellow `#F2C900` |
 | Font | **Open Sans** (the GRA guideline names Futura PT; the user chose Open Sans) |
 | Themes | **Light and dark**, with a switch in the header; follows the visitor's system setting until they choose |
-| Map | **Interactive flat 2D world map**. No 3D globe, no scroll animations, no smooth-scroll library, no ambient motion |
-| Motion | Only the drawer slide-in, map zoom when a visitor selects a country, hover and focus states. Everything respects reduced motion |
+| Map | **Interactive flat 2D world map** is the functional geography. The homepage hero adds a static, decorative half-globe (SVG, d3-geo orthographic; no 3D library) that hands off to the map. No scroll animations, no smooth-scroll library, no ambient motion |
+| Motion | Only the drawer slide-in, map zoom when a visitor selects a country, the hero globe → map hand-off (user-initiated, ~0.6s), hover and focus states. Everything respects reduced motion |
 | Rejected | Two earlier directions ("Clear" light editorial and "Bold" charcoal heat map, in `design/directions/`) |
 
 ### Score-band colours

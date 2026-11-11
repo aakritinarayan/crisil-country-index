@@ -26,7 +26,7 @@ export function ExploreWorkspace() {
     <section id="map" aria-labelledby="explore-h" className="wrap scroll-mt-20">
       <div>
         <span className="eyebrow">Explore the index</span>
-        <h2 id="explore-h" className="t-h2 mt-4">{countries.length} countries, <span className="grad-text">one map</span></h2>
+        <h2 id="explore-h" tabIndex={-1} className="t-h2 mt-4 outline-none">{countries.length} countries, <span className="grad-text">one map</span></h2>
       </div>
 
       {/* controls sit directly on the page above the map: no card around them */}
@@ -34,7 +34,7 @@ export function ExploreWorkspace() {
         <PillarSelector />
       </div>
 
-      <div className="mt-3 grid border border-line bg-raised lg:grid-cols-[minmax(0,1fr)_minmax(320px,360px)] lg:grid-rows-[1fr_auto]">
+      <div className="map-frame mt-3 grid border border-line bg-raised lg:grid-cols-[minmax(0,1fr)_minmax(320px,360px)] lg:grid-rows-[1fr_auto]">
         <div className="order-1 min-w-0 p-2 sm:p-4 lg:order-none lg:col-start-1 lg:row-start-1">
           <WorldMap items={items} bands={meta.score_bands} activeBands={overview ? null : bandFilter} selectedId={selectedId} onSelect={select} metricLabel={measureLabel} neutral={overview} />
         </div>
