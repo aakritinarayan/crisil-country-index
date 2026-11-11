@@ -471,10 +471,9 @@ button.score-cell[data-active] .rank-score { outline: 2px solid var(--teal); out
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
 .hero-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 3px; font-size: 12.5px; font-weight: 600; color: #f1f4f2;
   background: color-mix(in srgb, var(--chip) 30%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chip) 60%, transparent); }
-.country-map-card { --tile-bg: #142321; --globe-land: #24332f; --globe-border: #3a4d48; --sel-outer: #9fe3d6;
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .08); transition: box-shadow .2s, transform .3s var(--ease-out-expo); }
-.country-map-card:hover { box-shadow: inset 0 0 0 1px rgb(159 227 214 / .35); transform: translateY(-2px); }
-@media (prefers-reduced-motion: reduce) { .country-map-card:hover { transform: none; } }
+.country-float { --sel-outer: #9fe3d6; opacity: .92; transition: opacity .25s, transform .4s var(--ease-out-expo); }
+.country-float:hover { opacity: 1; transform: scale(1.015); }
+@media (prefers-reduced-motion: reduce) { .country-float:hover { transform: none; } }
 /* pillar rows and assessment cards: soft surfaces, quiet hover */
 /* pillar explorer: the chart rows are the navigation. Hover tints, the active row adds a
  * thin teal rule on the left and a slightly deeper tint; the bar fill carries the band. */
@@ -496,21 +495,29 @@ button.score-cell[data-active] .rank-score { outline: 2px solid var(--teal); out
 @media (prefers-reduced-motion: reduce) { .pillar-detail, .pillar-tip { animation: none; } }
 .perf-row.is-on { box-shadow: inset 2px 0 0 var(--teal); }
 
-/* rankings score cells: the number is the content. Two treatments, one markup:
- * accent (default) — neutral cell, strong ink number, a short band-coloured bar on the left;
- * chip — solid band colour with the band's own readable ink (dark on light bands, white on dark). */
-.rank-score { display: inline-flex; align-items: center; justify-content: flex-end; height: 30px; min-width: 64px; padding: 0 10px 0 18px;
-  border-radius: 4px; font-size: 15px; font-weight: 600; letter-spacing: -0.005em; font-variant-numeric: tabular-nums lining-nums; color: var(--ink);
-  transition: background-color .12s, box-shadow .12s; }
-.rank-score.is-composite { font-size: 16px; font-weight: 700; min-width: 68px; }
-[data-cells="accent"] .rank-score { position: relative; background: transparent; }
-[data-cells="accent"] .rank-score::before { content: ""; position: absolute; left: 4px; top: 8px; bottom: 8px; width: 3px; border-radius: 2px; background: var(--chip);
-  box-shadow: 0 0 0 .5px color-mix(in srgb, var(--ink) 18%, transparent); }
-[data-cells="accent"] button.score-cell:hover .rank-score { background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line); }
-[data-cells="chip"] .rank-score { background: var(--chip); color: var(--chip-ink); }
-[data-cells="chip"] button.score-cell:hover .rank-score { box-shadow: 0 0 0 2px color-mix(in srgb, var(--chip) 45%, transparent); }
-.legend-accent { display: inline-block; width: 3px; height: 14px; border-radius: 2px; background: var(--chip); box-shadow: 0 0 0 .5px color-mix(in srgb, var(--ink) 18%, transparent); }
-[data-cells="chip"] .legend-accent { width: 18px; height: 12px; }
-/* the darkest bands sink into the dark surface: lift every accent by the same amount (order and hue kept) */
-:root[data-theme="dark"] [data-cells="accent"] .rank-score::before,
-:root[data-theme="dark"] .legend-accent { background: color-mix(in srgb, var(--chip) 72%, #ffffff); }
+/* rankings score cells: compact soft band chips. The band colour is mixed toward the
+ * raised surface (lighter than the full fill) so the theme's ink stays high-contrast on
+ * every band: dark ink on light tints, light ink on dark tints in dark mode. */
+.rank-score { display: inline-flex; align-items: center; justify-content: flex-end; height: 28px; min-width: 50px; padding: 0 9px;
+  border-radius: 3px; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums lining-nums; color: var(--ink);
+  --chip-mix: 45%; background: color-mix(in srgb, var(--chip) var(--chip-mix), var(--bg-raised));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 7%, transparent); transition: box-shadow .12s; }
+.rank-score.is-composite { --chip-mix: 52%; font-weight: 700; min-width: 56px; }
+:root[data-theme="dark"] .rank-score { --chip-mix: 34%; }
+:root[data-theme="dark"] .rank-score.is-composite { --chip-mix: 40%; }
+button.score-cell:hover .rank-score { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 35%, transparent); }
+.legend-chip { display: inline-block; width: 22px; height: 14px; border-radius: 3px; --chip-mix: 45%;
+  background: color-mix(in srgb, var(--chip) var(--chip-mix), var(--bg-raised)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 7%, transparent); }
+:root[data-theme="dark"] .legend-chip { --chip-mix: 34%; }
+/* published long-form text (components/public/Prose.tsx): a calm reading column */
+.prose-doc { max-width: 68ch; color: var(--ink-2); font-size: 15.5px; line-height: 1.75; }
+.prose-doc > * + * { margin-top: .9em; }
+.prose-doc h3 { margin-top: 1.6em; font-size: 16px; font-weight: 600; color: var(--ink); line-height: 1.4; }
+.prose-doc h4 { margin-top: 1.4em; font-size: 15px; font-weight: 600; color: var(--ink); }
+.prose-doc ul, .prose-doc ol { padding-left: 1.25em; }
+.prose-doc ul { list-style: disc; } .prose-doc ol { list-style: decimal; }
+.prose-doc li + li { margin-top: .35em; }
+.prose-doc li::marker { color: var(--muted); }
+.prose-doc strong { font-weight: 600; color: var(--ink); }
+.doc-link { color: var(--link); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--link) 35%, transparent); text-underline-offset: 3px; transition: text-decoration-color .15s, color .15s; }
+.doc-link:hover { text-decoration-color: currentColor; }

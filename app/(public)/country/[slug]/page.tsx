@@ -144,7 +144,7 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
       {/* ── compact summary header: identity, the numbers, one line, actions; map card right ── */}
       <header data-header-tone="dark" className="country-hero">
         <div aria-hidden className="country-hero-grid" />
-        <div className="wrap relative grid gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center lg:gap-12 lg:py-10">
+        <div className="wrap relative grid gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-center lg:gap-12 lg:py-10">
           <div className="min-w-0">
             <nav aria-label="Breadcrumb" className="text-[13px]">
               <ol className="flex flex-wrap items-center gap-2 text-[rgb(232_239_236/0.6)]">
@@ -192,10 +192,10 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
             </div>
           </div>
 
-          {/* a small map card: the country in its region */}
+          {/* the country alone, floating on the hero ground (no card, no map) */}
           <Link href={`/?select=${encodeURIComponent(country.country_id)}#map`} aria-label={`Show ${country.name} on the world map`}
-            className="country-map-card hidden aspect-[4/3] w-full overflow-hidden rounded-[10px] sm:block lg:aspect-square">
-            <CountryShape iso={country.iso_code} name={country.name} fill={compositeBand?.fill ?? "var(--sel-fill)"} />
+            className="country-float mx-auto hidden aspect-square w-full max-w-[340px] sm:block lg:-my-6 lg:max-w-none">
+            <CountryShape iso={country.iso_code} name={country.name} fill="" variant="float" />
           </Link>
         </div>
       </header>
