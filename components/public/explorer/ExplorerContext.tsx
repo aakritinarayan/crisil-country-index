@@ -16,7 +16,10 @@ type Ctx = {
   // ── shared exploration state: map, search, panel and rankings all use these ──
   selectedId: string | null;
   select: (id: string | null) => void;
-  measure: string; // COMPOSITE or a pillar_id
+  /** Overview: neutral map, no band colouring. The default on load. */
+  overview: boolean;
+  showOverview: () => void;
+  measure: string; // COMPOSITE or a pillar_id; what rankings use, and the map when not in overview
   setMeasure: (m: string) => void;
   measureLabel: string;
   bandFilter: Set<number> | null; // null = all bands
@@ -46,8 +49,13 @@ export function ExplorerProvider({ summary, children }: { summary: IndexSummary;
   const byId = useMemo(() => new Map(countries.map((c) => [c.country_id, c])), [countries]);
   const [target, setTarget] = useState<DrawerTarget | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [measure, setMeasure] = useState<string>(meta.show_composite ? COMPOSITE : pillars[0]?.pillar_id ?? COMPOSITE);
+  const defaultMeasure = meta.show_composite ? COMPOSITE : pillars[0]?.pillar_id ?? COMPOSITE;
+  const [measure, setMeasureState] = useState<string>(defaultMeasure);
+  const [overview, setOverview] = useState(true);
   const [bandFilter, setBandFilter] = useState<Set<number> | null>(null);
+  const setMeasure = useCallback((m: string) => { setOverview(false); setMeasureState(m); }, []);
+  // Overview has no bands, so a band filter would hide rows with no visible reason.
+  const showOverview = useCallback(() => { setOverview(true); setMeasureState(defaultMeasure); setBandFilter(null); }, [defaultMeasure]);
 
   const valueOf = useCallback(
     (c: SummaryCountry) => (measure === COMPOSITE ? c.composite_score : c.scores[measure] ?? null),
@@ -106,7 +114,7 @@ export function ExplorerProvider({ summary, children }: { summary: IndexSummary;
 
   return (
     <ExplorerCtx.Provider value={{
-      summary, byId, selectedId, select: setSelectedId, measure, setMeasure, measureLabel,
+      summary, byId, selectedId, select: setSelectedId, overview, showOverview, measure, setMeasure, measureLabel,
       bandFilter, toggleBand, clearBands: () => setBandFilter(null), valueOf, rankOf, passesFilter, openScore,
     }}>
       {children}

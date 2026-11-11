@@ -6,7 +6,7 @@
 /* ── Design tokens ──────────────────────────────────────────────────────────
  * One place for every colour and type decision (TECH_SPEC §10), so a brand kit
  * is applied here. Colours: GRA guideline — lime #95C11F, teal #00AAA6, charcoal
- * #353535, blue #0069B3, sky #00BCF3. Layout and type rhythm follow the InovaFint
+ * #353535, blue #0069B3, sky #00BCF3, orange #FF6300 (selection accent only, never a score colour). Layout and type rhythm follow the InovaFint
  * site. Score-band colours live in lib/bands.ts (they are data-driven).
  * Text tokens are checked for WCAG AA against the backgrounds they sit on. */
 :root,
@@ -28,7 +28,13 @@
   --grad-from: #5b8a00;
   --grad-to: #00807c;
   --map-empty: #dcdfd5;
-  --map-stroke: #f5f6f1;
+  /* map: neutral Overview fills, boundaries, and the selected-country accent (GRA orange) */
+  --map-assessed: #e7ebe8;
+  --map-unassessed: #f5f5f2;
+  --map-stroke: #ffffff;
+  --select: #ff6300;
+  --seg-on-bg: #353535; /* selected segment: GRA charcoal */
+  --seg-on-ink: #ffffff;
   --banner-bg: #f2c900;
   --banner-ink: #1f211c;
   --btn-bg: #353535;
@@ -56,7 +62,12 @@
   --grad-from: #b8dc54;
   --grad-to: #2fd0c9;
   --map-empty: #262a23;
-  --map-stroke: #0d0f0c;
+  --map-assessed: #343a33;
+  --map-unassessed: #20241e;
+  --map-stroke: #171a15;
+  --select: #ff7a26;
+  --seg-on-bg: #f1f3ec;
+  --seg-on-ink: #12140f;
   --banner-bg: #f2c900;
   --banner-ink: #1f211c;
   --btn-bg: #a6d12f;

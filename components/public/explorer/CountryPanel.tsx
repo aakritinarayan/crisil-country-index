@@ -5,10 +5,11 @@ import { ArrowRight, Close } from "@/components/ui/icons";
 import { ScoreChip } from "../ScoreChip";
 import { useExplorer } from "./ExplorerContext";
 
-/** Contextual insight panel beside the map. Nothing is pre-selected: until a visitor
- *  picks a country it offers ways in, drawn from the published data. */
+/** Contextual insight panel beside the map. Nothing is pre-selected. Without a selection
+ *  it explains how to explore (Overview) or summarises the active measure; with one it
+ *  shows that country's assessment. */
 export function CountryPanel() {
-  const { summary, byId, selectedId, select, valueOf, rankOf, measure, measureLabel, openScore } = useExplorer();
+  const { summary, byId, selectedId, select, valueOf, rankOf, overview, measure, measureLabel, openScore } = useExplorer();
   const { meta, pillars, countries } = summary;
   const c = selectedId ? byId.get(selectedId) : undefined;
 
@@ -32,20 +33,28 @@ export function CountryPanel() {
       </div>
     );
     return (
-      <div className="flex h-full flex-col p-5">
-        <p className="text-[15px] font-semibold text-ink">Pick a country to see its breakdown</p>
-        <p className="mt-1 text-[13px] text-muted">Select it on the map, search below, or start from these. Showing <span className="font-semibold text-ink-2">{measureLabel}</span>.</p>
-        {/* distribution of the active measure across bands */}
-        <div className="mt-4">
-          <div className="flex h-2 gap-px" aria-hidden>
-            {counts.filter((x) => x.n > 0).map((x) => <span key={x.b.label} style={{ flex: x.n, background: x.b.fill }} />)}
-          </div>
-          <p className="mt-1.5 text-[12px] text-muted num">
-            {counts.map((x) => `${x.b.label} ${x.n}`).join(" · ")}
-          </p>
-        </div>
-        {list("Highest", ranked.slice(0, 5), "mt-5")}
-        {ranked.length > 8 && list("Lowest", ranked.slice(-3).reverse(), "mt-5 hidden lg:block")}
+      <div className="flex h-full flex-col p-5 sm:p-6">
+        <h3 className="text-[19px] font-bold tracking-tight text-ink">Explore country performance</h3>
+        <p className="mt-2 text-[14px] leading-relaxed text-muted">
+          Select a country on the map or use Find a country to see its scores.{overview ? " Choose Composite or a pillar above to colour the map by score." : ""}
+        </p>
+        <dl className="mt-5 flex gap-8 border-t border-line pt-4">
+          <div><dt className="text-[12px] text-muted">Countries assessed</dt><dd className="mt-1 text-[28px] font-semibold leading-none text-ink num">{countries.length}</dd></div>
+          <div><dt className="text-[12px] text-muted">Pillars</dt><dd className="mt-1 text-[28px] font-semibold leading-none text-ink num">{pillars.length}</dd></div>
+        </dl>
+        {!overview && (
+          <>
+            {/* distribution of the active measure across bands */}
+            <div className="mt-6 border-t border-line pt-4">
+              <h4 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{measureLabel} by band</h4>
+              <div className="mt-2.5 flex h-2 gap-px" aria-hidden>
+                {counts.filter((x) => x.n > 0).map((x) => <span key={x.b.label} style={{ flex: x.n, background: x.b.fill, boxShadow: "inset 0 0 0 1px rgb(0 0 0 / .08)" }} />)}
+              </div>
+              <p className="mt-1.5 text-[12px] text-muted num">{counts.map((x) => `${x.b.label} ${x.n}`).join(" · ")}</p>
+            </div>
+            {list(`Highest on ${measureLabel.toLowerCase()}`, ranked.slice(0, 5), "mt-6")}
+          </>
+        )}
       </div>
     );
   }
@@ -78,7 +87,7 @@ export function CountryPanel() {
         {pillars.map((p) => {
           const v = c.scores[p.pillar_id];
           const b = bandFor(v, meta.score_bands);
-          const active = measure === p.pillar_id;
+          const active = !overview && measure === p.pillar_id;
           return (
             <li key={p.pillar_id}>
               <button type="button" onClick={(e) => openScore(c.country_id, p.pillar_id, e.currentTarget)}

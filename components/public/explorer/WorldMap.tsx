@@ -27,9 +27,13 @@ const clampView = (v: View): View => {
 let topoPromise: Promise<Topology> | null = null;
 const loadTopo = () => (topoPromise ??= import("world-atlas/countries-110m.json").then((m) => (m.default ?? m) as unknown as Topology));
 
-export function WorldMap({ items, bands, activeBands, selectedId, onSelect, metricLabel }: {
+/** Flat 2D world map. In Overview (`neutral`) assessed countries share one quiet grey
+ *  and nothing is band-coloured; otherwise fills come from the workbook bands. Hover is
+ *  a teal outline, the selection an orange one (GRA accents), so neither competes with
+ *  the score colours. */
+export function WorldMap({ items, bands, activeBands, selectedId, onSelect, metricLabel, neutral }: {
   items: MapItem[]; bands: ScoreBand[]; activeBands: Set<number> | null; selectedId: string | null;
-  onSelect: (id: string) => void; metricLabel: string;
+  onSelect: (id: string) => void; metricLabel: string; neutral: boolean;
 }) {
   const [topo, setTopo] = useState<Topology | null>(null);
   // The visitor's own zoom/pan, remembered for the selection it was made under.
@@ -52,7 +56,7 @@ export function WorldMap({ items, bands, activeBands, selectedId, onSelect, metr
     if (!topo) return { shapes: [] as Shape[], projection: null };
     const fc = feature(topo, topo.objects.countries as GeometryCollection);
     const features = (fc as unknown as { features: Feature<Geometry>[] }).features.filter((f) => f.id && f.id !== "010"); // drop Antarctica
-    const proj = geoEqualEarth().fitExtent([[6, 6], [W - 6, H - 6]], { type: "FeatureCollection", features } as GeoPermissibleObjects);
+    const proj = geoEqualEarth().fitExtent([[18, 14], [W - 18, H - 14]], { type: "FeatureCollection", features } as GeoPermissibleObjects);
     const path = geoPath(proj);
     const seen = new Set<string>();
     const out: Shape[] = [];
@@ -80,7 +84,8 @@ export function WorldMap({ items, bands, activeBands, selectedId, onSelect, metr
   }, [items, shapes, projection]);
 
   const colour = (it: MapItem | undefined) => {
-    if (!it || it.value == null) return { fill: "var(--map-empty)", dim: false };
+    if (!it) return { fill: "var(--map-unassessed)", dim: false };
+    if (neutral || it.value == null) return { fill: "var(--map-assessed)", dim: false }; // missing score stays neutral grey
     const b = bandFor(it.value, bands);
     return { fill: b.fill, dim: !!activeBands && !activeBands.has(b.index) };
   };
@@ -121,11 +126,12 @@ export function WorldMap({ items, bands, activeBands, selectedId, onSelect, metr
   };
   const selected = items.find((i) => i.id === selectedId);
   const sel = selected ? shapes.find((s) => s.num === ISO_TO_NUM[selected.iso]) : undefined;
+  const hov = hover && hover.item.id !== selectedId ? shapes.find((s) => s.num === ISO_TO_NUM[hover.item.iso]) : undefined;
 
   return (
     <div ref={box} className="relative select-none overflow-hidden" style={{ touchAction: view.k > 1 ? "none" : "pan-y" }}>
       <svg viewBox={`0 0 ${W} ${H}`} className={`block h-auto w-full ${view.k > 1 ? (dragging ? "cursor-grabbing" : "cursor-grab") : ""}`}
-        role="img" aria-label={`World map coloured by ${metricLabel}. For keyboard and screen-reader access, use Find a country or the rankings table below.`}
+        role="img" aria-label={`${neutral ? `World map of the ${items.length} assessed countries` : `World map coloured by ${metricLabel}`}. For keyboard and screen-reader access, use Find a country or the rankings table below.`}
         onPointerDown={(e) => { drag.current = { px: e.clientX, py: e.clientY, v: view, moved: false }; }}
         onPointerMove={(e) => {
           const g = drag.current;
@@ -143,21 +149,26 @@ export function WorldMap({ items, bands, activeBands, selectedId, onSelect, metr
             const it = byNum.get(s.num);
             const c = colour(it);
             return (
-              <path key={s.num} d={s.d} fill={c.fill} opacity={c.dim ? 0.18 : 1}
+              <path key={s.num} d={s.d} data-country={it?.id} fill={c.fill} opacity={c.dim ? 0.18 : 1}
                 stroke="var(--map-stroke)" strokeWidth={0.6} vectorEffect="non-scaling-stroke"
-                className={it ? "cursor-pointer transition-opacity hover:brightness-[1.08]" : ""}
+                className={it ? "cursor-pointer transition-opacity" : ""}
                 onPointerMove={it ? (e) => !drag.current?.moved && tip(e, it) : undefined}
                 onPointerLeave={() => setHover(null)}
                 onClick={it ? () => { if (!drag.current?.moved) onSelect(it.id); } : undefined} />
             );
           })}
-          {sel && <path d={sel.d} fill="none" stroke="var(--ink)" strokeWidth={2} vectorEffect="non-scaling-stroke" pointerEvents="none" />}
+          {hov && <path d={hov.d} fill={neutral ? "var(--teal)" : "none"} fillOpacity={0.28} stroke="var(--teal)" strokeWidth={1.5} vectorEffect="non-scaling-stroke" pointerEvents="none" />}
+          {sel && <>
+            {/* halo keeps the orange outline legible on every band fill and on the neutral greys */}
+            <path d={sel.d} fill="none" stroke="var(--map-stroke)" strokeWidth={5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" pointerEvents="none" />
+            <path d={sel.d} fill="none" stroke="var(--select)" strokeWidth={2.25} strokeLinejoin="round" vectorEffect="non-scaling-stroke" pointerEvents="none" />
+          </>}
           {dots.map(({ item, x, y }) => {
             const c = colour(item);
             const on = item.id === selectedId;
             return (
               <circle key={item.id} cx={x} cy={y} r={(on ? 5 : 3.6) / Math.sqrt(view.k)} fill={c.fill} opacity={c.dim ? 0.2 : 1}
-                stroke={on ? "var(--ink)" : "var(--map-stroke)"} strokeWidth={on ? 2 : 1} vectorEffect="non-scaling-stroke" className="cursor-pointer"
+                stroke={on ? "var(--select)" : hover?.item.id === item.id ? "var(--teal)" : neutral ? "var(--muted)" : "var(--map-stroke)"} strokeWidth={on ? 2.25 : neutral ? 0.75 : 1} vectorEffect="non-scaling-stroke" className="cursor-pointer"
                 onPointerMove={(e) => !drag.current?.moved && tip(e, item)} onPointerLeave={() => setHover(null)}
                 onClick={() => { if (!drag.current?.moved) onSelect(item.id); }} />
             );
@@ -168,19 +179,20 @@ export function WorldMap({ items, bands, activeBands, selectedId, onSelect, metr
       {!topo && <div className="absolute inset-0 grid place-items-center text-sm text-muted">Loading map…</div>}
 
       {hover && (
-        <div className="pointer-events-none absolute z-10 min-w-44 border border-line bg-raised px-3 py-2 shadow-lift"
+        <div className="pointer-events-none absolute z-10 border border-line bg-raised px-3 py-2 shadow-soft"
           style={{ left: hover.x, top: hover.y, transform: `translate(${hover.flip ? "calc(-100% - 14px)" : "14px"}, -50%)` }}>
-          <p className="text-sm font-semibold text-ink">{hover.item.name}</p>
-          <p className="mt-1 flex items-center gap-2 text-xs text-muted">
-            {hover.item.value != null && (() => { const b = bandFor(hover.item.value, bands); return (
-              <span className="chip text-[13px]" style={{ "--chip-fill": b.fill, "--chip-ink": b.ink } as React.CSSProperties}><span className="n">{fmtScore(hover.item.value)}</span><span className="l">{b.label}</span></span>
-            ); })()}
-            <span className="num">Rank #{hover.item.rank}</span>
-          </p>
+          <p className="whitespace-nowrap text-sm font-semibold text-ink">{hover.item.name}</p>
+          {!neutral && (
+            <p className="mt-1 whitespace-nowrap text-xs text-muted">
+              {hover.item.value != null
+                ? (() => { const b = bandFor(hover.item.value, bands); return <><span className="font-semibold text-ink num">{fmtScore(hover.item.value)}</span> · {b.label}</>; })()
+                : "No score"}
+            </p>
+          )}
         </div>
       )}
 
-      <div className="absolute right-3 top-3 flex flex-col border border-line-strong bg-raised shadow-soft">
+      <div className="absolute right-3 top-3 flex flex-col border border-line-strong bg-raised">
         <button type="button" onClick={() => zoomBy(1.6)} disabled={view.k >= MAX_K} className="grid size-9 place-items-center text-ink hover:bg-sunken disabled:opacity-40" aria-label="Zoom in"><Plus size={16} /></button>
         <button type="button" onClick={() => zoomBy(1 / 1.6)} disabled={view.k <= 1} className="grid size-9 place-items-center border-t border-line text-ink hover:bg-sunken disabled:opacity-40" aria-label="Zoom out"><Minus size={16} /></button>
         <button type="button" onClick={() => setView(IDENTITY)} disabled={view.k === 1} className="grid size-9 place-items-center border-t border-line text-ink hover:bg-sunken disabled:opacity-40" aria-label="Reset map view"><Reset size={15} /></button>
