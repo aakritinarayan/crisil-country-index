@@ -156,7 +156,9 @@ export function validate(wb: RawWorkbook): { framework: Framework | null; valida
       levels: levels.map((l): Level => ({ score: l.score, label: l.label })),
       bands: sorted.map((b): ScoreBand => ({ min: b.min, max: b.max, label: b.label })),
       show_composite: /^yes$/i.test(m("show_composite")),
-      sample: false,
+      // sample_data: yes marks placeholder data, so the site shows the sample notice
+      // (optional; absent or anything but "yes" means a real assessment)
+      sample: /^yes$/i.test(m("sample_data")),
     },
     pillars: pillars.map(({ _row, ...p }, i): FPillar => { void _row; return { ...p, display_order: order(p.display_order, i) }; }),
     kpis: kpis.map(({ _row, ...k }, i): FKpi => { void _row; return { ...k, group: k.group || null, display_order: order(k.display_order, i) }; }),

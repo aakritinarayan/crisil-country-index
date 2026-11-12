@@ -57,7 +57,7 @@ export const TABS: TabDef[] = [
   ] },
 ];
 
-export const META_FIELDS = ["template_version", "index_name", "as_of", "intro", "disclaimer", "scale_min", "scale_max", "show_composite",
+export const META_FIELDS = ["template_version", "index_name", "as_of", "intro", "disclaimer", "scale_min", "scale_max", "show_composite", "sample_data",
   "methodology_framework", "methodology_scoring", "methodology_sources", "methodology_assumptions"] as const;
 
 const yes = (b: boolean) => (b ? "yes" : "no");
@@ -97,7 +97,7 @@ export async function buildTemplate(f: Framework | null): Promise<Buffer> {
     const m = f.meta;
     const meta: [string, string | number][] = [
       ["template_version", TEMPLATE_VERSION], ["index_name", m.index_name], ["as_of", m.as_of], ["intro", m.intro], ["disclaimer", m.disclaimer],
-      ["scale_min", m.scale_min], ["scale_max", m.scale_max], ["show_composite", yes(m.show_composite)],
+      ["scale_min", m.scale_min], ["scale_max", m.scale_max], ["show_composite", yes(m.show_composite)], ["sample_data", yes(m.sample)],
       ["methodology_framework", m.methodology.framework], ["methodology_scoring", m.methodology.scoring],
       ["methodology_sources", m.methodology.sources], ["methodology_assumptions", m.methodology.assumptions],
     ];
