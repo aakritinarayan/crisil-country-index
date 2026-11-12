@@ -3,7 +3,9 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 // import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
 import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { ADMIN_HINT_COOKIE } from "./admin/hint";
 import { authConfig } from "./auth.config";
 
 /* Admin sign-in. One shared admin account for now: ADMIN_EMAIL plus a bcrypt hash in
@@ -31,6 +33,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.sub) session.user.id = token.sub;
       return session;
     },
+  },
+  // A readable, content-free hint that an administrator signed in on this browser, so the
+  // static public pages can offer an Admin shortcut without asking the server. It grants
+  // nothing: /admin still checks the real session.
+  events: {
+    async signIn() { (await cookies()).set(ADMIN_HINT_COOKIE, "1", { path: "/", sameSite: "lax", maxAge: 8 * 60 * 60 }); },
+    async signOut() { (await cookies()).delete(ADMIN_HINT_COOKIE); },
   },
   providers: [
     Credentials({
