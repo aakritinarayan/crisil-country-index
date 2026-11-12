@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useSyncExternalStore } from "react";
-import { Close, Menu, PanelLeft } from "@/components/ui/icons";
+import { ChevronLeft, Close, Menu } from "@/components/ui/icons";
 import { AdminMark } from "./AdminMark";
 import { ADMIN_NAV } from "./nav";
 import { NAV_KEY as KEY } from "./navState";
@@ -46,9 +46,10 @@ export function Sidebar() {
   return (
     <nav aria-label="Admin" className="admin-side hidden md:flex">
       <NavList />
+      {/* floats on the rail's edge, halfway down */}
       <button type="button" onClick={toggle} aria-expanded={!collapsed} data-tip={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        className="nav-item mt-auto text-muted" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
-        <PanelLeft size={18} className="shrink-0" /><span className="nav-label">Collapse</span>
+        className="side-toggle" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
+        <ChevronLeft size={14} />
       </button>
     </nav>
   );

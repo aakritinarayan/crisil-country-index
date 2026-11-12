@@ -13,6 +13,7 @@ export const Plus = ({ size, className }: P) => (<svg {...base(size)} className=
 export const Minus = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M5 12h14" /></svg>);
 export const Reset = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></svg>);
 export const ChevronDown = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="m6 9 6 6 6-6" /></svg>);
+export const ChevronLeft = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="m15 18-6-6 6-6" /></svg>);
 export const Sort = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M8 4v16M4 8l4-4 4 4M16 20V4M12 16l4 4 4-4" /></svg>);
 export const Crosshair = ({ size, className }: P) => (<svg {...base(size)} className={className}><circle cx="12" cy="12" r="7" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" /></svg>);
 export const Expand = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>);
@@ -27,7 +28,6 @@ export const LayoutGrid = ({ size, className }: P) => (<svg {...base(size)} clas
 export const UploadIcon = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M12 15V4M7 9l5-5 5 5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /></svg>);
 export const History = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8" /><path d="M3 3v5h5M12 7v5l3 2" /></svg>);
 export const Menu = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M4 7h16M4 12h16M4 17h16" /></svg>);
-export const PanelLeft = ({ size, className }: P) => (<svg {...base(size)} className={className}><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16" /></svg>);
 export const More = ({ size, className }: P) => (<svg {...base(size)} className={className}><circle cx="5" cy="12" r="1.2" fill="currentColor" /><circle cx="12" cy="12" r="1.2" fill="currentColor" /><circle cx="19" cy="12" r="1.2" fill="currentColor" /></svg>);
 export const Download = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M12 4v11M7 10l5 5 5-5M4 19h16" /></svg>);
 export const Eye = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></svg>);
