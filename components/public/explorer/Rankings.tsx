@@ -191,7 +191,7 @@ export function Rankings() {
     sortedCol !== key ? undefined : dir === "desc" ? "descending" : "ascending";
 
   return (
-    <section id="rankings" aria-labelledby="rankings-h" className="wrap scroll-mt-20">
+    <section id="rankings" aria-labelledby="rankings-h" className="wrap scroll-mt-4">
       <p className="eyebrow">Country rankings</p>
       <h2 id="rankings-h" tabIndex={-1} className="t-h2 mt-3 outline-none">Every country, <span className="grad-text">every pillar</span></h2>
       <p className="mt-4 max-w-[64ch] text-muted">
@@ -272,7 +272,7 @@ export function Rankings() {
             <caption className="sr-only">
               {meta.index_name}: {mode === "az" ? "countries A to Z" : `ranked on ${rankLabel}, ${dir === "desc" ? "highest first" : "lowest first"}`}. Select a score for its rationale and sources.
             </caption>
-            <thead className="z-10 xl:sticky xl:top-16">
+            <thead className="z-10 xl:sticky xl:top-0">
               <tr className="border-b border-line-strong">
                 {mode === "ranked" && <th scope="col" className="sticky-col left-0 w-12 pb-2 pr-2 text-right align-bottom text-[12px] font-medium text-muted">Rank<span className="sr-only"> on {rankLabel}</span></th>}
                 <th scope="col" className={`sticky-col ${mode === "ranked" ? "left-12" : "left-0"} pb-2 pl-3 text-left align-bottom text-[12.5px] font-medium text-muted`}>Country</th>

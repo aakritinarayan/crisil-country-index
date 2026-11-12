@@ -253,7 +253,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-sans); 
  * carried up here by a transform. --photo (1 → 0) blends the photographic hero Earth into
  * the light explorer globe on the way down. */
 @media (min-width: 1024px) {
-  .hero-stage { height: calc(100dvh - 4rem); min-height: 600px; }
+  .hero-stage { height: 100dvh; min-height: 600px; }
 }
 .hero-credit { position: absolute; left: 16px; bottom: 10px; z-index: 10; margin: 0; max-width: 190px; font-size: 11px; line-height: 1.45; color: var(--h-muted); }
 @media (min-width: 1024px) { .hero-credit { left: max(16px, (100% - 1280px) / 2); } }
@@ -387,28 +387,7 @@ html.tx-ready .explore-reveal { opacity: var(--explore-in, 1); transform: transl
 .rank-table .country-arrow, .rank-table .locate-btn { opacity: 0; transition: opacity .12s; }
 .rank-row:hover .country-arrow, .rank-row:focus-within .country-arrow, .rank-row:hover .locate-btn, .rank-row:focus-within .locate-btn { opacity: 1; }
 .az-head { background: var(--bg); }
-@media (min-width: 1280px) { .rank-table thead { top: 4rem; } }
-
-/* global header (SiteHeader.tsx): translucent glass that takes the tone of what is behind it */
-.site-header { --hd-bg: rgb(246 248 245 / 0.72); --hd-ink: var(--ink); --hd-muted: var(--ink-2); --hd-line: rgb(31 52 46 / 0.09);
-  --hd-field: rgb(255 255 255 / 0.62); --hd-field-line: rgb(31 52 46 / 0.12);
-  background: var(--hd-bg); color: var(--hd-ink); border-bottom: 1px solid var(--hd-line);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
-  transition: background-color .3s ease, color .3s ease, border-color .3s ease; }
-.site-header[data-tone="dark"] { --focus: #45d0c6; --hd-bg: rgb(16 23 24 / 0.58); --hd-ink: #f1f4f2; --hd-muted: #b7c2c0; --hd-line: rgb(255 255 255 / 0.08);
-  --hd-field: rgb(255 255 255 / 0.06); --hd-field-line: rgb(255 255 255 / 0.14); }
-.site-header .hd-link { color: var(--hd-muted); transition: color .2s; }
-.site-header .hd-link:hover, .site-header .hd-link.is-active { color: var(--hd-ink); }
-.site-header nav .hd-link.is-active::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: 2px; height: 2px; background: var(--teal); }
-.site-header .hd-note { color: var(--hd-muted); border-color: var(--hd-line); }
-.site-header .hd-field { background: var(--hd-field); border: 1px solid var(--hd-field-line); color: var(--hd-ink); transition: background-color .3s, border-color .3s; }
-.site-header .hd-field:focus-within { border-color: var(--focus); box-shadow: 0 0 0 1px var(--focus); }
-.site-header .hd-field input::placeholder { color: var(--hd-muted); opacity: .85; }
-.site-header .hd-kbd { border: 1px solid var(--hd-field-line); color: var(--hd-muted); }
-.site-header .hd-icon { color: var(--hd-ink); border: 1px solid var(--hd-field-line); background: var(--hd-field); transition: background-color .2s, border-color .3s; }
-.site-header .hd-icon:hover { border-color: var(--hd-muted); }
-.site-header .hd-panel { border-color: var(--hd-line); }
-.site-header .hd-panel .hd-link { border-color: var(--hd-line); }
+@media (min-width: 1280px) { .rank-table thead { top: 0; } }
 
 .globe:focus-visible, .geo-surface:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 /* small states: a restrained marker shadow instead of a blurred shape */
@@ -426,26 +405,6 @@ button.score-cell:focus-visible .rank-score { outline: 2px solid var(--focus); o
 /* the score whose rationale is open stays marked behind the drawer */
 button.score-cell[data-active] .rank-score { outline: 2px solid var(--teal); outline-offset: 1px; }
 
-
-/* closing section (layout.tsx): methodology introduction + footer on one dark surface.
- * A clean, solid edge with rounded top corners after the page's normal section spacing;
- * the hero's grid at low opacity fading downwards, and the faintest dark-teal air.
- * Fixed colours: it reads the same in both themes. */
-.site-footer { --ink: #f1f4f2; --ink-2: #b9c3c0; --muted: #8b9794; --line: rgb(255 255 255 / .1); --link: #7fd9cf; --focus: #45d0c6;
-  position: relative; isolation: isolate; overflow: hidden; margin-top: clamp(3rem, 6vw, 4.5rem); color: var(--ink-2);
-  border-radius: 20px 20px 0 0;
-  background: radial-gradient(70% 120% at 85% 0%, rgb(21 78 70 / .22), transparent 70%), #101819; }
-@media (max-width: 639px) { .site-footer { border-radius: 16px 16px 0 0; } }
-.site-footer-grid { position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background-image: linear-gradient(rgb(255 255 255 / .035) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / .035) 1px, transparent 1px);
-  background-size: 80px 80px; background-position: center top;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 35%, transparent 90%);
-          mask-image: linear-gradient(180deg, #000 0%, #000 35%, transparent 90%); }
-.footer-link { color: var(--ink); text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 1px; text-underline-offset: 5px;
-  transition: color .18s, text-decoration-color .18s; }
-.footer-link:hover { color: #fff; text-decoration-color: var(--teal); }
-.footer-cta:hover .box { transform: translate(2px, -2px); }
-@media (prefers-reduced-motion: reduce) { .footer-cta:hover .box { transform: none; } }
 
 /* Select (components/ui/Select.tsx): trigger + anchored listbox */
 .sel-trigger.is-open { border-color: var(--focus); box-shadow: 0 0 0 1px var(--focus); }

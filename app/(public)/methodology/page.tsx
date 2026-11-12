@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { getPublishedSnapshot } from "@/lib/data";
 import { allBands, formatAsOf } from "@/lib/bands";
@@ -31,8 +32,14 @@ export default async function MethodologyPage() {
   return (
     <article className="wrap pb-16">
       <header className="max-w-[1040px] border-b border-line pb-8 pt-10 sm:pt-12">
-        <p className="label text-muted">{meta.index_name}</p>
-        <h1 className="mt-2 text-[clamp(2rem,4vw,2.75rem)] font-semibold leading-[1.1] tracking-[-0.025em] text-ink">Methodology</h1>
+        <nav aria-label="Breadcrumb" className="text-[13px] text-muted">
+          <ol className="flex flex-wrap items-center gap-2">
+            <li><Link href="/" className="transition-colors hover:text-ink">{meta.index_name}</Link></li>
+            <li aria-hidden>/</li>
+            <li aria-current="page" className="text-ink-2">Methodology</li>
+          </ol>
+        </nav>
+        <h1 className="mt-3 text-[clamp(2rem,4vw,2.75rem)] font-semibold leading-[1.1] tracking-[-0.025em] text-ink">Methodology</h1>
         <p className="mt-3 max-w-[60ch] text-[16.5px] leading-relaxed text-ink-2">
           Understand how countries are assessed, how scores are assigned and the evidence behind the Country Index.
         </p>
@@ -138,7 +145,7 @@ export default async function MethodologyPage() {
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
-    <section id={id} aria-labelledby={`${id}-h`} className="grid scroll-mt-24 gap-x-12 gap-y-4 border-b border-line py-10 lg:grid-cols-[220px_minmax(0,1fr)]">
+    <section id={id} aria-labelledby={`${id}-h`} className="grid scroll-mt-4 gap-x-12 gap-y-4 border-b border-line py-10 lg:grid-cols-[220px_minmax(0,1fr)]">
       <h2 id={`${id}-h`} className="text-[20px] font-semibold leading-snug tracking-[-0.015em] text-ink">{title}</h2>
       <div className="min-w-0">{children}</div>
     </section>

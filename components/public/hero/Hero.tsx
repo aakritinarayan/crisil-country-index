@@ -39,12 +39,12 @@ export function Hero({ summary, sample = true }: { summary: IndexSummary; sample
         sage as the page scrolls (--bg-mix, set by ExploreWorkspace). No band, no edge. */}
     <div aria-hidden className="tx-backdrop" />
     <section id="hero" aria-labelledby="hero-h" className="hero relative isolate overflow-clip">
-      <div id="hero-stage" data-header-tone="dark" className="hero-stage relative">
+      <div id="hero-stage" className="hero-stage relative">
         <HeroStars />
         <div aria-hidden className="hero-grid pointer-events-none absolute inset-0 -z-10" />
         <div id="hero-intro" className="wrap relative z-10 pt-[clamp(36px,5.5vh,64px)] text-center">
           <p className="hero-eyebrow">Global country index</p>
-          {sample && <p className="mx-auto mt-3 w-fit border border-white/15 px-2.5 py-1 text-[12px] font-medium text-[var(--h-ink)] xl:hidden">Sample data — not a Crisil assessment</p>}
+          {sample && <p className="mx-auto mt-3 w-fit border border-white/15 px-2.5 py-1 text-[12px] font-medium text-[var(--h-ink)]">Sample data — not a Crisil assessment</p>}
           <h1 id="hero-h" className="hero-title mx-auto mt-3 max-w-[1100px]">
             Understanding <span className="hero-accent">{base}</span>{rest} across the world.
           </h1>

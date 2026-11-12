@@ -195,7 +195,7 @@ export function ExploreWorkspace() {
   const geoProps = { bands: meta.score_bands, neutral: overview, activeBands: overview ? null : bandFilter, selectedId, onSelect: select, expanded, onExpand: toggleExpanded };
 
   return (
-    <section id="map" aria-labelledby="explore-h" className="explore scroll-mt-16" data-view={view}>
+    <section id="map" aria-labelledby="explore-h" className="explore" data-view={view}>
       <a ref={scrollHint} href="#map" onClick={(e) => { e.preventDefault(); enterExplorer(); }}
         className="hero-scroll absolute left-0 top-0 z-[3] hidden lg:inline-flex" style={{ visibility: "hidden" }}>
         <svg aria-hidden width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v15M6 13l6 6 6-6" /></svg><span className="sr-only">Scroll to explore the world</span>

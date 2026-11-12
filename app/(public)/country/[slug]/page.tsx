@@ -141,7 +141,7 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
   return (
     <article>
       {/* ── compact summary header: identity, the numbers, one line, actions; map card right ── */}
-      <header data-header-tone="dark" className="country-hero">
+      <header className="country-hero">
         <div aria-hidden className="country-hero-grid" />
         <div className="wrap relative grid gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-center lg:gap-12 lg:py-10">
           <div className="min-w-0">
@@ -220,7 +220,7 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
         <PillarExplorer key={country.country_id} rows={rows} min={meta.score_min} max={meta.score_max} legend={allBands(meta.score_bands).map((b) => ({ label: b.label, min: b.min, max: b.max, fill: b.fill }))} />
 
         {/* ── continue exploring ── */}
-        <section id="explore" aria-labelledby="explore-more-h" className="scroll-mt-32 border-t border-line py-12">
+        <section id="explore" aria-labelledby="explore-more-h" className="scroll-mt-4 border-t border-line py-12">
           <h2 id="explore-more-h" className="text-[24px] font-bold tracking-[-0.02em] text-ink">Continue exploring</h2>
           <nav aria-label="Ranked neighbours" className="mt-6 grid gap-px border-y border-line sm:grid-cols-2">
             {prev ? (
