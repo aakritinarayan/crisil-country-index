@@ -14,18 +14,30 @@ import type { Payload } from "./types";
  * Everyone else keeps getting the static published pages. Preview also requires a live
  * admin session, so an expired session quietly falls back to the published data. */
 export { PREVIEW_COOKIE } from "@/lib/admin/hint";
-import { PREVIEW_COOKIE } from "@/lib/admin/hint";
+import { PREVIEW_COOKIE, SHARE_COOKIE } from "@/lib/admin/hint";
+import { shareCookieValue, sharedVersion } from "./share";
 
-export type Preview = { version: VersionRecord; demo: boolean; payloadFound: boolean };
+/* Two ways in, same rendering: an administrator previewing a stored version, or a reviewer
+ * who opened a share link (lib/share.ts) — that one needs no session, only the cookie the
+ * link set, and it stops working as soon as the share token changes. */
+export type Preview =
+  | { kind: "admin"; version: VersionRecord; demo: boolean; payloadFound: boolean }
+  | { kind: "share"; label: string; payload: Payload };
 
 export const previewState = cache(async (): Promise<Preview | null> => {
   const { isEnabled } = await draftMode();
   if (!isEnabled) return null; // always the case while pages are prerendered
-  const id = (await cookies()).get(PREVIEW_COOKIE)?.value;
-  if (!id || !(await auth())?.user) return null;
-  const found = await getVersion(id);
-  if (!found || found.version.status === "rejected") return null;
-  return { version: found.version, demo: dataSource() === "demo", payloadFound: (await previewPayload(id)) != null };
+  const jar = await cookies();
+  const id = jar.get(PREVIEW_COOKIE)?.value;
+  if (id && (await auth())?.user) {
+    const found = await getVersion(id);
+    if (found && found.version.status !== "rejected")
+      return { kind: "admin", version: found.version, demo: dataSource() === "demo", payloadFound: (await previewPayload(id)) != null };
+  }
+  const shared = sharedVersion();
+  const expected = shareCookieValue();
+  if (shared && expected && jar.get(SHARE_COOKIE)?.value === expected) return { kind: "share", label: shared.label, payload: shared.payload };
+  return null;
 });
 
 /** The dataset a public page renders: the previewed version for an administrator in
@@ -33,6 +45,7 @@ export const previewState = cache(async (): Promise<Preview | null> => {
  *  getPublishedSnapshot — there is no request, and so no preview, at build time.) */
 export async function getSiteSnapshot(): Promise<Payload | null> {
   const preview = await previewState();
+  if (preview?.kind === "share") return preview.payload;
   if (preview) {
     const payload = await previewPayload(preview.version.id);
     if (payload) return payload;

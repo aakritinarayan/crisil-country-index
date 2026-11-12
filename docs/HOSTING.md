@@ -53,3 +53,17 @@ with a clear error rather than mixing stores.
 
 Publishing expires the `index-data` cache tag, so the public pages update within seconds.
 Uploaded data lives only in Atlas and Azure — never in this public repository.
+
+## Review links (before the hosted admin exists)
+
+To show reviewers a version that isn't published, without any of the above:
+
+1. Locally: `npm run share:link` (the published version) or `npm run share:link -- <number>`.
+   It writes `SHARE_TOKEN` and `SHARE_PAYLOAD` to `.data/share/vercel-env.txt` and prints the link.
+2. Vercel → Settings → Environment Variables: add both (Production), then redeploy.
+3. Send `https://crisil-country-index.vercel.app/share/<token>`. It opens the full site in
+   preview, with a bar saying it isn't published. Everyone else still sees the published site.
+
+To update the shared version but keep the link: `npm run share:link -- <number> --keep`, then
+update `SHARE_PAYLOAD` on Vercel and redeploy. To revoke: run it without `--keep` (new token)
+or delete the variables, then redeploy — browsers that opened the old link lose access too.

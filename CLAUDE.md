@@ -71,6 +71,10 @@ load-bearing subset that must never be silently violated.
   Uploaded-by, approved-by and published-by are recorded separately. The store enforces
   the rules; the console only explains them. Local-store publishes/approvals say they are
   prototype operations — never present them as production.
+- **Review links** (`lib/share.ts`, `/share/<token>`): one version shown in preview to
+  anyone with the link, data carried in the private `SHARE_PAYLOAD` env var (made by
+  `npm run share:link`), never in the repo. The cookie holds a digest of the token, so
+  rotating the token revokes every browser.
 - The sample-data notice shows only when `SHOW_SAMPLE_DATA_BANNER` is on **and**
   the data is a sample (`meta.sample !== false`) — real assessments never carry it.
 
