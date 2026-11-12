@@ -532,3 +532,14 @@ button.score-cell:hover .rank-score { box-shadow: inset 0 0 0 1px color-mix(in s
 .admin-status .dot { width: 7px; height: 7px; border-radius: 999px; background: var(--muted); }
 .admin-status.is-live { border-color: color-mix(in srgb, var(--teal) 45%, var(--line)); background: color-mix(in srgb, var(--teal) 8%, var(--bg-raised)); }
 .admin-status.is-live .dot { background: var(--teal); }
+
+/* floating theme switch (ThemeToggle.tsx): the site has no header, so it sits at the
+ * bottom right of every public page, below drawers (z-50) and the expanded explorer (60) */
+.theme-fab { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 30;
+  display: grid; place-items: center; width: 44px; height: 44px; border-radius: 999px;
+  background: var(--bg-raised); color: var(--ink); border: 1px solid var(--line-strong); box-shadow: var(--shadow-soft);
+  transition: border-color .15s, transform .15s; }
+.theme-fab:hover { border-color: var(--muted); transform: translateY(-1px); }
+.theme-fab:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .theme-fab:hover { transform: none; } }
+@media print { .theme-fab { display: none; } }

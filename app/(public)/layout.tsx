@@ -1,4 +1,5 @@
 import { ClosingSection } from "@/components/public/ClosingSection";
+import { ThemeToggle } from "@/components/public/ThemeToggle";
 
 /* No site header or footer: the public site is embedded in a host page (iframe), which
  * provides its own chrome. Each page carries the sample-data notice in its own header;
@@ -12,6 +13,7 @@ export default function PublicLayout({ children }: LayoutProps<"/">) {
       <main id="main" className="flex-1">{children}</main>
 
       <ClosingSection />
+      <ThemeToggle />
     </div>
   );
 }
