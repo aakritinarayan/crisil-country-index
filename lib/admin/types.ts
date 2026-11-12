@@ -10,7 +10,8 @@ export type Actor =
   | { kind: "system"; id: "system" };
 
 /** published / draft / archived per DATA_MODEL; a rejected upload is kept (its file is
- *  retained) but never becomes a version — it has no version number. */
+ *  retained) but never becomes a version — it has no version number. The console shows only
+ *  Live and Final (lib/admin/workflow.ts displayStatus) — the client's preference. */
 export type VersionStatus = "published" | "draft" | "archived" | "rejected";
 
 export type Issue = { code: string; message: string; tab?: string; row?: number; column?: string };
@@ -37,6 +38,8 @@ export type VersionRecord = {
   source_file: { filename: string; size_bytes: number; uploaded_at: string };
   created_at: string;
   created_by: Actor;             // the uploader
+  approved_at?: string | null;   // when approval is required (lib/admin/workflow.ts); absent on older records
+  approved_by?: Actor | null;    // never the uploader
   published_at: string | null;   // most recent publication (history lives in the events)
   published_by: Actor | null;
   validation: Validation;
@@ -48,7 +51,8 @@ export type AuditEventType =
   | "upload.received"
   | "validation.passed"
   | "validation.failed"
-  | "draft.created"
+  | "draft.created"              // shown as "Saved as version N" (Final); the key is kept for the existing log
+  | "version.approved"
   | "version.published"
   | "version.restored"           // an earlier version published again (rollback)
   | "version.archived";          // superseded by another publish
@@ -63,4 +67,4 @@ export type AuditEvent = {
   data?: Record<string, string | number | boolean | null>;
 };
 
-export const versionLabel = (v: Pick<VersionRecord, "version">) => (v.version != null ? `Version ${v.version}` : "Rejected upload");
+export const versionLabel = (v: Pick<VersionRecord, "version">) => (v.version != null ? `Version ${v.version}` : "Failed upload");

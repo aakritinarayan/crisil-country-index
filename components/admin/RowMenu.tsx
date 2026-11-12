@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
-import { Download, Eye, More, Publish, Restore } from "@/components/ui/icons";
+import { Check, Download, Eye, More, Publish, Restore } from "@/components/ui/icons";
 import type { VersionActions } from "@/lib/admin/permissions";
 
 /** The per-version overflow menu: details, then the less frequent actions. An
@@ -23,8 +23,8 @@ export function RowMenu({ label, href, actions }: { label: string; href: string;
 
   const items = [
     { key: "preview", text: "Preview", icon: Eye, state: actions.preview },
-    actions.publish && { key: "publish", text: "Publish…", icon: Publish, state: actions.publish },
-    actions.restore && { key: "restore", text: "Restore this version…", icon: Restore, state: actions.restore },
+    actions.approve && { key: "approve", text: "Approve…", icon: Check, state: actions.approve },
+    actions.publish && { key: "publish", text: actions.earlier ? "Publish this version again…" : "Publish…", icon: actions.earlier ? Restore : Publish, state: actions.publish },
     { key: "download", text: "Download source workbook", icon: Download, state: actions.download },
   ].filter(Boolean) as { key: string; text: string; icon: typeof Eye; state: { enabled: boolean; reason?: string } }[];
 
@@ -38,7 +38,7 @@ export function RowMenu({ label, href, actions }: { label: string; href: string;
             <a key={key} href={`/admin/preview/${href.split("/").pop()}`} target="_blank" rel="noopener" className="menu-item"><Icon size={16} />{text}<span className="sr-only"> (opens in a new tab)</span></a>
           ) : key === "download" && state.enabled ? (
             <a key={key} href={`${href}/download`} download className="menu-item"><Icon size={16} />{text}</a>
-          ) : (key === "publish" || key === "restore") && state.enabled ? (
+          ) : (key === "publish" || key === "approve") && state.enabled ? (
             // the confirmation step lives on the version page
             <Link key={key} href={href} className="menu-item"><Icon size={16} />{text}</Link>
           ) : (

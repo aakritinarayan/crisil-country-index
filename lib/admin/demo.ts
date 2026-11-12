@@ -8,7 +8,7 @@ import type { Actor, AuditEvent, ChangeSummary, VersionRecord } from "./types";
  * serving the bundled sample dataset. The console says so wherever these appear.
  *
  * The story it tells: two administrators; uploads by one published by the other; a
- * rejected upload; a rollback; a correction for the same reporting period; a pending draft. */
+ * rejected upload; a rollback; a correction for the same reporting period; a Final version not yet published. */
 
 const A: Actor = { kind: "admin", id: "demo-admin-a", name: "Demo administrator A", email: "demo-a@example.com" };
 const B: Actor = { kind: "admin", id: "demo-admin-b", name: "Demo administrator B", email: "demo.administrator.b.research-data-team@example.com" };

@@ -54,6 +54,17 @@ load-bearing subset that must never be silently violated.
   `.data/admin`). `getPublishedSnapshot()` is `"use cache"` + `cacheTag("index-data")`;
   publish calls `updateTag("index-data")`. A plain fs read on a public page breaks
   Cache Components prerendering — keep data reads behind that cached function.
+- **Admin update workflow (client feedback 2026-11-12)** — `lib/admin/workflow.ts`, tested:
+  upload final workbook → validate → review changes → approval (if required) → publish.
+  *Confirmed:* only internally finalised workbooks are uploaded; the console shows two
+  statuses only, **Live** and **Final** (internal draft/archived/rejected stay in the data
+  model, never as labels or sections); validation and change review always run.
+  *Awaiting the client:* a second approval (`ADMIN_REQUIRE_APPROVAL`, default off — approver
+  must not be the uploader), version history/archive and rollback (`ADMIN_ALLOW_ROLLBACK`,
+  default on). Don't hardcode either; don't add Draft/Rejected/Pending Approval sections.
+  Uploaded-by, approved-by and published-by are recorded separately. The store enforces
+  the rules; the console only explains them. Local-store publishes/approvals say they are
+  prototype operations — never present them as production.
 - The sample-data notice shows only when `SHOW_SAMPLE_DATA_BANNER` is on **and**
   the data is a sample (`meta.sample !== false`) — real assessments never carry it.
 

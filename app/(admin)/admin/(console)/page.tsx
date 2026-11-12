@@ -4,10 +4,11 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { getPublishedSnapshot } from "@/lib/data";
 import { formatAsOf } from "@/lib/bands";
-import { dataSource, overview } from "@/lib/admin/store";
+import { actionContext, dataSource, listVersions, overview } from "@/lib/admin/store";
 import { actionsFor, capabilitiesFor } from "@/lib/admin/permissions";
 import { fmtDate, fmtDateTime, fmtPeriod } from "@/lib/admin/format";
 import { versionLabel } from "@/lib/admin/types";
+import { awaitingApproval } from "@/lib/admin/workflow";
 import { DemoNotice, PageHead, SectionHead, UploadButton } from "@/components/admin/Page";
 import { ActorLabel, StatusLabel, ValidationLabel, actorName } from "@/components/admin/Status";
 import { VersionTable } from "@/components/admin/VersionTable";
@@ -30,6 +31,7 @@ async function Content() {
   const source = dataSource();
   const caps = capabilitiesFor(admin);
   const { live, pending, recent, total } = await overview();
+  const ctx = await actionContext(admin, await listVersions());
 
   return (
     <>
@@ -41,7 +43,7 @@ async function Content() {
           <div className="admin-card pub-row">
             <Field label="Reporting period" value={fmtPeriod(live.as_of)} strong />
             <Field label="Version" value={<Link href={`/admin/versions/${live.id}`} className="ver-link">{versionLabel(live)}</Link>} />
-            <Field label="Status" value={<StatusLabel status="published" />} />
+            <Field label="Status" value={<StatusLabel v={live} />} />
             <Field label="Published" value={live.published_at ? fmtDate(live.published_at) : "—"} title={live.published_at ? fmtDateTime(live.published_at) : undefined} />
             <Field label="Published by" value={live.published_by ? <ActorLabel actor={live.published_by} compact /> : "—"} wide />
             <PublicLink />
@@ -51,13 +53,17 @@ async function Content() {
 
       {pending && (
         <section aria-labelledby="pending-h" className="mt-8">
-          <SectionHead id="pending-h" title="Pending update" />
+          <SectionHead id="pending-h" title="Next update" />
           <div className="pending-row">
             <div className="min-w-0">
-              <p className="text-[15px] font-semibold text-ink">{versionLabel(pending)} · {fmtPeriod(pending.as_of)}</p>
+              <p className="flex flex-wrap items-center gap-x-3 text-[15px] font-semibold text-ink">{versionLabel(pending)} · {fmtPeriod(pending.as_of)} <StatusLabel v={pending} /></p>
               <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13.5px] text-muted">
                 <ValidationLabel v={pending.validation} />
                 <span>Uploaded by <span className="text-ink-2">{actorName(pending.created_by)}</span> on <span className="num">{fmtDate(pending.created_at)}</span></span>
+                {pending.approved_by
+                  ? <span>Approved by <span className="text-ink-2">{actorName(pending.approved_by)}</span></span>
+                  : awaitingApproval(pending, ctx.settings) && <span className="text-ink-2">Awaiting approval by another administrator</span>}
+                <span>Not live yet</span>
               </p>
             </div>
             <Link href={`/admin/versions/${pending.id}`} className="act-btn is-primary shrink-0">Review changes<ArrowRight size={15} /></Link>
@@ -70,7 +76,7 @@ async function Content() {
           {total > recent.length && <Link href="/admin/versions" className="admin-link text-[13.5px] font-semibold">View all {total}</Link>}
         </SectionHead>
         {recent.length
-          ? <VersionTable caption="Recent versions, newest first" rows={recent.map((v) => ({ v, actions: actionsFor(v, caps, source) }))} />
+          ? <VersionTable caption="Recent versions, newest first" rows={recent.map((v) => ({ v, actions: actionsFor(v, caps, source, ctx) }))} />
           : (
             <div className="admin-card flex flex-col items-start gap-4 px-5 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6">
               <div>

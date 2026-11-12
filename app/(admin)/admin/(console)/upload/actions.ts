@@ -9,7 +9,7 @@ import { toPayload } from "@/lib/cfe/compute";
 
 const MAX_BYTES = 4 * 1024 * 1024; // TECH_SPEC §5
 
-/** Upload → validate → save as a draft (or keep as a rejected upload) → the version page,
+/** Upload → validate → save as a Final version (or keep as a failed upload) → the version page,
  *  which shows the validation report and the change summary. Problems with the file itself
  *  (wrong type, too large, empty) are reported on the form and nothing is stored. */
 export async function uploadWorkbook(_prev: string | null, form: FormData): Promise<string | null> {

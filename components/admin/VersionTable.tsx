@@ -33,7 +33,7 @@ export function VersionTable({ rows, caption }: { rows: Row[]; caption: string }
                   <span className="block text-[13px] font-normal text-muted">{fmtPeriod(v.as_of)}</span>
                   <span className="block truncate text-[12.5px] font-normal text-muted" title={v.source_file.filename}>{v.source_file.filename}</span>
                 </th>
-                <td><StatusLabel status={v.status} /></td>
+                <td><StatusLabel v={v} /></td>
                 <td className="max-w-[210px]"><ActorLabel actor={v.created_by} /></td>
                 <td className="whitespace-nowrap text-ink-2 num">{fmtDateTime(v.created_at)}</td>
                 <td><ValidationLabel v={v.validation} /></td>
@@ -58,7 +58,7 @@ export function VersionTable({ rows, caption }: { rows: Row[]; caption: string }
                 <span className="text-[13.5px] text-muted"> · {fmtPeriod(v.as_of)}</span>
                 <span className="block truncate text-[12.5px] text-muted" title={v.source_file.filename}>{v.source_file.filename}</span>
               </div>
-              <div className="flex shrink-0 items-center gap-2"><StatusLabel status={v.status} /><RowMenu label={`${versionLabel(v)}, ${fmtPeriod(v.as_of)}`} href={href(v)} actions={actions} /></div>
+              <div className="flex shrink-0 items-center gap-2"><StatusLabel v={v} /><RowMenu label={`${versionLabel(v)}, ${fmtPeriod(v.as_of)}`} href={href(v)} actions={actions} /></div>
             </div>
             <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 text-[13.5px] sm:grid-cols-3">
               <div className="min-w-0"><dt className="text-[12px] text-muted">Uploaded by</dt><dd className="min-w-0"><ActorLabel actor={v.created_by} compact /></dd></div>

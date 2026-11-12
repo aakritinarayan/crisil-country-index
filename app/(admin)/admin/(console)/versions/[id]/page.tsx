@@ -3,16 +3,17 @@ import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
-import { dataSource, getVersion, listVersions } from "@/lib/admin/store";
+import { actionContext, dataSource, getVersion, listVersions } from "@/lib/admin/store";
 import { actionsFor, capabilitiesFor } from "@/lib/admin/permissions";
 import { fmtBytes, fmtDateTime, fmtPeriod, zoneName } from "@/lib/admin/format";
+import { awaitingApproval } from "@/lib/admin/workflow";
 import { versionLabel, type AuditEvent, type ChangeSummary, type VersionRecord } from "@/lib/admin/types";
 import { fmtScore } from "@/lib/bands";
 import { DemoNotice, PageHead } from "@/components/admin/Page";
 import { ActionButton } from "@/components/admin/ActionButton";
 import { PublishControl } from "@/components/admin/PublishControl";
 import { ActorLabel, StatusLabel, ValidationLabel, actorName } from "@/components/admin/Status";
-import { Download, Eye, Publish, Restore } from "@/components/ui/icons";
+import { Check, Download, Eye, Publish, Restore } from "@/components/ui/icons";
 import { nCountries } from "@/lib/plural";
 
 export const metadata: Metadata = { title: "Version details · Admin" };
@@ -29,8 +30,10 @@ async function Detail({ params, searchParams }: { params: PageProps<"/admin/vers
   if (!found) notFound();
   const { version: v, events } = found;
   const source = dataSource();
-  const a = actionsFor(v, capabilitiesFor(admin), source);
-  const live = (await listVersions()).find((x) => x.status === "published" && x.id !== v.id) ?? null;
+  const ctx = await actionContext(admin, await listVersions());
+  const a = actionsFor(v, capabilitiesFor(admin), source, ctx);
+  const live = ctx.live && ctx.live.id !== v.id ? ctx.live : null;
+  const local = source === "local";
   const title = `${versionLabel(v)} (${fmtPeriod(v.as_of)})`;
   const changeLine = v.changes ? summaryLine(v.changes) : null;
 
@@ -38,17 +41,17 @@ async function Detail({ params, searchParams }: { params: PageProps<"/admin/vers
     <>
       <PageHead
         back={{ href: "/admin/versions", label: "Version history" }}
-        title={<span className="flex flex-wrap items-center gap-x-3 gap-y-1">{versionLabel(v)}<span className="text-[0.62em] font-normal tracking-normal"><StatusLabel status={v.status} /></span></span>}
+        title={<span className="flex flex-wrap items-center gap-x-3 gap-y-1">{versionLabel(v)}<span className="text-[0.62em] font-normal tracking-normal"><StatusLabel v={v} /></span></span>}
         description={`${fmtPeriod(v.as_of)} · uploaded ${fmtDateTime(v.created_at)} by ${actorName(v.created_by)}`}
         action={
           <div className="flex flex-wrap gap-2">
             <ActionButton state={a.preview} label="Preview" icon={Eye} href={`/admin/preview/${v.id}`} newTab reasonId="a-preview" />
+            {a.approve && (a.approve.enabled
+              ? <PublishControl id={v.id} mode="approve" title={title} replaces={null} changes={null} local={local} />
+              : <ActionButton state={a.approve} label="Approve…" icon={Check} tone="primary" reasonId="a-approve" />)}
             {a.publish && (a.publish.enabled
-              ? <PublishControl id={v.id} restore={false} title={title} replaces={live ? `${versionLabel(live)} (${fmtPeriod(live.as_of)})` : null} changes={changeLine} />
-              : <ActionButton state={a.publish} label="Publish…" icon={Publish} tone="primary" reasonId="a-publish" />)}
-            {a.restore && (a.restore.enabled
-              ? <PublishControl id={v.id} restore title={title} replaces={live ? `${versionLabel(live)} (${fmtPeriod(live.as_of)})` : null} changes={null} />
-              : <ActionButton state={a.restore} label="Restore…" icon={Restore} reasonId="a-restore" />)}
+              ? <PublishControl id={v.id} mode={a.earlier ? "republish" : "publish"} title={title} replaces={live ? `${versionLabel(live)} (${fmtPeriod(live.as_of)})` : null} changes={changeLine} local={local} />
+              : <ActionButton state={a.publish} label={a.earlier ? "Publish again…" : "Publish…"} icon={a.earlier ? Restore : Publish} tone={a.earlier || a.approve ? "quiet" : "primary"} reasonId="a-publish" />)}
             <ActionButton state={a.download} label="Download" icon={Download} href={`/admin/versions/${v.id}/download`} download reasonId="a-download" />
           </div>
         }
@@ -57,11 +60,12 @@ async function Detail({ params, searchParams }: { params: PageProps<"/admin/vers
       {flash.uploaded && (
         <p role="status" className={`flash mb-7 ${v.validation.passed ? "" : "is-bad"}`}>
           {v.validation.passed
-            ? <>Uploaded and saved as <strong>{versionLabel(v)}</strong>, a draft. {v.validation.warnings.length ? `Check the ${v.validation.warnings.length} warning${v.validation.warnings.length === 1 ? "" : "s"} below, ` : ""}review the changes, then preview or publish it. The public site hasn’t changed.</>
+            ? <>Uploaded and saved as <strong>{versionLabel(v)}</strong> (Final). {v.validation.warnings.length ? `Check the ${v.validation.warnings.length} warning${v.validation.warnings.length === 1 ? "" : "s"} below, ` : ""}review the changes, then {awaitingApproval(v, ctx.settings) ? "another administrator approves it before it can be published" : "preview or publish it"}. The public site hasn’t changed.</>
             : <>This upload didn’t pass validation, so nothing was saved as publishable. Fix the {v.validation.errors.length} error{v.validation.errors.length === 1 ? "" : "s"} below in the workbook and upload it again. The file is kept for reference.</>}
         </p>
       )}
-      {flash.published && v.status === "published" && <p role="status" className="flash mb-7"><strong>{versionLabel(v)}</strong> is now live on the public site.</p>}
+      {flash.approved && v.approved_by && <p role="status" className="flash mb-7"><strong>{versionLabel(v)}</strong> is approved{local ? " (recorded in the local prototype store)" : ""}. It isn’t live until someone publishes it.</p>}
+      {flash.published && v.status === "published" && <p role="status" className="flash mb-7"><strong>{versionLabel(v)}</strong> is now live on {local ? "the public site served from this machine (local prototype — not a production publish)" : "the public site"}.</p>}
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <div className="grid min-w-0 gap-8">
@@ -76,11 +80,14 @@ async function Detail({ params, searchParams }: { params: PageProps<"/admin/vers
         <aside aria-labelledby="det-h" className="admin-card p-5">
           <h2 id="det-h" className="text-[15px] font-semibold text-ink">Details</h2>
           <dl className="det-list mt-3">
-            <Row label="Version">{v.version != null ? v.version : <span className="text-muted">None — rejected uploads aren’t versioned</span>}</Row>
+            <Row label="Version">{v.version != null ? v.version : <span className="text-muted">None — failed uploads aren’t versioned</span>}</Row>
             <Row label="Reporting period">{fmtPeriod(v.as_of)}</Row>
-            <Row label="Status"><StatusLabel status={v.status} /></Row>
+            <Row label="Status"><StatusLabel v={v} /></Row>
             <Row label="Source workbook"><span className="break-all">{v.source_file.filename}</span><span className="block text-[12.5px] text-muted">{fmtBytes(v.source_file.size_bytes)}</span></Row>
             <Row label="Uploaded"><span className="num">{fmtDateTime(v.created_at)}</span><ActorLabel actor={v.created_by} full /></Row>
+            {(ctx.settings.approvalRequired || v.approved_by) && v.status !== "rejected" && (
+              <Row label="Approved">{v.approved_at && v.approved_by ? <><span className="num">{fmtDateTime(v.approved_at)}</span><ActorLabel actor={v.approved_by} full /></> : <span className="text-muted">{v.status === "published" ? "Not recorded" : "Awaiting approval"}</span>}</Row>
+            )}
             <Row label="Last published">{v.published_at && v.published_by ? <><span className="num">{fmtDateTime(v.published_at)}</span><ActorLabel actor={v.published_by} full /></> : <span className="text-muted">Not published</span>}</Row>
             {v.counts && <Row label="Contents">{nCountries(v.counts.countries)} · {v.counts.pillars} pillars</Row>}
             <Row label="Record ID"><span className="break-all font-mono text-[12px] text-muted">{v.id}</span></Row>
@@ -171,10 +178,11 @@ const EVENT_TEXT: Record<AuditEvent["type"], string> = {
   "upload.received": "Workbook uploaded",
   "validation.passed": "Validation passed",
   "validation.failed": "Validation failed",
-  "draft.created": "Draft created",
+  "draft.created": "Saved as Final",
+  "version.approved": "Approved for publishing",
   "version.published": "Published",
-  "version.restored": "Restored and published",
-  "version.archived": "Archived",
+  "version.restored": "Published again",
+  "version.archived": "Replaced as live",
 };
 
 function detail(e: AuditEvent): string | null {
@@ -184,6 +192,7 @@ function detail(e: AuditEvent): string | null {
     case "validation.passed": return d.warnings ? `${d.warnings} warning${d.warnings === 1 ? "" : "s"}` : "No warnings";
     case "validation.failed": return d.errors ? `${d.errors} error${d.errors === 1 ? "" : "s"} — nothing saved as publishable` : null;
     case "draft.created": return d.version != null ? `Saved as version ${d.version}` : null;
+    case "version.approved": return "Ready to publish — publishing is a separate step";
     case "version.published": return d.replaced_version != null ? `Replaced version ${d.replaced_version} on the public site` : "First version on the public site";
     case "version.restored": return [d.replaced_version != null && `Replaced version ${d.replaced_version}`, d.note].filter(Boolean).join(" · ") || null;
     case "version.archived": return d.replaced_by_version != null ? `Superseded by version ${d.replaced_by_version}` : null;
