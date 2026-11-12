@@ -31,6 +31,7 @@ export const Menu = ({ size, className }: P) => (<svg {...base(size)} className=
 export const More = ({ size, className }: P) => (<svg {...base(size)} className={className}><circle cx="5" cy="12" r="1.2" fill="currentColor" /><circle cx="12" cy="12" r="1.2" fill="currentColor" /><circle cx="19" cy="12" r="1.2" fill="currentColor" /></svg>);
 export const Download = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M12 4v11M7 10l5 5 5-5M4 19h16" /></svg>);
 export const Eye = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></svg>);
+export const EyeOff = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-2.9 3.9M6.6 6.6C3.7 8.4 2 12 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" /><path d="m3 3 18 18" /></svg>);
 export const Restore = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.5" /><path d="M4 4v4.5h4.5" /></svg>);
 export const Publish = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M12 19V8M7 13l5-5 5 5M5 4h14" /></svg>);
 export const FileSheet = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5M8.5 12.5h7M8.5 16h7M12 12.5V19" /></svg>);

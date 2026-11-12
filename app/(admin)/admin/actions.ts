@@ -16,7 +16,7 @@ export async function login(_prev: string | null, form: FormData): Promise<strin
     await signIn("credentials", { email: form.get("email"), password: form.get("password"), redirectTo });
     return null;
   } catch (e) {
-    if (e instanceof AuthError) return e.type === "CredentialsSignin" ? "That email and password don’t match the admin account." : "Sign-in failed. Please try again.";
+    if (e instanceof AuthError) return e.type === "CredentialsSignin" ? "Incorrect email or password. Please try again." : "Unable to sign in right now. Please try again.";
     throw e; // the success redirect
   }
 }

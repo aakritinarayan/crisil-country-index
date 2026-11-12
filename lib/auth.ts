@@ -5,7 +5,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { cookies, draftMode } from "next/headers";
 import { redirect } from "next/navigation";
-import { ADMIN_HINT_COOKIE, PREVIEW_COOKIE } from "./admin/hint";
+import { ADMIN_HINT_COOKIE, PREVIEW_COOKIE, SESSION_SEEN_COOKIE } from "./admin/hint";
 import { authConfig } from "./auth.config";
 
 /* Admin sign-in. One shared admin account for now: ADMIN_EMAIL plus a bcrypt hash in
@@ -38,11 +38,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // static public pages can offer an Admin shortcut without asking the server. It grants
   // nothing: /admin still checks the real session.
   events: {
-    async signIn() { (await cookies()).set(ADMIN_HINT_COOKIE, "1", { path: "/", sameSite: "lax", maxAge: 8 * 60 * 60 }); },
+    async signIn() {
+      const jar = await cookies();
+      jar.set(ADMIN_HINT_COOKIE, "1", { path: "/", sameSite: "lax", maxAge: 8 * 60 * 60 });
+      jar.set(SESSION_SEEN_COOKIE, "1", { path: "/admin", sameSite: "lax", maxAge: 30 * 24 * 60 * 60 });
+    },
     // signing out also ends any preview in this browser
     async signOut() {
       const jar = await cookies();
       jar.delete(ADMIN_HINT_COOKIE);
+      jar.delete({ name: SESSION_SEEN_COOKIE, path: "/admin" });
       jar.delete(PREVIEW_COOKIE);
       (await draftMode()).disable();
     },
