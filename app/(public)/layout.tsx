@@ -1,8 +1,9 @@
 import { getPublishedSnapshot } from "@/lib/data";
+import { ClosingSection } from "@/components/public/ClosingSection";
 
 /* No site header or footer: the public site is embedded in a host page (iframe), which
  * provides its own chrome. Each page carries the sample-data notice in its own header;
- * the disclaimer stays here so it is on every page (CLAUDE.md: disclaimer slot). */
+ * the closing band (methodology introduction + disclaimer) ends every page. */
 export default async function PublicLayout({ children }: LayoutProps<"/">) {
   const snapshot = await getPublishedSnapshot();
 
@@ -12,14 +13,7 @@ export default async function PublicLayout({ children }: LayoutProps<"/">) {
 
       <main id="main" className="flex-1">{children}</main>
 
-      <section aria-labelledby="disclaimer-h" className="wrap">
-        <div className="border-t border-line py-6">
-          <h2 id="disclaimer-h" className="label text-muted">Disclaimer</h2>
-          <p className="mt-1.5 max-w-[90ch] text-[13px] leading-relaxed text-muted">
-            {snapshot?.meta.disclaimer || "This index is not a credit rating."}
-          </p>
-        </div>
-      </section>
+      <ClosingSection disclaimer={snapshot?.meta.disclaimer || "This index is not a credit rating."} />
     </div>
   );
 }
