@@ -68,8 +68,9 @@ load-bearing subset that must never be silently violated.
 - **Admin update workflow (client feedback 2026-11-12)** — `lib/admin/workflow.ts`, tested:
   upload final workbook → validate → review changes → approval (if required) → publish.
   *Confirmed:* only internally finalised workbooks are uploaded; the console shows two
-  statuses only, **Live** and **Final** (internal draft/archived/rejected stay in the data
-  model, never as labels or sections); validation and change review always run.
+  statuses **Live**, **Final** (validated, not yet published) and — at the user's request
+  2026-11-12 — **Archived** (was live, since replaced); rejected uploads have no status, and
+  there are no Draft/Rejected sections; validation and change review always run.
   *Awaiting the client:* a second approval (`ADMIN_REQUIRE_APPROVAL`, default off — approver
   must not be the uploader), version history/archive and rollback (`ADMIN_ALLOW_ROLLBACK`,
   default on). Don't hardcode either; don't add Draft/Rejected/Pending Approval sections.

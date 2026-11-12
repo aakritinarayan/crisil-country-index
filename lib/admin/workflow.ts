@@ -5,7 +5,8 @@ import type { Actor, VersionRecord } from "./types";
  *   upload final workbook → validate → review changes → approval (if required) → publish
  *
  * Confirmed with the client: only internally finalised workbooks are uploaded, so an
- * accepted upload is "Final" (never a draft); the only other visible status is "Live".
+ * accepted upload is "Final" (never a draft) until published; then "Live"; once replaced,
+ * "Archived" (requested 2026-11-12 — the label only; archived versions keep Final's actions).
  * Validation and change review always happen.
  *
  * Not yet confirmed — each is a setting here, not a hardcoded rule:

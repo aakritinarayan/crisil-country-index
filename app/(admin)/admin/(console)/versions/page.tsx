@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Version history · Admin" };
 export default function VersionsPage() {
   return (
     <>
-      <PageHead title="Version history" description="Every uploaded workbook, newest first. Exactly one version is live at a time; the others are Final." action={<UploadButton />} />
+      <PageHead title="Version history" description="Every uploaded workbook, newest first. Exactly one version is live at a time. Earlier live versions are Archived; a new upload is Final until it’s published." action={<UploadButton />} />
       <Suspense fallback={<div className="admin-card h-[240px]" />}><Content /></Suspense>
     </>
   );

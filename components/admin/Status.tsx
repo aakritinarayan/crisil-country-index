@@ -2,12 +2,13 @@ import { Alert, Check, CircleX } from "@/components/ui/icons";
 import type { Actor, Validation, VersionRecord } from "@/lib/admin/types";
 import { displayStatus } from "@/lib/admin/workflow";
 
-/* Status and validation labels: text first, a small mark second. Two statuses only, as the
- * client asked: Live (a tinted pill, so it stands out in any list) and Final. An upload that
- * failed validation has no status; its validation label says why. */
+/* Status and validation labels: text first, a small mark second. Live (a tinted pill, so it
+ * stands out in any list); Final — validated, not yet published; Archived — was live, since
+ * replaced. An upload that failed validation has no status; its validation label says why. */
 export function StatusLabel({ v }: { v: Pick<VersionRecord, "status"> }) {
   const s = displayStatus(v);
   if (s === "live") return <span className="admin-status is-live"><span aria-hidden className="dot" />Live</span>;
+  if (s === "final" && v.status === "archived") return <span className="status-text is-archived"><span aria-hidden className="dot" />Archived</span>;
   if (s === "final") return <span className="status-text is-final"><span aria-hidden className="dot" />Final</span>;
   return <span className="text-muted"><span aria-hidden>—</span><span className="sr-only">No status (failed validation)</span></span>;
 }
