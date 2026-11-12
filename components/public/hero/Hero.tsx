@@ -19,8 +19,7 @@ export function Hero({ summary, sample = true }: { summary: IndexSummary; sample
   const { meta, countries } = summary;
   const subject = subjectOf(meta.index_name);
   const base = subject.replace(/\s+readiness$/, "");
-  // highlight the short topic ("digital infrastructure"); the rest of the title stays white
-  const rest = subject.slice(base.length);
+  // the short topic ("24/7 carbon-free electricity") is highlighted; the rest stays white
 
   // global figures only: the hero never singles out one country (a global site; with few
   // countries assessed, even an average would effectively be one country's score)
@@ -39,10 +38,10 @@ export function Hero({ summary, sample = true }: { summary: IndexSummary; sample
           <p className="hero-eyebrow">Global country index</p>
           {sample && <p className="mx-auto mt-3 w-fit border border-white/15 px-2.5 py-1 text-[12px] font-medium text-[var(--h-ink)]">Sample data — not a Crisil assessment</p>}
           <h1 id="hero-h" className="hero-title mx-auto mt-3 max-w-[1100px]">
-            Understanding <span className="hero-accent">{base}</span>{rest} across the world.
+            Understanding global readiness for <span className="hero-accent">{base}</span>.
           </h1>
           <p className="mx-auto mt-4 max-w-[640px] text-[16px] leading-[1.65] text-[var(--h-muted)] sm:text-[17px]">
-            Explore how countries perform across key pillars of {base}, backed by transparent assessments and supporting evidence.
+            Explore country-level readiness across key assessment pillars, supported by transparent scoring, methodology and evidence.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <ExploreCta />
