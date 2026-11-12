@@ -32,7 +32,7 @@ export const previewState = cache(async (): Promise<Preview | null> => {
   if (id && (await auth())?.user) {
     const found = await getVersion(id);
     if (found && found.version.status !== "rejected")
-      return { kind: "admin", version: found.version, demo: dataSource() === "demo", payloadFound: (await previewPayload(id)) != null };
+      return { kind: "admin", version: found.version, demo: dataSource() === "demo" || found.version.demo === true, payloadFound: (await previewPayload(id)) != null };
   }
   const shared = sharedVersion();
   const expected = shareCookieValue();

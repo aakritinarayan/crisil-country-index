@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
-import { actionContext, dataSource, getVersion, listVersions } from "@/lib/admin/store";
+import { actionContext, dataSource, demoMode, getVersion, listVersions } from "@/lib/admin/store";
 import { actionsFor, capabilitiesFor } from "@/lib/admin/permissions";
 import { fmtBytes, fmtDateTime, fmtPeriod, zoneName } from "@/lib/admin/format";
 import { awaitingApproval } from "@/lib/admin/workflow";
@@ -41,7 +41,7 @@ async function Detail({ params, searchParams }: { params: PageProps<"/admin/vers
     <>
       <PageHead
         back={{ href: "/admin/versions", label: "Version history" }}
-        title={<span className="flex flex-wrap items-center gap-x-3 gap-y-1">{versionLabel(v)}<span className="text-[0.62em] font-normal tracking-normal"><StatusLabel v={v} /></span></span>}
+        title={<span className="flex flex-wrap items-center gap-x-3 gap-y-1">{versionLabel(v)}<span className="text-[0.62em] font-normal tracking-normal"><StatusLabel v={v} /></span>{v.demo && <span className="demo-tag text-[13px]">Demo</span>}</span>}
         description={`${fmtPeriod(v.as_of)} · uploaded ${fmtDateTime(v.created_at)} by ${actorName(v.created_by)}`}
         action={
           <div className="flex flex-wrap gap-2">
@@ -56,7 +56,7 @@ async function Detail({ params, searchParams }: { params: PageProps<"/admin/vers
           </div>
         }
       />
-      {source === "demo" && <DemoNotice />}
+      {demoMode() !== "off" && <DemoNotice merged={demoMode() === "merge"} />}
       {flash.uploaded && (
         <p role="status" className={`flash mb-7 ${v.validation.passed ? "" : "is-bad"}`}>
           {v.validation.passed

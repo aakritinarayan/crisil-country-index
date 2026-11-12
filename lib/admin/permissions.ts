@@ -28,7 +28,7 @@ export type ActionContext = { actor: Actor; live: VersionRecord | null; settings
 
 /** Which actions a version offers, and why one is unavailable. */
 export function actionsFor(v: VersionRecord, caps: Set<Capability>, source: Source, ctx: ActionContext): VersionActions {
-  const demo = source === "demo";
+  const demo = source === "demo" || v.demo === true;
   const state = (cap: Capability, blocker: string | null = null): ActionState =>
     !caps.has(cap) ? { enabled: false, reason: "Your account can’t do this" }
     : demo && cap !== "preview" ? { enabled: false, reason: "Demonstration record — there is no stored workbook" }

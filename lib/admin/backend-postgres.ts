@@ -39,7 +39,11 @@ export const postgresBackend: Backend = {
   },
 
   saveUpload: (u) => withPg(async (c) => {
-    const version = u.accepted ? Number((await c.query<{ n: string }>(`select nextval('${SCHEMA}.version_seq') as n`)).rows[0].n) : null;
+    let version: number | null = null;
+    if (u.accepted) {
+      if (u.minVersion > 0) await c.query(`select setval('${SCHEMA}.version_seq', greatest((select last_value from ${SCHEMA}.version_seq), $1))`, [u.minVersion]);
+      version = Number((await c.query<{ n: string }>(`select nextval('${SCHEMA}.version_seq') as n`)).rows[0].n);
+    }
     const path = version != null ? acceptedPath(version, u.filename) : rejectedPath(u.id, u.filename);
     await c.query(`insert into ${T.f} (path, content_type, data) values ($1, $2, $3)`, [path, XLSX, u.file]);   // 1. the file, first
     const built = u.build(version);

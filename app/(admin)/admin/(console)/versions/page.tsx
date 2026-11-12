@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
-import { actionContext, dataSource, listVersions } from "@/lib/admin/store";
+import { actionContext, dataSource, demoMode, listVersions } from "@/lib/admin/store";
 import { actionsFor, capabilitiesFor } from "@/lib/admin/permissions";
 import { zoneName } from "@/lib/admin/format";
 import { DemoNotice, PageHead, UploadButton } from "@/components/admin/Page";
@@ -40,7 +40,7 @@ async function Content() {
   const ctx = await actionContext(admin, versions);
   return (
     <>
-      {source === "demo" && <DemoNotice />}
+      {demoMode() !== "off" && <DemoNotice merged={demoMode() === "merge"} />}
       <p className="mb-3 text-[13.5px] text-muted">{n} upload{n === 1 ? "" : "s"} · times in {zoneName()}</p>
       <VersionTable caption="All versions, newest first" rows={versions.map((v) => ({ v, actions: actionsFor(v, caps, source, ctx) }))} />
     </>

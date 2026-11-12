@@ -90,8 +90,11 @@ export async function demoData(): Promise<{ versions: VersionRecord[]; events: A
     ev("version.archived", "2026-10-07T04:30:00Z", SYS, v2.id, { replaced_by_version: 4 }),
     ...uploaded(v5),
   ];
-  return { versions, events };
+  return { versions: versions.map((v) => ({ ...v, demo: true as const })), events };
 }
+
+/** The highest demonstration version number: real uploads shown alongside continue after it. */
+export const DEMO_LAST_VERSION = 5;
 
 /** Plausible score movements built from the bundled sample (real country and pillar
  *  names, current score as "after"), so the change summary has something to show. */

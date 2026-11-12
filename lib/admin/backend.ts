@@ -20,6 +20,7 @@ export type NewUpload = {
   filename: string;
   file: Buffer;
   accepted: { payload: Payload; framework: Framework } | null;
+  minVersion: number;            // an accepted upload's number is above this (and above every earlier one)
   /** Builds the record and its events once the version number (accepted only) is known. */
   build: (version: number | null) => { record: VersionRecord; events: AuditEvent[] };
 };

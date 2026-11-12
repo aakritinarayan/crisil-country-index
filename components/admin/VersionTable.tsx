@@ -29,7 +29,7 @@ export function VersionTable({ rows, caption }: { rows: Row[]; caption: string }
             {rows.map(({ v, actions }) => (
               <tr key={v.id} className={v.status === "published" ? "is-live" : ""}>
                 <th scope="row" className="max-w-[260px]">
-                  <Link href={href(v)} className="ver-link">{versionLabel(v)}</Link>
+                  <Link href={href(v)} className="ver-link">{versionLabel(v)}</Link>{v.demo && <span className="demo-tag ml-2">Demo</span>}
                   <span className="block text-[13px] font-normal text-muted">{fmtPeriod(v.as_of)}</span>
                   <span className="block truncate text-[12.5px] font-normal text-muted" title={v.source_file.filename}>{v.source_file.filename}</span>
                 </th>
@@ -54,7 +54,7 @@ export function VersionTable({ rows, caption }: { rows: Row[]; caption: string }
           <li key={v.id} className={`px-4 py-4 sm:px-5 ${v.status === "published" ? "is-live-row" : ""}`}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <Link href={href(v)} className="ver-link text-[15px]">{versionLabel(v)}</Link>
+                <Link href={href(v)} className="ver-link text-[15px]">{versionLabel(v)}</Link>{v.demo && <span className="demo-tag ml-2">Demo</span>}
                 <span className="text-[13.5px] text-muted"> · {fmtPeriod(v.as_of)}</span>
                 <span className="block truncate text-[12.5px] text-muted" title={v.source_file.filename}>{v.source_file.filename}</span>
               </div>

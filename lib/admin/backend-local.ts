@@ -46,7 +46,7 @@ export const localBackend: Backend = {
       await mkdir(dir, { recursive: true });
       await writeFile(path.join(dir, safeName(u.filename)), u.file);                    // 1. the file
       const versions = await readVersions();
-      const next = u.accepted ? versions.reduce((m, v) => Math.max(m, v.version ?? 0), 0) + 1 : null;
+      const next = u.accepted ? versions.reduce((m, v) => Math.max(m, v.version ?? 0), u.minVersion) + 1 : null;
       if (u.accepted) {
         await writeJson(payloadFile(u.id), u.accepted.payload);                         // 2. its data
         await writeJson(frameworkFile(u.id), u.accepted.framework);

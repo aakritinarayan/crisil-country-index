@@ -4,7 +4,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { getPublishedSnapshot } from "@/lib/data";
 import { formatAsOf } from "@/lib/bands";
-import { actionContext, dataSource, listVersions, overview } from "@/lib/admin/store";
+import { actionContext, dataSource, demoMode, listVersions, overview } from "@/lib/admin/store";
 import { actionsFor, capabilitiesFor } from "@/lib/admin/permissions";
 import { fmtDate, fmtDateTime, fmtPeriod } from "@/lib/admin/format";
 import { versionLabel } from "@/lib/admin/types";
@@ -35,7 +35,7 @@ async function Content() {
 
   return (
     <>
-      {source === "demo" && <DemoNotice />}
+      {demoMode() !== "off" && <DemoNotice merged={demoMode() === "merge"} />}
 
       <section aria-labelledby="current-h">
         <SectionHead id="current-h" title="Current publication" />

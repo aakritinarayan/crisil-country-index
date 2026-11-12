@@ -62,6 +62,7 @@ export const cloudBackend: Backend = {
     await ensureIndexes(versions, events);
     let version: number | null = null;
     if (u.accepted) {
+      if (u.minVersion > 0) await counters.updateOne({ _id: "version" }, { $max: { seq: u.minVersion } }, { upsert: true });
       const c = await counters.findOneAndUpdate({ _id: "version" }, { $inc: { seq: 1 } }, { upsert: true, returnDocument: "after" });
       version = c!.seq;
     }

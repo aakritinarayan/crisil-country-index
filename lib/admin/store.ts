@@ -6,9 +6,9 @@ import { sampleSnapshot } from "@/lib/data";
 import type { Payload } from "@/lib/types";
 import type { Framework } from "@/lib/cfe/types";
 import { diffFrameworks } from "@/lib/cfe/diff";
-import { demoData } from "./demo";
+import { DEMO_LAST_VERSION, demoData } from "./demo";
 import { readJson } from "./files";
-import { backend, dataSource } from "./source";
+import { backend, dataSource, demoMode } from "./source";
 import type { Actor, AuditEvent, Validation, VersionRecord } from "./types";
 import { approveBlocker, isEarlier, publishBlocker, workflowSettings } from "./workflow";
 
@@ -22,11 +22,25 @@ import { approveBlocker, isEarlier, publishBlocker, workflowSettings } from "./w
  * validation and, when required, approval (lib/admin/workflow.ts). Audit events are
  * append-only: this module offers no way to edit or remove one. */
 
-export { dataSource, type Source } from "./source";
+export { dataSource, demoMode, type Source } from "./source";
 
 /** Read once per request (React cache): a page asks several questions of the same data. */
-const load = cache(async (): Promise<{ versions: VersionRecord[]; events: AuditEvent[] }> =>
-  dataSource() === "demo" ? demoData() : backend().load());
+const load = cache(async (): Promise<{ versions: VersionRecord[]; events: AuditEvent[] }> => {
+  const mode = demoMode();
+  if (mode === "only") return demoData();
+  const real = await backend().load();
+  if (mode === "off") return real;
+  // merge: the demonstration history first; once a real version is live, the demo's live
+  // version reads as replaced (one live version, always)
+  const demo = await demoData();
+  const realLive = real.versions.some((v) => v.status === "published");
+  return {
+    versions: [...demo.versions.map((v) => (realLive && v.status === "published" ? { ...v, status: "archived" as const } : v)), ...real.versions],
+    events: [...demo.events, ...real.events],
+  };
+});
+
+export const isDemoRecord = (v: Pick<VersionRecord, "demo">) => v.demo === true;
 
 /** Every upload, newest first. */
 export async function listVersions(): Promise<VersionRecord[]> {
@@ -59,7 +73,7 @@ export async function actionContext(admin: Admin, versions?: VersionRecord[]) {
 /** The dataset a version would publish. Demonstration records have no stored workbook, so
  *  they preview with the bundled sample (and the preview bar says so). */
 export async function previewPayload(id: string): Promise<Payload | null> {
-  return dataSource() === "demo" ? sampleSnapshot() : backend().readPayload(id);
+  return dataSource() === "demo" || id.includes("-demo-") ? sampleSnapshot() : backend().readPayload(id);
 }
 
 /** The data to pre-fill the next template with: the live version's, else the newest
@@ -68,7 +82,8 @@ export async function previewPayload(id: string): Promise<Payload | null> {
 export async function latestFramework(): Promise<Framework | null> {
   if (dataSource() !== "demo") {
     const versions = await listVersions();
-    const pick = versions.find((v) => v.status === "published") ?? versions.find((v) => v.validation.passed);
+    const real = versions.filter((v) => !isDemoRecord(v));
+    const pick = real.find((v) => v.status === "published") ?? real.find((v) => v.validation.passed);
     const f = pick && (await backend().readFramework(pick.id));
     if (f) return f;
   }
@@ -77,7 +92,7 @@ export async function latestFramework(): Promise<Framework | null> {
 
 /** A version's original upload, exactly as received, if it still exists. */
 export function readSourceFile(v: VersionRecord): Promise<Buffer | null> {
-  return dataSource() === "demo" ? Promise.resolve(null) : backend().readSource(v);
+  return dataSource() === "demo" || isDemoRecord(v) ? Promise.resolve(null) : backend().readSource(v);
 }
 
 /** The actor recorded for an action: built only from the server session (requireAdmin),
@@ -113,6 +128,8 @@ export async function recordUpload(input: { admin: Admin; filename: string; file
   const actor = actorOf(admin);
   return store.saveUpload({
     id, filename, file, accepted,
+    // shown alongside the demonstration history, real versions continue its numbering
+    minVersion: demoMode() === "merge" ? DEMO_LAST_VERSION : 0,
     build: (version) => ({
       record: {
         id, version, as_of: asOf, status: accepted ? "draft" : "rejected",

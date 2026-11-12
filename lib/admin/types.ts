@@ -45,6 +45,7 @@ export type VersionRecord = {
   validation: Validation;
   changes: ChangeSummary | null;
   counts: { countries: number; pillars: number } | null;
+  demo?: true;                   // a demonstration record (lib/admin/demo.ts): fictional, read-only
 };
 
 export type AuditEventType =

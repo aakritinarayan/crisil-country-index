@@ -33,10 +33,12 @@ export function SectionHead({ id, title, children }: { id: string; title: string
 }
 
 /** Shown wherever demonstration records appear, so nobody mistakes them for real uploads. */
-export function DemoNotice() {
+export function DemoNotice({ merged = false }: { merged?: boolean }) {
   return (
     <div role="note" className="demo-note mb-7">
-      <p><strong className="font-semibold text-ink">Demonstration records.</strong> The versions, administrators and activity below are fictional — nothing here changed the public site, which still shows the bundled sample dataset.</p>
+      {merged
+        ? <p><strong className="font-semibold text-ink">Prototype.</strong> Versions tagged <span className="demo-tag">Demo</span> are fictional examples built on the sample data, to show how the history reads over several months. They can be previewed but not changed. Your own uploads work normally and continue the numbering.</p>
+        : <p><strong className="font-semibold text-ink">Demonstration records.</strong> The versions, administrators and activity below are fictional — nothing here changed the public site, which still shows the bundled sample dataset.</p>}
     </div>
   );
 }
