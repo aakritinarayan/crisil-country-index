@@ -3,7 +3,7 @@ import globalSample from "@/data/sample-global.json";
 import workbookSample from "@/data/sample-workbook.json";
 import type { IndexSummary, Payload } from "./types";
 import { cacheLife, cacheTag } from "next/cache";
-import { readPublishedPayload } from "./admin/files";
+import { readPublishedPayload } from "./admin/source";
 
 export const INDEX_DATA_TAG = "index-data";
 
@@ -16,8 +16,9 @@ export function sampleSnapshot(): Payload {
 /* What the public site shows: the version published from the admin, or — until one has
  * been — the bundled sample. Cached and tagged "index-data" so public pages stay static;
  * publishing expires the tag (updateTag in the publish action) — that is the whole "go
- * live" mechanism (TECH_SPEC §3). Today the published version lives in the local store
- * (.data/admin); with MongoDB only the read inside changes. */
+ * live" mechanism (TECH_SPEC §3). The published version is read from MongoDB when hosted,
+ * else from the local store (lib/admin/source.ts) — at build and after a publish, never
+ * per visitor. */
 export async function getPublishedSnapshot(): Promise<Payload | null> {
   "use cache";
   cacheTag(INDEX_DATA_TAG);

@@ -35,7 +35,7 @@ export type VersionRecord = {
   version: number | null;        // monotonic, never reused; null for a rejected upload
   as_of: string;                 // reporting period, YYYY-MM
   status: VersionStatus;
-  source_file: { filename: string; size_bytes: number; uploaded_at: string };
+  source_file: { filename: string; size_bytes: number; uploaded_at: string; blob?: string };  // blob: its path in Azure storage (hosted)
   created_at: string;
   created_by: Actor;             // the uploader
   approved_at?: string | null;   // when approval is required (lib/admin/workflow.ts); absent on older records

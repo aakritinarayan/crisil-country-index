@@ -54,8 +54,10 @@ load-bearing subset that must never be silently violated.
 - **The GitHub repo is public. Never commit client data.** Crisil's workbook, the
   converted framework and every upload live in git-ignored `.data/`
   (`.data/cfe/`, `.data/templates/`, `.data/admin/`). Commit code only.
-- **Local store stands in for Mongo/Azure** (`lib/admin/store.ts`, files under
-  `.data/admin`). `getPublishedSnapshot()` is `"use cache"` + `cacheTag("index-data")`;
+- **Admin storage** (`lib/admin/source.ts`): MongoDB Atlas + Azure Blob when
+  `MONGODB_URI` and `AZURE_STORAGE_CONNECTION_STRING` are set (`backend-cloud.ts`; publish
+  is a transaction + a one-published unique index), else local files under `.data/admin`
+  (`backend-local.ts`). Rules stay in `store.ts`/`workflow.ts`. Setup: `docs/HOSTING.md`. `getPublishedSnapshot()` is `"use cache"` + `cacheTag("index-data")`;
   publish calls `updateTag("index-data")`. A plain fs read on a public page breaks
   Cache Components prerendering — keep data reads behind that cached function.
 - **Admin update workflow (client feedback 2026-11-12)** — `lib/admin/workflow.ts`, tested:

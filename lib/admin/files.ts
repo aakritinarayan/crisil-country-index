@@ -1,11 +1,9 @@
 import "server-only";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { Payload } from "@/lib/types";
-import type { VersionRecord } from "./types";
 
-/* The local store's files (git-ignored .data/admin/), standing in for MongoDB and Azure
- * Blob Storage until those are connected:
+/* The local store's files (git-ignored .data/admin/), used when no database is configured
+ * (lib/admin/backend-local.ts):
  *   versions.json              every version's metadata
  *   events.jsonl               the audit trail, append-only
  *   payloads/<id>.json         what a version renders (calculated at upload)
@@ -29,11 +27,3 @@ export const versionsFile = () => path.join(DIR, "versions.json");
 export const payloadFile = (id: string) => path.join(DIR, "payloads", `${id}.json`);
 export const frameworkFile = (id: string) => path.join(DIR, "frameworks", `${id}.json`);
 export const uploadDir = (id: string, accepted: boolean) => path.join(DIR, "uploads", accepted ? "accepted" : "rejected", id);
-
-/** The published version's payload, if a version has been published from the admin. */
-export async function readPublishedPayload(): Promise<Payload | null> {
-  if (process.env.ADMIN_DEMO_DATA === "true") return null; // demonstration records never drive the site
-  const versions = (await readJson<VersionRecord[]>(versionsFile())) ?? [];
-  const live = versions.find((v) => v.status === "published");
-  return live && SAFE_ID.test(live.id) ? readJson<Payload>(payloadFile(live.id)) : null;
-}
