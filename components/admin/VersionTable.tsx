@@ -39,7 +39,7 @@ export function VersionTable({ rows, caption }: { rows: Row[]; caption: string }
                 <td><ValidationLabel v={v.validation} /></td>
                 <td>
                   <div className="flex items-center justify-end gap-1.5">
-                    <ActionButton state={actions.preview} label="Preview" icon={Eye} reasonId={`pv-${v.id}`} />
+                    <ActionButton state={actions.preview} label="Preview" icon={Eye} href={`/admin/preview/${v.id}`} newTab reasonId={`pv-${v.id}`} />
                     <RowMenu label={`${versionLabel(v)}, ${fmtPeriod(v.as_of)}`} href={href(v)} actions={actions} />
                   </div>
                 </td>

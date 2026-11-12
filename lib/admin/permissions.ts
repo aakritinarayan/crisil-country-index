@@ -24,7 +24,8 @@ export function actionsFor(v: VersionRecord, caps: Set<Capability>, source: Sour
   const state = (cap: Capability): ActionState => (!caps.has(cap) ? { enabled: false, reason: "Your account can’t do this" } : { enabled: false, reason: pending });
   const rejected = v.status === "rejected";
   return {
-    preview: rejected ? { enabled: false, reason: "A rejected upload can’t be previewed" } : state("preview"),
+    // preview works for every stored version (demonstration records preview with the sample)
+    preview: rejected ? { enabled: false, reason: "A rejected upload can’t be previewed" } : caps.has("preview") ? { enabled: true } : state("preview"),
     download: state("download"),
     publish: v.status === "draft" ? state("publish") : null,
     restore: v.status === "archived" ? state("restore") : null,

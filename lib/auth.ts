@@ -3,9 +3,9 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 // import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers";
+import { cookies, draftMode } from "next/headers";
 import { redirect } from "next/navigation";
-import { ADMIN_HINT_COOKIE } from "./admin/hint";
+import { ADMIN_HINT_COOKIE, PREVIEW_COOKIE } from "./admin/hint";
 import { authConfig } from "./auth.config";
 
 /* Admin sign-in. One shared admin account for now: ADMIN_EMAIL plus a bcrypt hash in
@@ -39,7 +39,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // nothing: /admin still checks the real session.
   events: {
     async signIn() { (await cookies()).set(ADMIN_HINT_COOKIE, "1", { path: "/", sameSite: "lax", maxAge: 8 * 60 * 60 }); },
-    async signOut() { (await cookies()).delete(ADMIN_HINT_COOKIE); },
+    // signing out also ends any preview in this browser
+    async signOut() {
+      const jar = await cookies();
+      jar.delete(ADMIN_HINT_COOKIE);
+      jar.delete(PREVIEW_COOKIE);
+      (await draftMode()).disable();
+    },
   },
   providers: [
     Credentials({

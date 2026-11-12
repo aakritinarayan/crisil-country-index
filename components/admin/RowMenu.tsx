@@ -34,7 +34,9 @@ export function RowMenu({ label, href, actions }: { label: string; href: string;
       <div id={id} hidden={!open} className="account-panel !w-[268px]">
         <div className="p-1.5">
           <Link href={href} className="menu-item">View details</Link>
-          {items.map(({ key, text, icon: Icon, state }) => (
+          {items.map(({ key, text, icon: Icon, state }) => key === "preview" && state.enabled ? (
+            <a key={key} href={`/admin/preview/${href.split("/").pop()}`} target="_blank" rel="noopener" className="menu-item"><Icon size={16} />{text}<span className="sr-only"> (opens in a new tab)</span></a>
+          ) : (
             <button key={key} type="button" aria-disabled={!state.enabled || undefined} className="menu-item">
               <Icon size={16} />
               <span className="min-w-0 text-left">{text}{!state.enabled && state.reason && <span className="block text-[12px] font-normal leading-snug text-muted">{state.reason}</span>}</span>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { getPublishedSnapshot } from "@/lib/data";
+import { getSiteSnapshot } from "@/lib/preview";
 import { allBands, formatAsOf } from "@/lib/bands";
 import { Prose } from "@/components/public/Prose";
 import { NotPublished } from "@/components/public/NotPublished";
@@ -12,12 +12,12 @@ import { NotPublished } from "@/components/public/NotPublished";
  * Where a field is empty the page says so instead of filling the gap. */
 
 export async function generateMetadata(): Promise<Metadata> {
-  const p = await getPublishedSnapshot();
+  const p = await getSiteSnapshot();
   return { title: p ? `Methodology · ${p.meta.index_name}` : "Methodology" };
 }
 
 export default async function MethodologyPage() {
-  const p = await getPublishedSnapshot();
+  const p = await getSiteSnapshot();
   if (!p) return <NotPublished />;
   const { meta } = p;
   const pillars = [...p.pillars].sort((a, b) => a.display_order - b.display_order);

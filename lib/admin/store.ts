@@ -2,6 +2,8 @@ import "server-only";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { Admin } from "@/lib/auth";
+import { getPublishedSnapshot } from "@/lib/data";
+import type { Payload } from "@/lib/types";
 import { demoData } from "./demo";
 import type { Actor, AuditEvent, VersionRecord } from "./types";
 
@@ -47,6 +49,15 @@ export async function overview() {
   const live = versions.find((v) => v.status === "published") ?? null;
   const pending = versions.find((v) => v.status === "draft" && v.validation.passed && (live?.version == null || (v.version ?? 0) > live.version)) ?? null;
   return { live, pending, recent: versions.slice(0, 5), total: versions.length };
+}
+
+/** The dataset a version would publish. Demonstration records have no stored workbook, so
+ *  they preview with the bundled sample (and the preview bar says so); local versions read
+ *  the payload saved at upload (.data/admin/payloads/<id>.json). */
+export async function previewPayload(id: string): Promise<Payload | null> {
+  if (dataSource() === "demo") return getPublishedSnapshot();
+  if (!/^[\w-]+$/.test(id)) return null;
+  return readFile(path.join(DIR, "payloads", `${id}.json`), "utf8").then((t) => JSON.parse(t) as Payload, () => null);
 }
 
 /** The actor recorded for an action: built only from the server session (requireAdmin),

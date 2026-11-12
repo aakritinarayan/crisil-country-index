@@ -1,4 +1,5 @@
-import { getPublishedSnapshot, summarise } from "@/lib/data";
+import { summarise } from "@/lib/data";
+import { getSiteSnapshot } from "@/lib/preview";
 import { ExplorerProvider } from "@/components/public/explorer/ExplorerContext";
 import { ExploreWorkspace } from "@/components/public/explorer/ExploreWorkspace";
 import { Rankings } from "@/components/public/explorer/Rankings";
@@ -7,7 +8,7 @@ import { NotPublished } from "@/components/public/NotPublished";
 import { Hero } from "@/components/public/hero/Hero";
 
 export default async function Landing() {
-  const snapshot = await getPublishedSnapshot();
+  const snapshot = await getSiteSnapshot();
   if (!snapshot) return <NotPublished />;
   const summary = summarise(snapshot);
 

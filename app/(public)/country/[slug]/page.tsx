@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { countryDetail, getPublishedSnapshot, summarise } from "@/lib/data";
+import { getSiteSnapshot } from "@/lib/preview";
 import { allBands, bandFor, fmtScore, formatAsOf } from "@/lib/bands";
 import type { Reference } from "@/lib/types";
 import { ArrowLeft, ArrowRight } from "@/components/ui/icons";
@@ -27,7 +28,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<"/country/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const p = await getPublishedSnapshot();
+  const p = await getSiteSnapshot();
   const c = p?.countries.find((x) => x.slug === slug);
   if (!p || !c) return { title: "Country not found" };
   return { title: `${c.name} · ${p.meta.index_name}`, description: c.summary.slice(0, 160) || undefined };
@@ -69,7 +70,7 @@ function CountrySkeleton() {
 
 async function CountryProfile({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const snapshot = await getPublishedSnapshot();
+  const snapshot = await getSiteSnapshot();
   if (!snapshot || slug === UNPUBLISHED) return <NotPublished />;
   const detail = countryDetail(snapshot, slug);
   if (!detail) notFound();

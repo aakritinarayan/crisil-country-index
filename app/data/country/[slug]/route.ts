@@ -1,4 +1,5 @@
 import { countryDetail, getPublishedSnapshot } from "@/lib/data";
+import { getSiteSnapshot } from "@/lib/preview";
 
 // Per-country rationale + references, loaded when a score is opened.
 // Prerendered for every country, so it is static like the pages.
@@ -9,7 +10,7 @@ export async function generateStaticParams() {
 
 export async function GET(_req: Request, ctx: RouteContext<"/data/country/[slug]">) {
   const { slug } = await ctx.params;
-  const p = await getPublishedSnapshot();
+  const p = await getSiteSnapshot();
   const d = p && countryDetail(p, slug);
   if (!d) return Response.json({ error: "Not found" }, { status: 404 });
   return Response.json(d);

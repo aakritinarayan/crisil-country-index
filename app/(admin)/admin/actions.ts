@@ -7,7 +7,11 @@ import { signIn, signOut } from "@/lib/auth";
  *  return address. */
 export async function login(_prev: string | null, form: FormData): Promise<string | null> {
   const back = String(form.get("callbackUrl") ?? "");
-  const redirectTo = /^\/admin(\/|$|\?)/.test(back) && !back.startsWith("/admin/login") ? back : "/admin";
+  let redirectTo = /^\/admin(\/|$|\?)/.test(back) && !back.startsWith("/admin/login") ? back : "/admin";
+  // a preview link is a route handler that switches the browser into preview; after a
+  // sign-in the client router can't follow it, so return to that version instead
+  const preview = redirectTo.match(/^\/admin\/preview\/([\w-]+)/);
+  if (preview) redirectTo = `/admin/versions/${preview[1]}`;
   try {
     await signIn("credentials", { email: form.get("email"), password: form.get("password"), redirectTo });
     return null;

@@ -36,7 +36,7 @@ async function Detail({ params }: { params: PageProps<"/admin/versions/[id]">["p
         description={`${fmtPeriod(v.as_of)} · uploaded ${fmtDateTime(v.created_at)} by ${actorName(v.created_by)}`}
         action={
           <div className="flex flex-wrap gap-2">
-            <ActionButton state={a.preview} label="Preview" icon={Eye} reasonId="a-preview" />
+            <ActionButton state={a.preview} label="Preview" icon={Eye} href={`/admin/preview/${v.id}`} newTab reasonId="a-preview" />
             {a.publish && <ActionButton state={a.publish} label="Publish…" icon={Publish} tone="primary" reasonId="a-publish" />}
             {a.restore && <ActionButton state={a.restore} label="Restore…" icon={Restore} reasonId="a-restore" />}
             <ActionButton state={a.download} label="Download" icon={Download} reasonId="a-download" />
