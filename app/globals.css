@@ -508,3 +508,27 @@ button.score-cell:hover .rank-score { box-shadow: inset 0 0 0 1px color-mix(in s
 .prose-doc strong { font-weight: 600; color: var(--ink); }
 .doc-link { color: var(--link); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--link) 35%, transparent); text-underline-offset: 3px; transition: text-decoration-color .15s, color .15s; }
 .doc-link:hover { text-decoration-color: currentColor; }
+
+/* ── Admin console (app/(admin)) ─────────────────────────────────────────────
+ * Same tokens, type and buttons as the public site; quieter surfaces, no hero. */
+.admin { background: var(--bg); }
+.admin-bar { background: color-mix(in srgb, var(--bg-raised) 88%, transparent); border-bottom: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.admin-tag { margin-left: 2px; padding: 2px 7px; border: 1px solid var(--line-strong); border-radius: 3px; font-size: 11.5px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.admin-card { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 6px; }
+.admin-field { height: 44px; width: 100%; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--bg-raised);
+  color: var(--ink); font-size: 15px; transition: border-color .15s, box-shadow .15s; }
+.admin-field:hover { border-color: var(--muted); }
+.admin-field:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 1px var(--focus); }
+.admin-error { padding: 10px 12px; border-left: 3px solid #c2410c; background: color-mix(in srgb, #c2410c 8%, var(--bg-raised)); font-size: 14px; color: var(--ink); }
+.admin-link { color: var(--link); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px; transition: text-decoration-color .15s; }
+.admin-link:hover { text-decoration-color: currentColor; }
+.admin-btn-quiet { height: 36px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--bg-raised);
+  font-size: 13.5px; font-weight: 600; color: var(--ink); transition: border-color .15s; }
+.admin-btn-quiet:hover { border-color: var(--muted); }
+.admin-status { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+  border: 1px solid var(--line-strong); color: var(--ink); }
+.admin-status .dot { width: 7px; height: 7px; border-radius: 999px; background: var(--muted); }
+.admin-status.is-live { border-color: color-mix(in srgb, var(--teal) 45%, var(--line)); background: color-mix(in srgb, var(--teal) 8%, var(--bg-raised)); }
+.admin-status.is-live .dot { background: var(--teal); }
