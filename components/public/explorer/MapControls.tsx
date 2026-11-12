@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Collapse, Crosshair, Expand, Minus, Plus, Reset } from "@/components/ui/icons";
 
 /** One compact control group for both geographic views (upper right): zoom in / out,
@@ -66,8 +66,13 @@ export function useWheelZoom(el: React.RefObject<HTMLElement | null>, expanded: 
   return hint;
 }
 
-const MAC = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+// The modifier key differs by platform. The server can't know the visitor's, so it renders
+// "Ctrl" and the browser switches to "⌘" after hydration (a mismatch otherwise: the server's
+// own platform would decide the static HTML).
+const noSubscribe = () => () => {};
+const isMac = () => /Mac|iPhone|iPad/.test(navigator.platform);
 export function WheelHint({ show }: { show: boolean }) {
+  const MAC = useSyncExternalStore(noSubscribe, isMac, () => false);
   return (
     <div aria-hidden className={`map-hint ${show ? "is-on" : ""}`}>
       <span>{MAC ? "Use ⌘ + scroll, or pinch, to zoom the map" : "Use Ctrl + scroll, or pinch, to zoom the map"}</span>
