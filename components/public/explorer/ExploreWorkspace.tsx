@@ -59,8 +59,6 @@ export function ExploreWorkspace() {
   const missing = items.filter((i) => i.value == null).length;
   const counts = bands.map((b) => items.filter((i) => i.value != null && bandFor(i.value, meta.score_bands).index === b.index).length);
   const options = useMemo(() => countries.map(({ country_id, name, slug, iso_code, composite_score, rank }) => ({ country_id, name, slug, iso_code, composite_score, rank })), [countries]);
-  // the hero outlines the top performer (summary is already in rank order)
-  const topIso = meta.show_composite ? countries.find((c) => c.composite_score != null)?.iso_code : undefined;
 
   useEffect(() => {
     const mq = window.matchMedia(DESKTOP);
@@ -243,7 +241,7 @@ export function ExploreWorkspace() {
           <div className="min-w-0">
             <div ref={slot} data-view={view} data-arrived={arrived || undefined} className="explorer-viewer">
               <div ref={flyer} data-arrived={arrived || undefined} className="globe-fly">
-                <Globe ref={globeRef} items={globeItems} {...geoProps} mode={arrived ? "explore" : "intro"} highlight={topIso}
+                <Globe ref={globeRef} items={globeItems} {...geoProps} mode={arrived ? "explore" : "intro"}
                   onActivate={enterExplorer} label="Explore countries on the globe" photo={desktop && !expanded} controls heroBlend={heroBlend} />
               </div>
               <div className="flat-layer" inert={!flat}>

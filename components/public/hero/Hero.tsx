@@ -1,5 +1,5 @@
 import type { IndexSummary } from "@/lib/types";
-import { fmtScore } from "@/lib/bands";
+import { formatAsOf } from "@/lib/bands";
 import { ExploreCta, HeroHalfGlobe, MethodologyCta } from "./HeroActions";
 import { HeroStars } from "./HeroStars";
 import { HeroMetrics, type HeroMetricData } from "./HeroMetrics";
@@ -10,7 +10,7 @@ function subjectOf(indexName: string) {
   return indexName.replace(/\s+index\s*$/i, "").trim().toLowerCase();
 }
 
-/** Immersive dark hero: eyebrow, headline, one line of context, two CTAs, three live
+/** Immersive dark hero: eyebrow, headline, one line of context, two CTAs, three index-wide
  *  metrics, and the half-globe in the lower part. On lg and up that half-globe is the
  *  Country Explorer's globe, drawn up here by ExploreWorkspace and carried down into the
  *  explorer on scroll; below lg the hero shows its own (HeroHalfGlobe).
@@ -22,16 +22,9 @@ export function Hero({ summary, sample = true }: { summary: IndexSummary; sample
   // highlight the short topic ("digital infrastructure"); the rest of the title stays white
   const rest = subject.slice(base.length);
 
-  const withComposite = meta.show_composite ? countries.filter((c) => c.composite_score != null) : [];
-  const metrics: HeroMetricData = { count: countries.length, average: null, top: null };
-  if (withComposite.length) {
-    const mean = withComposite.reduce((t, c) => t + c.composite_score!, 0) / withComposite.length;
-    metrics.average = { value: fmtScore(Math.round(mean * 10) / 10), n: withComposite.length };
-    const best = Math.max(...withComposite.map((c) => c.composite_score!));
-    const leaders = withComposite.filter((c) => c.composite_score === best); // summary order: display_order on ties
-    metrics.top = { id: leaders[0].country_id, name: leaders[0].name, score: fmtScore(best), tied: leaders.length - 1 };
-  }
-  const topIso = withComposite.find((c) => c.composite_score === Math.max(...withComposite.map((x) => x.composite_score!)))?.iso_code;
+  // global figures only: the hero never singles out one country (a global site; with few
+  // countries assessed, even an average would effectively be one country's score)
+  const metrics: HeroMetricData = { count: countries.length, pillars: summary.pillars.length, asOf: formatAsOf(meta.as_of) };
 
   return (
     <>
@@ -59,7 +52,7 @@ export function Hero({ summary, sample = true }: { summary: IndexSummary; sample
             <HeroMetrics {...metrics} />
           </div>
         </div>
-        <HeroHalfGlobe highlight={topIso} />
+        <HeroHalfGlobe />
         <p className="hero-credit">
           Earth imagery: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-[var(--h-ink)]">Solar System Scope</a> (CC BY 4.0), based on NASA data.
         </p>

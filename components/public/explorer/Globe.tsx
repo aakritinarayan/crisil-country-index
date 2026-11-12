@@ -20,7 +20,8 @@ export type GeoViewHandle = { getFocus: () => GeoFocus | null; setFocus: (f: Geo
 type Rot = [number, number];
 
 const FILL = 0.47;                 // sphere radius as a share of the shorter side at zoom 1
-const HERO_TILT = 35;              // degrees the hero tilts the featured country above centre
+const HERO_TILT = 35;              // degrees the hero tilts its view point above centre
+const HERO_VIEW: [number, number] = [20, 20]; // [lon, lat] the hero faces: Europe, Africa and Asia, no one country
 const MIN_Z = 1, MAX_Z = 6;
 const SMALL = smallStates as unknown as Record<string, [number, number]>;
 const clampZ = (z: number) => Math.min(MAX_Z, Math.max(MIN_Z, z));
@@ -76,7 +77,7 @@ function geography(topo: Topology | null) {
  *  turns it to the front (small states also zoom in) without undoing a closer zoom the
  *  visitor chose. Geometry: 110m while moving, thinned 50m at rest, full 50m above 2×.
  *  Keyboard and screen-reader access to countries is the search and the rankings list. */
-export function Globe({ ref, items, bands, neutral, activeBands, selectedId, onSelect, mode, highlight, onActivate, label, photo, controls, expanded = false, onExpand, heroBlend = 1 }: {
+export function Globe({ ref, items, bands, neutral, activeBands, selectedId, onSelect, mode, onActivate, label, photo, controls, expanded = false, onExpand, heroBlend = 1 }: {
   ref?: React.Ref<GeoViewHandle>;
   items: GlobeItem[];
   bands: ScoreBand[];
@@ -85,7 +86,6 @@ export function Globe({ ref, items, bands, neutral, activeBands, selectedId, onS
   selectedId: string | null;
   onSelect: (id: string) => void;
   mode: GlobeMode;
-  highlight?: string;               // ISO alpha-3 outlined in intro (top performer)
   onActivate: () => void;
   label: string;
   photo: boolean;                   // load the photographic layer at all
@@ -146,11 +146,11 @@ export function Globe({ ref, items, bands, neutral, activeBands, selectedId, onS
   })), [items, byNum]);
 
   const introRot = useMemo<Rot>(() => {
-    const f = highlight ? byNum.get(ISO_TO_NUM[highlight]) : undefined;
-    const [lon, lat] = f ? geoCentroid(f) : [20, 20];
-    // the focus country ~35° above centre: the middle of the part of the sphere the hero shows
+    // a fixed world view, not centred on any one country (the hero is global);
+    // that point sits ~35° above centre: the middle of the part of the sphere the hero shows
+    const [lon, lat] = HERO_VIEW;
     return [-lon, -(lat - HERO_TILT)];
-  }, [byNum, highlight]);
+  }, []);
   const current = rot ?? introRot;
   // What is drawn: the hero always shows its fixed composition (introRot, zoom 1); the
   // explorer shows the visitor's camera; the hand-off blends between the two. The
@@ -253,7 +253,6 @@ export function Globe({ ref, items, bands, neutral, activeBands, selectedId, onS
   const selected = items.find((i) => i.id === selectedId);
   const selD = landD(selected?.iso);
   const hovD = hover && hover.item.id !== selectedId ? landD(hover.item.iso) : undefined;
-  const topD = !explore ? landD(highlight) : undefined;
 
   const tip = (e: React.PointerEvent, item: GlobeItem) => {
     if (!explore || moved.current || e.pointerType !== "mouse") return;
@@ -391,7 +390,6 @@ export function Globe({ ref, items, bands, neutral, activeBands, selectedId, onS
               <path d={drawing.borders} stroke="var(--globe-border)" strokeWidth=".65" />
               <path d={drawing.coast} stroke="var(--globe-coast)" strokeWidth=".85" />
             </g>
-            {topD && <path d={topD} fill="#95C11F" fillOpacity=".35" stroke="#c8e86a" strokeWidth="1" className="gl-photo" pointerEvents="none" />}
           </g>
           {/* a crisp limb, so the sphere's edge reads against the page */}
           {viewZoom < 1.02 && <circle cx={w / 2} cy={h / 2} r={R} fill="none" stroke="var(--globe-coast)" strokeOpacity=".35" strokeWidth="1" className="gl-light" pointerEvents="none" />}
