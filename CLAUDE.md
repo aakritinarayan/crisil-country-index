@@ -38,6 +38,10 @@ load-bearing subset that must never be silently violated.
   The framework definitions and scores are client data (see below).
   Shape in `lib/cfe/types.ts`; maths in `lib/cfe/compute.ts` (tested against the
   workbook's own formulas, `npm test`).
+- **Scope is global** (confirmed 2026-11-12): the site and its "global" wording stay, even
+  while only a few markets are assessed. The hero shows index-wide figures only — never one
+  country's name or score. The official index name (and "energy" vs "electricity" in
+  "24/7 CFE") is still a placeholder awaiting the client; it lives in the data, not code.
 - **Agreed with the client:** pillars/composite shown 0–100 (pillar = KPI average
   ÷ 5 × 100); bands Low 0–39 / Moderate 40–69 / High 70–100 (placeholder until
   Crisil sets them); a KPI with no score is *not assessed* — excluded and its
