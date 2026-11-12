@@ -1,5 +1,6 @@
 import "server-only";
 import path from "node:path";
+import { cache } from "react";
 import type { Admin } from "@/lib/auth";
 import { sampleSnapshot } from "@/lib/data";
 import type { Payload } from "@/lib/types";
@@ -23,9 +24,9 @@ import { approveBlocker, isEarlier, publishBlocker, workflowSettings } from "./w
 
 export { dataSource, type Source } from "./source";
 
-async function load(): Promise<{ versions: VersionRecord[]; events: AuditEvent[] }> {
-  return dataSource() === "demo" ? demoData() : backend().load();
-}
+/** Read once per request (React cache): a page asks several questions of the same data. */
+const load = cache(async (): Promise<{ versions: VersionRecord[]; events: AuditEvent[] }> =>
+  dataSource() === "demo" ? demoData() : backend().load());
 
 /** Every upload, newest first. */
 export async function listVersions(): Promise<VersionRecord[]> {

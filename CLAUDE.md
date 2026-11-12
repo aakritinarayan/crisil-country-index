@@ -54,6 +54,11 @@ load-bearing subset that must never be silently violated.
 - **The GitHub repo is public. Never commit client data.** Crisil's workbook, the
   converted framework and every upload live in git-ignored `.data/`
   (`.data/cfe/`, `.data/templates/`, `.data/admin/`). Commit code only.
+- **Hosted admin runs on Neon Postgres** (provisioned via the Vercel Marketplace on
+  2026-11-12 at the user's choice — a deviation from TECH_SPEC's Mongo + Azure, accepted for
+  speed): `lib/pg.ts`, `lib/admin/backend-postgres.ts`; files stored in the DB; events and
+  files are append-only by trigger. Production env on Vercel holds the admin credentials
+  (generated; kept locally in git-ignored `.data/`). The Mongo + Azure backend remains.
 - **Admin storage** (`lib/admin/source.ts`): MongoDB Atlas + Azure Blob when
   `MONGODB_URI` and `AZURE_STORAGE_CONNECTION_STRING` are set (`backend-cloud.ts`; publish
   is a transaction + a one-published unique index), else local files under `.data/admin`
