@@ -47,3 +47,6 @@ next-env.d.ts
 !template/*.xlsx
 *.pdf
 .DS_Store
+
+# local admin store (versions, audit events)
+/.data/

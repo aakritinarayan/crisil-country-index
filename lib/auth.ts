@@ -20,10 +20,18 @@ import { authConfig } from "./auth.config";
  *     issuer: process.env.AUTH_MICROSOFT_ENTRA_ID_ISSUER,
  *   }),
  *
- * Whichever provider is active, session.user.email is the identifying string recorded
- * as created_by / published_by on every snapshot. */
+ * Whichever provider is active, session.user.id is the stable key recorded on every audit
+ * event and snapshot (created_by / published_by), alongside the name and email at the time. */
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  callbacks: {
+    ...authConfig.callbacks,
+    // expose the stable subject (user.id at sign-in) as session.user.id for audit records
+    session({ session, token }) {
+      if (token.sub) session.user.id = token.sub;
+      return session;
+    },
+  },
   providers: [
     Credentials({
       credentials: { email: { type: "email" }, password: { type: "password" } },
@@ -39,18 +47,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // always run the hash comparison, so a wrong email costs the same time as a wrong password
         const ok = await bcrypt.compare(password, hash);
         if (!ok || email !== adminEmail) return null;
-        return { id: "admin", email: adminEmail, name: process.env.ADMIN_NAME || "Administrator" };
+        // stable ID for the shared account; with Entra this is the user's object ID
+        return { id: `local:${adminEmail}`, email: adminEmail, name: process.env.ADMIN_NAME?.trim() || null };
       },
     }),
   ],
 });
 
-export type Admin = { name: string; email: string };
+/** The signed-in administrator, from the server session only. `name` is null when the
+ *  identity provider doesn't supply one — the console never invents it. */
+export type Admin = { id: string; name: string | null; email: string };
 
 /** The server-side check every admin page, action and route handler makes. Middleware
  *  only redirects; this is the actual authorisation (TECH_SPEC §3). */
 export async function requireAdmin(): Promise<Admin> {
   const session = await auth();
-  if (!session?.user?.email) redirect("/admin/login");
-  return { name: session.user.name ?? "Administrator", email: session.user.email };
+  const user = session?.user;
+  if (!user?.email || !user.id) redirect("/admin/login");
+  return { id: user.id, name: user.name?.trim() || null, email: user.email };
 }

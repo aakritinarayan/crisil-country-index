@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
 import "./globals.css";
+import { NAV_SCRIPT } from "@/components/admin/navState";
 
 const openSans = Open_Sans({ variable: "--font-open-sans", subsets: ["latin"], display: "swap" });
 
@@ -22,6 +23,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={openSans.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* admin sidebar collapsed state (harmless on public pages: only sets an attribute) */}
+        <script dangerouslySetInnerHTML={{ __html: NAV_SCRIPT }} />
       </head>
       <body className="min-h-dvh">{children}</body>
     </html>

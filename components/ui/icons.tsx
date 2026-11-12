@@ -21,3 +21,19 @@ export const PanelRight = ({ size, className }: P) => (<svg {...base(size)} clas
 export const GlobeIcon = ({ size, className }: P) => (<svg {...base(size)} className={className}><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z" /></svg>);
 export const MapIcon = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M9 4 3 6.5v13.5L9 17.5l6 2.5 6-2.5V4l-6 2.5L9 4Z" /><path d="M9 4v13.5M15 6.5V20" /></svg>);
 export const Check = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>);
+
+// admin console
+export const LayoutGrid = ({ size, className }: P) => (<svg {...base(size)} className={className}><rect x="3.5" y="3.5" width="7" height="7" rx="1" /><rect x="13.5" y="3.5" width="7" height="7" rx="1" /><rect x="3.5" y="13.5" width="7" height="7" rx="1" /><rect x="13.5" y="13.5" width="7" height="7" rx="1" /></svg>);
+export const UploadIcon = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M12 15V4M7 9l5-5 5 5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /></svg>);
+export const History = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8" /><path d="M3 3v5h5M12 7v5l3 2" /></svg>);
+export const Menu = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M4 7h16M4 12h16M4 17h16" /></svg>);
+export const PanelLeft = ({ size, className }: P) => (<svg {...base(size)} className={className}><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16" /></svg>);
+export const More = ({ size, className }: P) => (<svg {...base(size)} className={className}><circle cx="5" cy="12" r="1.2" fill="currentColor" /><circle cx="12" cy="12" r="1.2" fill="currentColor" /><circle cx="19" cy="12" r="1.2" fill="currentColor" /></svg>);
+export const Download = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M12 4v11M7 10l5 5 5-5M4 19h16" /></svg>);
+export const Eye = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></svg>);
+export const Restore = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.5" /><path d="M4 4v4.5h4.5" /></svg>);
+export const Publish = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M12 19V8M7 13l5-5 5 5M5 4h14" /></svg>);
+export const FileSheet = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5M8.5 12.5h7M8.5 16h7M12 12.5V19" /></svg>);
+export const Alert = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M12 4 2.8 19.5h18.4Z" /><path d="M12 10v4M12 17.2v.1" /></svg>);
+export const CircleX = ({ size, className }: P) => (<svg {...base(size)} className={className}><circle cx="12" cy="12" r="9" /><path d="m9 9 6 6M15 9l-6 6" /></svg>);
+export const LogOut = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10" /></svg>);
