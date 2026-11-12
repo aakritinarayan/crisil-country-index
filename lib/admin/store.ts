@@ -1,30 +1,33 @@
 import "server-only";
-import { appendFile, mkdir, readFile } from "node:fs/promises";
+import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Admin } from "@/lib/auth";
-import { getPublishedSnapshot } from "@/lib/data";
+import { sampleSnapshot } from "@/lib/data";
 import type { Payload } from "@/lib/types";
+import type { Framework } from "@/lib/cfe/types";
+import { diffFrameworks } from "@/lib/cfe/diff";
 import { demoData } from "./demo";
-import type { Actor, AuditEvent, VersionRecord } from "./types";
+import { DIR, SAFE_ID, frameworkFile, payloadFile, readJson, uploadDir, versionsFile, writeJson } from "./files";
+import type { Actor, AuditEvent, Validation, VersionRecord } from "./types";
 
-/* Version metadata and the audit trail.
+/* Versions and their audit trail.
  *
- * Local-only for now (no MongoDB / Azure yet): records live under .data/admin/ —
- * versions.json and events.jsonl — and nothing writes versions until upload is connected.
+ * Local-only for now (no MongoDB / Azure yet): files under .data/admin (lib/admin/files.ts).
  * With ADMIN_DEMO_DATA=true the console shows the demonstration records instead
- * (lib/admin/demo.ts), and says so. Swapping in Mongo means re-implementing these few
- * functions; the console only uses this module.
+ * (lib/admin/demo.ts), read-only, and says so. Swapping in Mongo means re-implementing this
+ * module; the console only uses it.
  *
- * Audit events are append-only: this module exposes no way to edit or delete one. In
- * production the events collection is insert-only for the app's database user. */
+ * Invariants (DATA_MODEL §3): nothing is ever deleted; exactly one version is published at a
+ * time; version numbers only go up and are never reused; the uploaded file is stored before
+ * the version that points at it. Audit events are append-only: this module offers no way to
+ * edit or remove one. */
 
-const DIR = path.join(process.cwd(), ".data", "admin");
 export type Source = "demo" | "local";
 export const dataSource = (): Source => (process.env.ADMIN_DEMO_DATA === "true" ? "demo" : "local");
 
 async function load(): Promise<{ versions: VersionRecord[]; events: AuditEvent[] }> {
   if (dataSource() === "demo") return demoData();
-  const versions = await readFile(path.join(DIR, "versions.json"), "utf8").then((t) => JSON.parse(t) as VersionRecord[], () => []);
+  const versions = (await readJson<VersionRecord[]>(versionsFile())) ?? [];
   const events = await readFile(path.join(DIR, "events.jsonl"), "utf8")
     .then((t) => t.split("\n").filter(Boolean).map((l) => JSON.parse(l) as AuditEvent), () => []);
   return { versions, events };
@@ -52,23 +55,118 @@ export async function overview() {
 }
 
 /** The dataset a version would publish. Demonstration records have no stored workbook, so
- *  they preview with the bundled sample (and the preview bar says so); local versions read
- *  the payload saved at upload (.data/admin/payloads/<id>.json). */
+ *  they preview with the bundled sample (and the preview bar says so). */
 export async function previewPayload(id: string): Promise<Payload | null> {
-  if (dataSource() === "demo") return getPublishedSnapshot();
-  if (!/^[\w-]+$/.test(id)) return null;
-  return readFile(path.join(DIR, "payloads", `${id}.json`), "utf8").then((t) => JSON.parse(t) as Payload, () => null);
+  if (dataSource() === "demo") return sampleSnapshot();
+  return SAFE_ID.test(id) ? readJson<Payload>(payloadFile(id)) : null;
+}
+
+/** The data to pre-fill the next template with: the live version's, else the newest
+ *  accepted upload's, else the converted assessment (.data/cfe/framework.json), else none. */
+export async function latestFramework(): Promise<Framework | null> {
+  if (dataSource() === "local") {
+    const versions = await listVersions();
+    const pick = versions.find((v) => v.status === "published") ?? versions.find((v) => v.validation.passed);
+    const f = pick && (await readJson<Framework>(frameworkFile(pick.id)));
+    if (f) return f;
+  }
+  return readJson<Framework>(path.join(process.cwd(), ".data", "cfe", "framework.json"));
+}
+
+/** Where a version's original upload is kept, if it still exists. */
+export function sourceFilePath(v: VersionRecord) {
+  return path.join(uploadDir(v.id, v.validation.passed), safeName(v.source_file.filename));
 }
 
 /** The actor recorded for an action: built only from the server session (requireAdmin),
  *  never from anything the browser sent. */
 export const actorOf = (admin: Admin): Actor => ({ kind: "admin", id: admin.id, name: admin.name, email: admin.email });
+const SYSTEM: Actor = { kind: "system", id: "system" };
 
-/** Append one audit event. Used by upload / publish / restore once they are connected. */
-export async function recordEvent(event: Omit<AuditEvent, "id" | "at">) {
-  if (dataSource() === "demo") throw new Error("Demonstration data is read-only.");
+// ── writes ───────────────────────────────────────────────────────────────────────────
+// One writer at a time within this process (a local stand-in for Mongo transactions).
+let queue: Promise<unknown> = Promise.resolve();
+function exclusive<T>(fn: () => Promise<T>): Promise<T> {
+  const run = queue.then(fn, fn);
+  queue = run.catch(() => {});
+  return run;
+}
+function assertWritable() { if (dataSource() === "demo") throw new Error("Demonstration data is read-only. Set ADMIN_DEMO_DATA=false to work with real uploads."); }
+
+const safeName = (n: string) => (n.replace(/[^\w.\- ()]+/g, "_").replace(/^\.+/, "").slice(0, 160) || "workbook.xlsx");
+const event = (type: AuditEvent["type"], actor: Actor, version_id: string, data?: AuditEvent["data"], at = new Date().toISOString()): AuditEvent =>
+  ({ id: crypto.randomUUID(), type, at, actor, version_id, data });
+async function append(events: AuditEvent[]) {
   await mkdir(DIR, { recursive: true });
-  const full: AuditEvent = { ...event, id: crypto.randomUUID(), at: new Date().toISOString() };
-  await appendFile(path.join(DIR, "events.jsonl"), JSON.stringify(full) + "\n", { flag: "a" });
-  return full;
+  await appendFile(path.join(DIR, "events.jsonl"), events.map((e) => JSON.stringify(e) + "\n").join(""), { flag: "a" });
+}
+
+/** Record an upload: the file is stored first (accepted or rejected, it is kept), then the
+ *  version — a draft when validation passed, a rejected upload (no version number) when it
+ *  failed — then its audit events. Returns the new record. */
+export function recordUpload(input: { admin: Admin; filename: string; file: Buffer; asOf: string; validation: Validation; framework: Framework | null; payload: Payload | null }) {
+  assertWritable();
+  return exclusive(async () => {
+    const { admin, filename, file, asOf, validation, framework, payload } = input;
+    const accepted = validation.passed && framework && payload;
+    const id = crypto.randomUUID();
+    const now = new Date().toISOString();
+    const dir = uploadDir(id, !!accepted);
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, safeName(filename)), file);                    // 1. the file
+
+    const versions = (await readJson<VersionRecord[]>(versionsFile())) ?? [];
+    const next = versions.reduce((m, v) => Math.max(m, v.version ?? 0), 0) + 1;
+    let changes = null;
+    if (accepted) {
+      await writeJson(payloadFile(id), payload);                                 // 2. what it renders
+      await writeJson(frameworkFile(id), framework);
+      const live = versions.find((v) => v.status === "published");
+      const liveFramework = live && (await readJson<Framework>(frameworkFile(live.id)));
+      const livePayload = live && (await readJson<Payload>(payloadFile(live.id)));
+      if (live && liveFramework && livePayload) changes = diffFrameworks({ framework: liveFramework, payload: livePayload, version: live.version }, { framework, payload });
+    }
+    const actor = actorOf(admin);
+    const record: VersionRecord = {
+      id, version: accepted ? next : null, as_of: asOf, status: accepted ? "draft" : "rejected",
+      source_file: { filename, size_bytes: file.length, uploaded_at: now },
+      created_at: now, created_by: actor, published_at: null, published_by: null,
+      validation, changes, counts: payload ? { countries: payload.countries.length, pillars: payload.pillars.length } : null,
+    };
+    await writeJson(versionsFile(), [...versions, record]);                       // 3. the version
+    await append([                                                               // 4. the audit trail
+      event("upload.received", actor, id, { filename, size_bytes: file.length }, now),
+      validation.passed ? event("validation.passed", SYSTEM, id, { warnings: validation.warnings.length }) : event("validation.failed", SYSTEM, id, { errors: validation.errors.length }),
+      ...(accepted ? [event("draft.created", SYSTEM, id, { version: next })] : []),
+    ]);
+    return record;
+  });
+}
+
+/** Publish a draft, or restore an archived version (rollback is publishing an earlier
+ *  version — FLOW §4). The live version becomes archived; exactly one stays published. */
+export function publishVersion(id: string, admin: Admin) {
+  assertWritable();
+  return exclusive(async () => {
+    const versions = (await readJson<VersionRecord[]>(versionsFile())) ?? [];
+    const target = versions.find((v) => v.id === id);
+    if (!target) throw new Error("That version doesn’t exist.");
+    if (target.status === "published") throw new Error(`${target.version != null ? `Version ${target.version}` : "This version"} is already live.`);
+    if (target.status === "rejected" || !target.validation.passed) throw new Error("A rejected upload can’t be published.");
+    if (!(await readJson<Payload>(payloadFile(id)))) throw new Error("This version’s data is missing, so it can’t be published.");
+
+    const now = new Date().toISOString();
+    const actor = actorOf(admin);
+    const live = versions.find((v) => v.status === "published");
+    const restoring = target.status === "archived";
+    const updated = versions.map((v) =>
+      v.id === target.id ? { ...v, status: "published" as const, published_at: now, published_by: actor }
+      : v.id === live?.id ? { ...v, status: "archived" as const } : v);
+    await writeJson(versionsFile(), updated);
+    await append([
+      event(restoring ? "version.restored" : "version.published", actor, target.id, { version: target.version, replaced_version: live?.version ?? null }, now),
+      ...(live ? [event("version.archived", SYSTEM, live.id, { replaced_by_version: target.version }, now)] : []),
+    ]);
+    return { version: target.version, restored: restoring };
+  });
 }

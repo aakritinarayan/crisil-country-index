@@ -30,6 +30,33 @@ load-bearing subset that must never be silently violated.
   `lib/snapshots.test.ts` self-skips without `MONGODB_URI` and needs a
   replica set (transactions).
 
+## Assessment framework (from 2026-11-12)
+
+- **The real index is Crisil's "CSI framework V2": 24/7 carbon-free electricity
+  readiness** — weighted pillars → weighted KPIs scored 1–5 (levels 1 Low /
+  3 Moderate / 5 High) → some KPIs scored per procurement route and averaged.
+  The framework definitions and scores are client data (see below).
+  Shape in `lib/cfe/types.ts`; maths in `lib/cfe/compute.ts` (tested against the
+  workbook's own formulas, `npm test`).
+- **Agreed with the client:** pillars/composite shown 0–100 (pillar = KPI average
+  ÷ 5 × 100); bands Low 0–39 / Moderate 40–69 / High 70–100 (placeholder until
+  Crisil sets them); a KPI with no score is *not assessed* — excluded and its
+  pillar's other weights scaled up, never counted as zero (the client's sheet
+  scored it 0); scores off the 1/3/5 levels are warnings, not errors.
+- **Upload template** (`lib/cfe/template.ts`): long-format tabs matched by header
+  name; the admin hands it out pre-filled with the latest data. Parser
+  `lib/cfe/parse.ts` (sanitises on ingest), rules `lib/cfe/validate.ts`.
+  `npm run cfe:import -- "<Crisil sheet>.xlsx"` converts Crisil's own layout once.
+- **The GitHub repo is public. Never commit client data.** Crisil's workbook, the
+  converted framework and every upload live in git-ignored `.data/`
+  (`.data/cfe/`, `.data/templates/`, `.data/admin/`). Commit code only.
+- **Local store stands in for Mongo/Azure** (`lib/admin/store.ts`, files under
+  `.data/admin`). `getPublishedSnapshot()` is `"use cache"` + `cacheTag("index-data")`;
+  publish calls `updateTag("index-data")`. A plain fs read on a public page breaks
+  Cache Components prerendering — keep data reads behind that cached function.
+- The sample-data notice shows only when `SHOW_SAMPLE_DATA_BANNER` is on **and**
+  the data is a sample (`meta.sample !== false`) — real assessments never carry it.
+
 ## Hard-won gotchas (verified this project, do not re-learn)
 
 - **Local `.env.local` values containing `$` must escape it as `\$`** —

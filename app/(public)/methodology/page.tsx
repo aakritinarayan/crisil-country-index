@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { getSiteSnapshot } from "@/lib/preview";
+import { showSampleNotice } from "@/lib/data";
 import { allBands, formatAsOf } from "@/lib/bands";
 import { Prose } from "@/components/public/Prose";
 import { NotPublished } from "@/components/public/NotPublished";
@@ -23,7 +24,7 @@ export default async function MethodologyPage() {
   const pillars = [...p.pillars].sort((a, b) => a.display_order - b.display_order);
   const bands = allBands(meta.score_bands);
   const period = formatAsOf(meta.as_of);
-  const sample = process.env.SHOW_SAMPLE_DATA_BANNER !== "false";
+  const sample = showSampleNotice(meta);
   const weighted = pillars.filter((x) => x.weight != null);
   // weights published as fractions of 1 read better as percentages; anything else is shown as published
   const asShare = weighted.length > 0 && Math.abs(weighted.reduce((t, x) => t + x.weight!, 0) - 1) < 0.001;
@@ -72,6 +73,45 @@ export default async function MethodologyPage() {
             </ol>
           )}
         </Section>
+
+        {p.framework && (
+          <Section id="kpis" title="Indicators and scoring anchors">
+            <p className="max-w-[68ch] text-[15.5px] leading-[1.75] text-ink-2">
+              Each pillar is made up of weighted indicators (KPIs), scored from {p.framework.scale.min} to {p.framework.scale.max}
+              {p.framework.levels.length > 0 && <> — {[...p.framework.levels].sort((x, y) => x.score - y.score).map((l) => `${l.score} ${l.label}`).join(", ")}</>}.
+              {p.framework.kpis.some((k) => k.by_route) && " Indicators marked “per route” are scored for each corporate procurement route and averaged."}
+            </p>
+            {pillars.map((pl) => {
+              const ks = p.framework!.kpis.filter((k) => k.pillar_id === pl.pillar_id);
+              if (!ks.length) return null;
+              return (
+                <div key={pl.pillar_id} className="mt-7">
+                  <h3 className="text-[16px] font-semibold text-ink">{pl.name}{pl.weight != null && <span className="font-normal text-muted num"> · {asShare ? `${Math.round(pl.weight * 1000) / 10}%` : pl.weight} of the composite</span>}</h3>
+                  <div className="mt-2 overflow-x-auto">
+                    <table className="w-full min-w-[640px] text-[14px]">
+                      <caption className="sr-only">{pl.name}: indicators, weights and scoring anchors</caption>
+                      <thead><tr className="border-b border-line text-left text-[12.5px] text-muted">
+                        <th scope="col" className="py-2 pr-4 font-normal">Indicator</th><th scope="col" className="py-2 pr-4 text-right font-normal">Weight</th>
+                        <th scope="col" className="py-2 pr-4 font-normal">5 means</th><th scope="col" className="py-2 pr-4 font-normal">3 means</th><th scope="col" className="py-2 font-normal">1 means</th>
+                      </tr></thead>
+                      <tbody>
+                        {ks.map((k) => (
+                          <tr key={k.kpi_id} className="border-b border-line align-top">
+                            <th scope="row" className="py-3 pr-4 text-left font-medium text-ink">{k.name}{k.by_route && <span className="mt-0.5 block text-[12px] font-normal text-muted">per route</span>}</th>
+                            <td className="py-3 pr-4 text-right text-ink num">{Math.round(k.weight * 1000) / 10}%</td>
+                            <td className="py-3 pr-4 text-[13.5px] leading-relaxed text-ink-2">{k.anchors.high || "—"}</td>
+                            <td className="py-3 pr-4 text-[13.5px] leading-relaxed text-ink-2">{k.anchors.moderate || "—"}</td>
+                            <td className="py-3 text-[13.5px] leading-relaxed text-ink-2">{k.anchors.low || "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              );
+            })}
+          </Section>
+        )}
 
         <Section id="scoring" title="How scores are calculated">
           <Published text={meta.methodology.scoring} what="scoring approach" />

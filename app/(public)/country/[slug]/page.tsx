@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { countryDetail, getPublishedSnapshot, summarise } from "@/lib/data";
+import { countryDetail, getPublishedSnapshot, showSampleNotice, summarise } from "@/lib/data";
 import { getSiteSnapshot } from "@/lib/preview";
 import { allBands, bandFor, fmtScore, formatAsOf } from "@/lib/bands";
 import type { Reference } from "@/lib/types";
@@ -12,6 +12,7 @@ import ALPHA2 from "@/data/iso-alpha3-to-alpha2.json";
 import { PillarExplorer, type PillarRow } from "@/components/public/country/PillarExplorer";
 import { NotPublished } from "@/components/public/NotPublished";
 import { CompositeHistogram, HISTOGRAM_MIN_COUNTRIES } from "@/components/public/country/CompositeHistogram";
+import { nCountries } from "@/lib/plural";
 
 /* Country profile. Everything here is derived from the published snapshot: pillar
  * order, band labels and edges, the scale, rank, medians and neighbours. Nothing is
@@ -131,10 +132,11 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
       band: b ? { label: b.label, min: b.min, max: b.max, fill: b.fill } : null,
       rationale: sc?.rationale ?? "",
       references: (sc?.references ?? []).map((r: Reference) => ({ title: r.title, publisher: r.publisher, date: fmtDate(r.published_date), url: safeUrl(r.url) })),
+      kpis: detail.kpis?.byPillar[p.pillar_id],
     };
   });
   const period = formatAsOf(meta.as_of);
-  const sample = process.env.SHOW_SAMPLE_DATA_BANNER !== "false";
+  const sample = showSampleNotice(meta);
   // flag from the 2-letter code (regional-indicator pair); decorative, the name carries meaning
   const a2 = (ALPHA2 as Record<string, string>)[country.iso_code];
   const flag = a2 ? String.fromCodePoint(...[...a2].map((ch) => 0x1f1e6 + ch.charCodeAt(0) - 65)) : null;
@@ -208,7 +210,7 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
                 <h2 id="bench-h" className="text-[22px] font-semibold tracking-[-0.02em] text-ink">Against the index</h2>
                 <p className="mt-1 text-[14px] text-muted">Composite scores of every country in the index.</p>
               </div>
-              <p className="text-[14px] text-ink-2 num">Higher than <strong className="font-semibold text-ink">{Math.round((below / composites.length) * 100)}%</strong> of {composites.length} countries</p>
+              <p className="text-[14px] text-ink-2 num">Higher than <strong className="font-semibold text-ink">{Math.round((below / composites.length) * 100)}%</strong> of {nCountries(composites.length)}</p>
             </div>
             <div className="mt-6">
               {composites.length >= HISTOGRAM_MIN_COUNTRIES
@@ -218,7 +220,8 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
           </section>
         )}
 
-        <PillarExplorer key={country.country_id} rows={rows} min={meta.score_min} max={meta.score_max} legend={allBands(meta.score_bands).map((b) => ({ label: b.label, min: b.min, max: b.max, fill: b.fill }))} />
+        <PillarExplorer key={country.country_id} rows={rows} min={meta.score_min} max={meta.score_max} legend={allBands(meta.score_bands).map((b) => ({ label: b.label, min: b.min, max: b.max, fill: b.fill }))}
+          kpiScale={detail.kpis ? { levels: detail.kpis.levels, max: detail.kpis.max } : undefined} />
 
         {/* ── continue exploring ── */}
         <section id="explore" aria-labelledby="explore-more-h" className="scroll-mt-4 border-t border-line py-12">

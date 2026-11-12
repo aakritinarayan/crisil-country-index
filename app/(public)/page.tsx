@@ -1,4 +1,4 @@
-import { summarise } from "@/lib/data";
+import { showSampleNotice, summarise } from "@/lib/data";
 import { getSiteSnapshot } from "@/lib/preview";
 import { ExplorerProvider } from "@/components/public/explorer/ExplorerContext";
 import { ExploreWorkspace } from "@/components/public/explorer/ExploreWorkspace";
@@ -14,7 +14,7 @@ export default async function Landing() {
 
   return (
     <ExplorerProvider summary={summary}>
-      <Hero summary={summary} sample={process.env.SHOW_SAMPLE_DATA_BANNER !== "false"} />
+      <Hero summary={summary} sample={showSampleNotice(snapshot.meta)} />
 
 
       <ExploreWorkspace />

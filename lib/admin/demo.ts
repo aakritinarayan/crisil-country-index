@@ -1,5 +1,5 @@
 import "server-only";
-import { getPublishedSnapshot } from "@/lib/data";
+import { sampleSnapshot } from "@/lib/data";
 import type { Actor, AuditEvent, ChangeSummary, VersionRecord } from "./types";
 
 /* Demonstration records for the admin console (ADMIN_DEMO_DATA=true) — a prototype state
@@ -19,7 +19,7 @@ const none = { passed: true, errors: [], warnings: [] };
 const deadLink = (row: number) => ({ code: "reference.unreachable", message: "Reference URL did not respond (HTTP 404). Publishing is still allowed.", tab: "references", row, column: "url" });
 
 export async function demoData(): Promise<{ versions: VersionRecord[]; events: AuditEvent[] }> {
-  const p = await getPublishedSnapshot();
+  const p = sampleSnapshot();
   const counts = p ? { countries: p.countries.length, pillars: p.pillars.length } : null;
   const moves = p ? largestMoves(p) : [];
   const changes = (against: number | null, s: Partial<ChangeSummary>): ChangeSummary => ({
@@ -95,7 +95,7 @@ export async function demoData(): Promise<{ versions: VersionRecord[]; events: A
 
 /** Plausible score movements built from the bundled sample (real country and pillar
  *  names, current score as "after"), so the change summary has something to show. */
-function largestMoves(p: NonNullable<Awaited<ReturnType<typeof getPublishedSnapshot>>>) {
+function largestMoves(p: ReturnType<typeof sampleSnapshot>) {
   const deltas = [-9, 7, -6, 5, 4, -4];
   const pillars = [...p.pillars].sort((a, b) => a.display_order - b.display_order);
   return deltas.map((d, i) => {

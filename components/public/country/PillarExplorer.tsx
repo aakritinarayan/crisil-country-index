@@ -2,6 +2,8 @@
 import { useEffect, useId, useState } from "react";
 import { fmtScore } from "@/lib/bands";
 import { ArrowUpRight, ChevronDown } from "@/components/ui/icons";
+import type { KpiLevel } from "@/lib/types";
+import { KpiBreakdown, type KpiView } from "./KpiBreakdown";
 
 export type PillarRow = {
   id: string; name: string; description: string;
@@ -9,7 +11,9 @@ export type PillarRow = {
   band: { label: string; min: number; max: number; fill: string } | null;
   rationale: string;
   references: { title: string; publisher: string; date: string | null; url: string | null }[];
+  kpis?: KpiView[];                    // framework data: the KPI evidence behind the score
 };
+export type KpiScale = { levels: KpiLevel[]; max: number };
 type Band = { label: string; min: number; max: number; fill: string };
 
 const diffOf = (r: PillarRow) => (r.score != null && r.median != null ? Math.round((r.score - r.median) * 10) / 10 : null);
@@ -21,7 +25,7 @@ const signed = (d: number) => `${d > 0 ? "+" : d < 0 ? "−" : "±"}${fmtScore(M
  *  published rationale and sources beside the chart — no scrolling, no accordions.
  *  Below md the rows expand in place instead. The first scored pillar starts selected;
  *  a #pillar-id in the address selects that one. Text is shown exactly as published. */
-export function PillarExplorer({ rows, min, max, legend }: { rows: PillarRow[]; min: number; max: number; legend: Band[] }) {
+export function PillarExplorer({ rows, min, max, legend, kpiScale }: { rows: PillarRow[]; min: number; max: number; legend: Band[]; kpiScale?: KpiScale }) {
   const uid = useId();
   const first = (rows.find((r) => r.score != null) ?? rows[0])?.id ?? null;
   const [selected, setSelected] = useState<string | null>(first);
@@ -98,7 +102,7 @@ export function PillarExplorer({ rows, min, max, legend }: { rows: PillarRow[]; 
         </div>
 
         <div id={`${uid}-panel`} className="pillar-panel min-w-0">
-          {current ? <Detail key={current.id} r={current} max={max} /> : <p className="text-[14.5px] text-muted">No pillars are published.</p>}
+          {current ? <Detail key={current.id} r={current} max={max} kpiScale={kpiScale} /> : <p className="text-[14.5px] text-muted">No pillars are published.</p>}
         </div>
       </div>
 
@@ -113,7 +117,7 @@ export function PillarExplorer({ rows, min, max, legend }: { rows: PillarRow[]; 
                 <span className="min-w-0 flex-1">{rowBody(r, open)}</span>
                 <ChevronDown size={16} className={`shrink-0 text-muted transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`} />
               </button>
-              {open && <div id={`${uid}-m-${r.id}`} className="border-t border-line px-4 pb-5 pt-4"><Detail r={r} max={max} compact /></div>}
+              {open && <div id={`${uid}-m-${r.id}`} className="border-t border-line px-4 pb-5 pt-4"><Detail r={r} max={max} kpiScale={kpiScale} compact /></div>}
             </li>
           );
         })}
@@ -124,7 +128,7 @@ export function PillarExplorer({ rows, min, max, legend }: { rows: PillarRow[]; 
 }
 
 /** One pillar's assessment: identity, score and band, benchmark, rationale, sources. */
-function Detail({ r, max, compact = false }: { r: PillarRow; max: number; compact?: boolean }) {
+function Detail({ r, max, kpiScale, compact = false }: { r: PillarRow; max: number; kpiScale?: KpiScale; compact?: boolean }) {
   const d = diffOf(r);
   return (
     <div className="pillar-detail">
@@ -161,6 +165,12 @@ function Detail({ r, max, compact = false }: { r: PillarRow; max: number; compac
         ) : <p className="text-[14.5px] text-muted">No score is published for this pillar.</p>}
       </div>
 
+      {r.kpis && kpiScale ? (
+        <>
+          <h4 className="label mt-6 text-muted">What the score is built from<span className="num"> · {r.kpis.length} KPI{r.kpis.length === 1 ? "" : "s"}</span></h4>
+          <div className="mt-3"><KpiBreakdown kpis={r.kpis} levels={kpiScale.levels} max={kpiScale.max} compact={compact} /></div>
+        </>
+      ) : <>
       <h4 className="label mt-6 text-muted">Assessment rationale</h4>
       {r.rationale
         ? <p className="mt-2 max-w-[70ch] whitespace-pre-line text-[15.5px] leading-[1.75] text-ink-2">{r.rationale}</p>
@@ -182,6 +192,7 @@ function Detail({ r, max, compact = false }: { r: PillarRow; max: number; compac
           ))}
         </ul>
       )}
+      </>}
     </div>
   );
 }

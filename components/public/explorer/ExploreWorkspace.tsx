@@ -9,6 +9,7 @@ import { useExplorer } from "./ExplorerContext";
 import { Globe, type GeoViewHandle, type GlobeItem } from "./Globe";
 import { PillarSelector } from "./PillarSelector";
 import { WorldMap, type MapItem } from "./WorldMap";
+import { nCountries } from "@/lib/plural";
 
 const DESKTOP = "(min-width: 1024px)";
 /** Hand-off progress at which the globe counts as arrived and becomes interactive. */
@@ -204,7 +205,7 @@ export function ExploreWorkspace() {
       <div id="explore-head" className="explore-reveal relative z-[2]">
         <p className="eyebrow">Explore the index</p>
         <h2 id="explore-h" tabIndex={-1} className="mt-3 text-[26px] font-bold leading-tight tracking-tight text-ink outline-none sm:text-[30px]">
-          {countries.length} countries, <span className="grad-text">one map</span>
+          {nCountries(countries.length)}, <span className="grad-text">one map</span>
         </h2>
       </div>
 

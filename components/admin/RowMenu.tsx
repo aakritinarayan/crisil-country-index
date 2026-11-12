@@ -36,6 +36,11 @@ export function RowMenu({ label, href, actions }: { label: string; href: string;
           <Link href={href} className="menu-item">View details</Link>
           {items.map(({ key, text, icon: Icon, state }) => key === "preview" && state.enabled ? (
             <a key={key} href={`/admin/preview/${href.split("/").pop()}`} target="_blank" rel="noopener" className="menu-item"><Icon size={16} />{text}<span className="sr-only"> (opens in a new tab)</span></a>
+          ) : key === "download" && state.enabled ? (
+            <a key={key} href={`${href}/download`} download className="menu-item"><Icon size={16} />{text}</a>
+          ) : (key === "publish" || key === "restore") && state.enabled ? (
+            // the confirmation step lives on the version page
+            <Link key={key} href={href} className="menu-item"><Icon size={16} />{text}</Link>
           ) : (
             <button key={key} type="button" aria-disabled={!state.enabled || undefined} className="menu-item">
               <Icon size={16} />

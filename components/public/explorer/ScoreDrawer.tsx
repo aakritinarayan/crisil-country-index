@@ -2,11 +2,12 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { allBands, bandFor, fmtScore } from "@/lib/bands";
-import type { Country, Score } from "@/lib/types";
+import type { CountryDetail } from "@/lib/data";
+import { KpiBreakdown } from "@/components/public/country/KpiBreakdown";
 import { ArrowLeft, ArrowRight, ArrowUpRight, Close } from "@/components/ui/icons";
 import { useExplorer } from "./ExplorerContext";
 
-type Detail = { country: Country; scores: Score[] };
+type Detail = Pick<CountryDetail, "country" | "scores" | "kpis">;
 const cache = new Map<string, Promise<Detail>>();
 const load = (slug: string) => {
   if (!cache.has(slug)) cache.set(slug, fetch(`/data/country/${slug}`).then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); }));
@@ -98,6 +99,12 @@ export function ScoreDrawer({ target, onClose, onNavigate }: {
               <p className="border-t border-line pt-5 text-[15px] text-muted">No score is published for {country.name} on this pillar.</p>
             )}
 
+            {detail?.kpis && target ? (
+              <>
+                <h3 className="label mt-8 text-muted">What the score is built from</h3>
+                <div className="mt-3"><KpiBreakdown kpis={detail.kpis.byPillar[target.pillarId] ?? []} levels={detail.kpis.levels} max={detail.kpis.max} compact /></div>
+              </>
+            ) : <>
             <h3 className="label mt-8 text-muted">Why this score</h3>
             {error ? <p className="mt-2 text-[15px] text-muted">The rationale could not be loaded. Check your connection and open the score again.</p>
               : s ? <p className="mt-2 whitespace-pre-line text-[15.5px] leading-[1.7] text-ink-2">{s.rationale}</p>
@@ -120,6 +127,7 @@ export function ScoreDrawer({ target, onClose, onNavigate }: {
                 ))}
               </ul>
             ))}
+            </>}
           </div>
 
           <div className="border-t border-line px-6 py-4 sm:px-7">

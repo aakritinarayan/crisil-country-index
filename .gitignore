@@ -50,3 +50,6 @@ next-env.d.ts
 
 # local admin store (versions, audit events)
 /.data/
+
+# headless-browser test profiles
+/prof*/

@@ -5,6 +5,7 @@ import { allBands, bandFor, fmtScore } from "@/lib/bands";
 import { ChevronDown, Close, Search } from "@/components/ui/icons";
 import { Select } from "@/components/ui/Select";
 import { COMPOSITE, useExplorer, type SummaryCountry } from "./ExplorerContext";
+import { nCountries } from "@/lib/plural";
 
 const PAGE = 25;
 const SAVED = "rankings-ui"; // UI state kept for the trip to a country profile and back
@@ -228,7 +229,7 @@ export function Rankings() {
           options={[...columns].reverse().map((c) => ({ value: c.key, label: c.label }))} />
         {narrowed && <button type="button" onClick={clearAll} className="h-10 px-1 text-[13px] font-semibold text-link underline decoration-1 underline-offset-4">Clear filters</button>}
         <p className="ml-auto text-[13px] text-muted num" aria-live="polite">
-          {rows.length} of {countries.length} countries{filterBand && <> · {singleBand != null ? bands[singleBand].label : "several bands"} on {rankLabel.toLowerCase()}</>}
+          {rows.length} of {nCountries(countries.length)}{filterBand && <> · {singleBand != null ? bands[singleBand].label : "several bands"} on {rankLabel.toLowerCase()}</>}
         </p>
       </div>
 

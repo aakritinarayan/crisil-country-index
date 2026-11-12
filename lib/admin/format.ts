@@ -9,6 +9,7 @@ export const fmtDate = (iso: string) =>
 export const zoneName = () =>
   new Intl.DateTimeFormat("en-GB", { timeZone: tz(), timeZoneName: "short" }).formatToParts(new Date()).find((p) => p.type === "timeZoneName")?.value ?? tz();
 export const fmtPeriod = (asOf: string) => {
+  if (!/^\d{4}-\d{2}$/.test(asOf)) return "Period not read";
   const [y, m] = asOf.split("-").map(Number);
   return new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, 1)));
 };

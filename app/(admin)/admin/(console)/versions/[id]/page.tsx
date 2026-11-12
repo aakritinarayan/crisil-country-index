@@ -3,30 +3,36 @@ import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
-import { dataSource, getVersion } from "@/lib/admin/store";
+import { dataSource, getVersion, listVersions } from "@/lib/admin/store";
 import { actionsFor, capabilitiesFor } from "@/lib/admin/permissions";
 import { fmtBytes, fmtDateTime, fmtPeriod, zoneName } from "@/lib/admin/format";
 import { versionLabel, type AuditEvent, type ChangeSummary, type VersionRecord } from "@/lib/admin/types";
 import { fmtScore } from "@/lib/bands";
 import { DemoNotice, PageHead } from "@/components/admin/Page";
 import { ActionButton } from "@/components/admin/ActionButton";
+import { PublishControl } from "@/components/admin/PublishControl";
 import { ActorLabel, StatusLabel, ValidationLabel, actorName } from "@/components/admin/Status";
 import { Download, Eye, Publish, Restore } from "@/components/ui/icons";
+import { nCountries } from "@/lib/plural";
 
 export const metadata: Metadata = { title: "Version details · Admin" };
 
-export default function VersionPage({ params }: PageProps<"/admin/versions/[id]">) {
-  return <Suspense fallback={<div className="admin-card h-[320px]" />}><Detail params={params} /></Suspense>;
+export default function VersionPage({ params, searchParams }: PageProps<"/admin/versions/[id]">) {
+  return <Suspense fallback={<div className="admin-card h-[320px]" />}><Detail params={params} searchParams={searchParams} /></Suspense>;
 }
 
-async function Detail({ params }: { params: PageProps<"/admin/versions/[id]">["params"] }) {
+async function Detail({ params, searchParams }: { params: PageProps<"/admin/versions/[id]">["params"]; searchParams: PageProps<"/admin/versions/[id]">["searchParams"] }) {
   const admin = await requireAdmin();
   const { id } = await params;
+  const flash = await searchParams;
   const found = await getVersion(id);
   if (!found) notFound();
   const { version: v, events } = found;
   const source = dataSource();
   const a = actionsFor(v, capabilitiesFor(admin), source);
+  const live = (await listVersions()).find((x) => x.status === "published" && x.id !== v.id) ?? null;
+  const title = `${versionLabel(v)} (${fmtPeriod(v.as_of)})`;
+  const changeLine = v.changes ? summaryLine(v.changes) : null;
 
   return (
     <>
@@ -37,13 +43,25 @@ async function Detail({ params }: { params: PageProps<"/admin/versions/[id]">["p
         action={
           <div className="flex flex-wrap gap-2">
             <ActionButton state={a.preview} label="Preview" icon={Eye} href={`/admin/preview/${v.id}`} newTab reasonId="a-preview" />
-            {a.publish && <ActionButton state={a.publish} label="Publish…" icon={Publish} tone="primary" reasonId="a-publish" />}
-            {a.restore && <ActionButton state={a.restore} label="Restore…" icon={Restore} reasonId="a-restore" />}
-            <ActionButton state={a.download} label="Download" icon={Download} reasonId="a-download" />
+            {a.publish && (a.publish.enabled
+              ? <PublishControl id={v.id} restore={false} title={title} replaces={live ? `${versionLabel(live)} (${fmtPeriod(live.as_of)})` : null} changes={changeLine} />
+              : <ActionButton state={a.publish} label="Publish…" icon={Publish} tone="primary" reasonId="a-publish" />)}
+            {a.restore && (a.restore.enabled
+              ? <PublishControl id={v.id} restore title={title} replaces={live ? `${versionLabel(live)} (${fmtPeriod(live.as_of)})` : null} changes={null} />
+              : <ActionButton state={a.restore} label="Restore…" icon={Restore} reasonId="a-restore" />)}
+            <ActionButton state={a.download} label="Download" icon={Download} href={`/admin/versions/${v.id}/download`} download reasonId="a-download" />
           </div>
         }
       />
       {source === "demo" && <DemoNotice />}
+      {flash.uploaded && (
+        <p role="status" className={`flash mb-7 ${v.validation.passed ? "" : "is-bad"}`}>
+          {v.validation.passed
+            ? <>Uploaded and saved as <strong>{versionLabel(v)}</strong>, a draft. {v.validation.warnings.length ? `Check the ${v.validation.warnings.length} warning${v.validation.warnings.length === 1 ? "" : "s"} below, ` : ""}review the changes, then preview or publish it. The public site hasn’t changed.</>
+            : <>This upload didn’t pass validation, so nothing was saved as publishable. Fix the {v.validation.errors.length} error{v.validation.errors.length === 1 ? "" : "s"} below in the workbook and upload it again. The file is kept for reference.</>}
+        </p>
+      )}
+      {flash.published && v.status === "published" && <p role="status" className="flash mb-7"><strong>{versionLabel(v)}</strong> is now live on the public site.</p>}
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <div className="grid min-w-0 gap-8">
@@ -64,7 +82,7 @@ async function Detail({ params }: { params: PageProps<"/admin/versions/[id]">["p
             <Row label="Source workbook"><span className="break-all">{v.source_file.filename}</span><span className="block text-[12.5px] text-muted">{fmtBytes(v.source_file.size_bytes)}</span></Row>
             <Row label="Uploaded"><span className="num">{fmtDateTime(v.created_at)}</span><ActorLabel actor={v.created_by} full /></Row>
             <Row label="Last published">{v.published_at && v.published_by ? <><span className="num">{fmtDateTime(v.published_at)}</span><ActorLabel actor={v.published_by} full /></> : <span className="text-muted">Not published</span>}</Row>
-            {v.counts && <Row label="Contents">{v.counts.countries} countries · {v.counts.pillars} pillars</Row>}
+            {v.counts && <Row label="Contents">{nCountries(v.counts.countries)} · {v.counts.pillars} pillars</Row>}
             <Row label="Record ID"><span className="break-all font-mono text-[12px] text-muted">{v.id}</span></Row>
           </dl>
         </aside>
@@ -194,4 +212,13 @@ function Timeline({ events }: { events: AuditEvent[] }) {
       <p className="mt-3 border-t border-line pt-3 text-[12.5px] text-muted">Recorded events only; entries are never edited or removed. Opening a preview isn’t recorded.</p>
     </div>
   );
+}
+
+/** "Compared with version 3: 4 scores changed · 2 rationales edited" — for the confirmation. */
+function summaryLine(c: ChangeSummary) {
+  const parts = ([[c.scores_changed, "score changed", "scores changed"], [c.rationales_edited, "rationale edited", "rationales edited"],
+    [c.sources_added, "source added", "sources added"], [c.sources_removed, "source removed", "sources removed"],
+    [c.countries_added, "country added", "countries added"], [c.countries_removed, "country removed", "countries removed"]] as const)
+    .filter(([n]) => n > 0).map(([n, one, many]) => `${n} ${n === 1 ? one : many}`);
+  return `${c.against_version != null ? `Compared with version ${c.against_version}: ` : ""}${parts.length ? parts.join(" · ") : "no changes"}`;
 }

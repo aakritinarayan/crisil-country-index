@@ -3,6 +3,7 @@ import { useId, useMemo, useState } from "react";
 import { bandFor, fmtScore } from "@/lib/bands";
 import type { ScoreBand } from "@/lib/types";
 import { Search } from "@/components/ui/icons";
+import { nCountries } from "@/lib/plural";
 
 export type CountryOption = { country_id: string; name: string; slug: string; iso_code: string; composite_score: number | null; rank: number };
 
@@ -51,7 +52,7 @@ export function CountryCombobox({
             else if (e.key === "Escape" && q) { e.stopPropagation(); setQ(""); }
           }}
         />
-        {showCount && <span className="hidden text-xs text-muted sm:inline num">{countries.length} countries</span>}
+        {showCount && <span className="hidden text-xs text-muted sm:inline num">{nCountries(countries.length)}</span>}
       </div>
       {showList && (
         <ul id={`${id}-list`} role="listbox" aria-label="Countries" className="absolute inset-x-0 top-full z-30 mt-1 max-h-80 overflow-auto border border-line bg-raised py-1 shadow-lift">
