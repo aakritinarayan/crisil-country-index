@@ -410,15 +410,16 @@ button.score-cell:focus-visible .rank-score { outline: 2px solid var(--focus); o
 button.score-cell[data-active] .rank-score { outline: 2px solid var(--teal); outline-offset: 1px; }
 
 
-/* closing band (ClosingSection.tsx): methodology introduction + disclaimer on one dark
- * surface. Rounded top corners after the page's normal section spacing; the hero's grid
+/* closing card (ClosingSection.tsx): the methodology introduction on an inset dark
+ * surface. Rounded corners, inside the page margins; the hero's grid
  * at low opacity fading downwards, and the faintest dark-teal air. Fixed colours: it
  * reads the same in both themes. */
 .closing { --ink: #f1f4f2; --ink-2: #b9c3c0; --muted: #8b9794; --line: rgb(255 255 255 / .1); --link: #7fd9cf; --focus: #45d0c6;
   position: relative; isolation: isolate; overflow: hidden; margin-top: clamp(3rem, 6vw, 4.5rem); color: var(--ink-2);
-  border-radius: 20px 20px 0 0;
+  border-radius: 20px;
   background: radial-gradient(70% 120% at 85% 0%, rgb(21 78 70 / .22), transparent 70%), #101819; }
-@media (max-width: 639px) { .closing { border-radius: 16px 16px 0 0; } }
+@media (max-width: 639px) { .closing { border-radius: 16px; } }
+:root[data-theme="dark"] .closing { border: 1px solid rgb(255 255 255 / .07); } /* keeps the card's edge on the dark page */
 .closing-grid { position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background-image: linear-gradient(rgb(255 255 255 / .035) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / .035) 1px, transparent 1px);
   background-size: 80px 80px; background-position: center top;
