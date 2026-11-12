@@ -382,9 +382,9 @@ html.tx-ready .explore-reveal { opacity: var(--explore-in, 1); transform: transl
 .rank-table td.is-sorted { background-color: color-mix(in srgb, var(--teal) 4%, transparent); }
 /* the composite column: the overall score, set apart by a faint teal ground and a hairline
  * divider from the five pillars (wins over the sorted-column tint) */
-.rank-table { --composite-bg: #edf4f1; --composite-rule: #d3e3dc; }
-:root[data-theme="dark"] .rank-table { --composite-bg: #121a17; --composite-rule: #24332d; }
-.rank-table .composite-col, .rank-table td.composite-col.is-sorted { background-color: var(--composite-bg); border-left: 1px solid var(--composite-rule); }
+.rank-table { --composite-bg: #e3efeb; --composite-rule: #8fbcb0; }
+:root[data-theme="dark"] .rank-table { --composite-bg: #15201c; --composite-rule: #3a6b60; }
+.rank-table .composite-col, .rank-table td.composite-col.is-sorted { background-color: var(--composite-bg); border-left: 2px solid var(--composite-rule); padding-left: 10px; padding-right: 8px; }
 .rank-table .score-cell { transition: background-color .12s; }
 .rank-table .score-cell:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .rank-table .sort-btn.is-sorted { box-shadow: inset 0 -2px 0 var(--teal); padding-bottom: 4px; }
@@ -465,12 +465,16 @@ button.score-cell[data-active] .rank-score { outline: 2px solid var(--teal); out
   border-radius: 3px; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums lining-nums; color: var(--ink);
   --chip-mix: 45%; background: color-mix(in srgb, var(--chip) var(--chip-mix), var(--bg-raised));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 7%, transparent); transition: box-shadow .12s; }
-/* composite chips: a firmer tint and outline, semibold 16px (60% light / 40% dark is the
- * most tint that keeps the ink at AA on every band) */
-.rank-score.is-composite { --chip-mix: 60%; font-size: 16px; font-weight: 600; min-width: 56px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 13%, transparent); }
+/* composite chips: the band's full colour with its own ink (lib/bands.ts: dark ink on the
+ * light bands, white on the dark ones; ≥4.6:1 light, ≥5.5:1 dark at 85%), wider, 16px
+ * semibold. The hairline keeps the palest band visible on the column ground. */
+.rank-score.is-composite { --chip-mix: 100%; color: var(--chip-ink, var(--ink)); font-size: 16px; font-weight: 600; min-width: 64px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent); outline: 0 solid transparent; outline-offset: 2px; transition: outline-color .12s; }
+/* composite hover / row keyboard focus: a teal outline (a dark ring would vanish on the dark bands) */
+.rank-table .composite-col .score-cell:hover .rank-score, .rank-row:focus-within .composite-col .rank-score { outline: 2px solid var(--composite-rule); }
 :root[data-theme="dark"] .rank-score { --chip-mix: 34%; }
-:root[data-theme="dark"] .rank-score.is-composite { --chip-mix: 40%; }
-button.score-cell:hover .rank-score, .rank-table .composite-col .score-cell:hover .rank-score, .rank-row:focus-within .composite-col .rank-score { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 35%, transparent); }
+:root[data-theme="dark"] .rank-score.is-composite { --chip-mix: 85%; }
+button.score-cell:hover .rank-score { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 35%, transparent); }
 .legend-chip { display: inline-block; width: 22px; height: 14px; border-radius: 3px; --chip-mix: 45%;
   background: color-mix(in srgb, var(--chip) var(--chip-mix), var(--bg-raised)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 7%, transparent); }
 :root[data-theme="dark"] .legend-chip { --chip-mix: 34%; }

@@ -146,7 +146,7 @@ export function Rankings() {
     const b = bandFor(v, meta.score_bands);
     // a softly tinted chip: the number is the content, the band only tints it (named in
     // the shared legend above, in the hover title and in the accessible name)
-    const chip = <ScoreChipCell value={fmtScore(v)} fill={b.fill} composite={composite} />;
+    const chip = <ScoreChipCell value={fmtScore(v)} fill={b.fill} ink={b.ink} composite={composite} />;
     const hint = `${label}: ${fmtScore(v)} · ${b.label} (${b.min}–${b.max})`;
     if (key === COMPOSITE) return <span className="score-cell flex px-1 py-0.5" title={hint} aria-label={`${c.name}, composite score ${fmtScore(v)}, ${b.label} band`} role="img">{chip}</span>;
     return (
@@ -321,7 +321,7 @@ export function Rankings() {
                     {mode === "ranked" && <span className="w-8 shrink-0 text-right text-[13px] text-muted num">{ranks.get(c.country_id) ?? "–"}</span>}
                     <Link href={`/country/${c.slug}`} onClick={remember} className="min-w-0 flex-1 pl-1 text-[15px] font-medium leading-snug text-ink">{c.name}</Link>
                     <span className="shrink-0" title={b ? `${b.label} (${b.min}–${b.max})` : undefined}>
-                      {v != null && b ? <><ScoreChipCell value={fmtScore(v)} fill={b.fill} composite={measure === COMPOSITE} /><span className="sr-only">, {b.label} band</span></> : <span className="text-[12px] text-muted">Not available</span>}
+                      {v != null && b ? <><ScoreChipCell value={fmtScore(v)} fill={b.fill} ink={b.ink} composite={measure === COMPOSITE} /><span className="sr-only">, {b.label} band</span></> : <span className="text-[12px] text-muted">Not available</span>}
                     </span>
                     <button type="button" aria-expanded={open} aria-label={`${open ? "Hide" : "Show"} ${c.name} pillar scores`} onClick={() => setExpanded(open ? null : c.country_id)} className="grid size-11 shrink-0 place-items-center text-muted">
                       <ChevronDown size={16} className={open ? "rotate-180" : ""} />
@@ -366,11 +366,12 @@ export function Rankings() {
   );
 }
 
-/** A compact numeric chip tinted by its readiness band (theme-aware tint, readable ink). */
-function ScoreChipCell({ value, fill, composite }: { value: string; fill: string; composite: boolean }) {
+/** A compact numeric chip tinted by its readiness band (theme-aware tint, readable ink).
+ *  Composite chips take the band's full colour and its own light/dark ink. */
+function ScoreChipCell({ value, fill, ink, composite }: { value: string; fill: string; ink: string; composite: boolean }) {
   // .rank-score: a soft band-tinted chip; the number is its most prominent element
   return (
-    <span className={`rank-score num ${composite ? "is-composite" : ""}`} style={{ "--chip": fill } as React.CSSProperties}>{value}</span>
+    <span className={`rank-score num ${composite ? "is-composite" : ""}`} style={{ "--chip": fill, "--chip-ink": ink } as React.CSSProperties}>{value}</span>
   );
 }
 
