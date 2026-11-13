@@ -20,15 +20,19 @@ export function MethodologyCta() {
 }
 
 /** Below lg only: the hero's own decorative half-globe (photographic, intro mode). On lg
- *  and up the explorer's globe takes this place (see ExploreWorkspace). */
+ *  and up the explorer's globe takes this place (see ExploreWorkspace). Its lower edge
+ *  dissolves into the page, and on scroll it recedes as the explorer's globe comes in
+ *  (--hero-globe-out / --globe-in, written by ExploreWorkspace). */
 export function HeroHalfGlobe() {
   const { summary } = useExplorer();
   const items = useMemo(() => summary.countries.map((c) => ({ id: c.country_id, iso: c.iso_code, name: c.name, value: null })), [summary.countries]);
   return (
     <div className="hero-half relative h-[clamp(300px,74vw,460px)] overflow-hidden lg:hidden" style={{ "--photo": 1 } as React.CSSProperties}>
-      <div className="absolute left-1/2 top-[clamp(24px,6vw,48px)] aspect-square w-[clamp(600px,158vw,980px)] -translate-x-1/2">
-        <Globe items={items} bands={summary.meta.score_bands} neutral activeBands={null} selectedId={null} onSelect={() => {}}
-          mode="intro" onActivate={enterExplorer} label="Explore countries on the globe" photo />
+      <div className="hero-half-fade absolute inset-0">
+        <div className="hero-half-globe absolute left-1/2 top-[clamp(24px,6vw,48px)] aspect-square w-[clamp(600px,158vw,980px)] -translate-x-1/2">
+          <Globe items={items} bands={summary.meta.score_bands} neutral activeBands={null} selectedId={null} onSelect={() => {}}
+            mode="intro" onActivate={enterExplorer} label="Explore countries on the globe" photo />
+        </div>
       </div>
       <a href="#map" onClick={(e) => { e.preventDefault(); enterExplorer(); }} className="hero-scroll absolute bottom-5 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap">
         <svg aria-hidden width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v15M6 13l6 6 6-6" /></svg><span className="sr-only">Scroll to explore the world</span>

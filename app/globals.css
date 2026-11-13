@@ -360,8 +360,20 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-sans); 
 .hero-metric { transition: color .15s; }
 a.hero-metric:hover, button.hero-metric:hover { color: #fff; text-decoration: underline; text-decoration-color: var(--h-teal); text-decoration-thickness: 2px; text-underline-offset: 6px; }
 
-/* soft hand-off from the dark hero into the page (light or dark), with a teal breath */
-.hero-spacer { height: 160px; }
+/* soft hand-off from the dark hero into the page (light or dark), with a teal breath —
+   desktop only; on phones and tablets the half-globe's own fade does that job (no gap) */
+.hero-spacer { height: 16px; }
+@media (min-width: 1024px) { .hero-spacer { height: 160px; } }
+/* below lg: the hero's half-globe dissolves at its lower edge, and recedes as the
+   explorer's globe grows in (values from ExploreWorkspace; without JS both stay put) */
+.hero-half-fade { -webkit-mask-image: linear-gradient(180deg, #000 58%, transparent 100%); mask-image: linear-gradient(180deg, #000 58%, transparent 100%); }
+@media (max-width: 1023.98px) {
+  /* the globe itself shrinks a little and fades; the clipped frame around it never moves,
+     so its soft lower edge stays soft */
+  html.tx-ready .hero-half-globe { opacity: calc(1 - var(--hero-globe-out, 0)); scale: calc(1 - var(--hero-globe-out, 0) * .1); transform-origin: 50% 25%; }
+  html.tx-ready .hero-half .hero-scroll { opacity: calc(1 - var(--hero-globe-out, 0) * 2); }
+  html.tx-ready .explorer-viewer[data-view="globe"] .globe-fly { opacity: var(--globe-in, 1); scale: calc(.88 + .12 * var(--globe-in, 1)); }
+}
 
 /* ── Hero → explorer hand-off (values written by ExploreWorkspace on one timeline) ──
  * Before JS runs (or without it) the hero keeps its own dark background and nothing is
@@ -377,6 +389,17 @@ html.tx-ready .hero-grid, html.tx-ready .hero canvas.stars { opacity: calc(1 - v
 html.tx-ready #hero-intro { opacity: calc(1 - var(--hero-out, 0)); transform: translateY(calc(var(--hero-out, 0) * -24px)); }
 html.tx-ready .hero-credit { opacity: calc(1 - var(--hero-out, 0)); }
 html.tx-ready .explore-reveal { opacity: var(--explore-in, 1); transform: translateY(calc((1 - var(--explore-in, 1)) * 12px)); }
+/* below lg (after the rules above, which it overrides): no shared scrolling backdrop — the
+   hero keeps its own dark ground, which turns into the explorer's over its last 180px,
+   exactly where the half-globe dissolves; the page below sits on that colour, so no dark
+   text ever meets the dark ground */
+@media (max-width: 1023.98px) {
+  html.tx-ready .tx-backdrop { display: none; }
+  html.tx-ready body { background: var(--explore-bg); }
+  html.tx-ready .hero { background: linear-gradient(180deg, transparent calc(100% - 180px), var(--explore-bg) 100%),
+    radial-gradient(120% 70% at 50% 100%, #10292a 0%, transparent 60%), linear-gradient(180deg, var(--h-bg) 0%, var(--h-bg-2) 100%); }
+  html.tx-ready .hero-grid, html.tx-ready .hero canvas.stars { opacity: 1; }
+}
 
 /* score distribution: one segmented bar (ScoreDistribution.tsx) */
 .dist-seg { transition: opacity .25s ease, flex-grow .5s var(--ease-out-expo), box-shadow .2s; }

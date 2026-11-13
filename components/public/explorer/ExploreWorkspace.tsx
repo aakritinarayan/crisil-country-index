@@ -64,6 +64,20 @@ export function ExploreWorkspace() {
     const mq = window.matchMedia(DESKTOP);
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     let raf = 0, size = 1, drop = 0;
+    // below lg (no travel): page offsets for the hand-over between the hero's half-globe and
+    // this globe — measured on resize / orientation change, never per scroll frame
+    const mob = { outEnd: 1, inStart: 0, inEnd: 1 };
+    const measureMobile = () => {
+      const half = document.querySelector<HTMLElement>(".hero-half"), sl = slot.current;
+      if (!half || !sl) return;
+      const H = window.innerHeight, y = window.scrollY;
+      // the half-globe has receded once its lower edge reaches 30% down the screen…
+      mob.outEnd = Math.max(1, half.getBoundingClientRect().bottom + y - H * 0.3);
+      // …and this globe settles as its viewer rises from the bottom edge to 45% up
+      const top = sl.getBoundingClientRect().top + y;
+      mob.inStart = top - H;
+      mob.inEnd = Math.max(mob.inStart + 1, top - H * 0.45);
+    };
 
     // the hero globe: centred, its top just clear of the intro and its centre at (or a
     // little below) the bottom of the first fold, so most of the upper half shows large
@@ -108,6 +122,11 @@ export function ExploreWorkspace() {
       if (!travel) {
         fl.style.transform = ""; fl.style.setProperty("--photo", "0"); setArrived(true); setHeroBlend(1);
         if (hint) hint.style.visibility = "hidden";
+        // the hand-over: compositor-only (opacity, translate, scale in CSS); still under
+        // reduced motion — both globes simply stay where they are
+        const y = window.scrollY, still = reduce.matches;
+        root.style.setProperty("--hero-globe-out", still ? "0" : smooth(0, mob.outEnd, y).toFixed(3));
+        root.style.setProperty("--globe-in", still ? "1" : smooth(mob.inStart, mob.inEnd, y).toFixed(3));
         return;
       }
       const e = smooth(0, 0.82, k);
@@ -128,7 +147,7 @@ export function ExploreWorkspace() {
       }
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(apply); };
-    const onResize = () => { setDesktop(mq.matches); layout(); apply(); };
+    const onResize = () => { setDesktop(mq.matches); layout(); measureMobile(); apply(); };
 
     onResize();
     flyer.current?.setAttribute("data-ready", "");
@@ -151,7 +170,7 @@ export function ExploreWorkspace() {
       // leaving the homepage: drop the hand-off state so other pages render normally
       const root = document.documentElement;
       root.classList.remove("tx-ready");
-      for (const v of ["--hero-out", "--bg-mix", "--explore-in"]) root.style.removeProperty(v);
+      for (const v of ["--hero-out", "--bg-mix", "--explore-in", "--hero-globe-out", "--globe-in"]) root.style.removeProperty(v);
     };
   }, []);
 
