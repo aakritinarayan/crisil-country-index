@@ -68,7 +68,7 @@ async function Detail({ params, searchParams }: { params: PageProps<"/admin/vers
       {flash.approved && v.approved_by && <p role="status" className="flash mb-7"><strong>{versionLabel(v)}</strong> is approved{local ? " (recorded in the local prototype store)" : ""}. It isn’t live until someone publishes it.</p>}
       {flash.published && v.status === "published" && <p role="status" className="flash mb-7"><strong>{versionLabel(v)}</strong> is now live on {local ? "the public site served from this machine (local prototype — not a production publish)" : "the public site"}.</p>}
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <div className="grid min-w-0 gap-8">
           <Block id="val-h" title="Validation" aside={<ValidationLabel v={v.validation} long />}>
             <Issues v={v} />
@@ -119,7 +119,7 @@ function Issues({ v }: { v: VersionRecord }) {
   if (!list.length) return <p className="admin-card px-5 py-4 text-[14px] text-muted">Every tab, row and column passed. No warnings.</p>;
   return (
     <div className="admin-card overflow-x-auto">
-      <table className="ver-table w-full text-[13.5px]">
+      <table className="ver-table stack-sm w-full text-[13.5px]">
         <caption className="sr-only">Validation issues</caption>
         <thead><tr><th scope="col">Type</th><th scope="col">Where</th><th scope="col">Issue</th></tr></thead>
         <tbody>
@@ -127,7 +127,7 @@ function Issues({ v }: { v: VersionRecord }) {
             <tr key={k}>
               <td className={`whitespace-nowrap font-semibold ${i.kind === "Error" ? "text-[var(--danger)]" : "text-[var(--warn)]"}`}>{i.kind}</td>
               <td className="whitespace-nowrap text-ink-2 num">{[i.tab, i.row != null && `row ${i.row}`, i.column].filter(Boolean).join(" · ")}</td>
-              <td className="min-w-[240px] text-ink-2">{i.message}</td>
+              <td className="stack-full text-ink-2 sm:min-w-[240px]">{i.message}</td>
             </tr>
           ))}
         </tbody>
@@ -154,7 +154,7 @@ function Changes({ v }: { v: VersionRecord }) {
         {parts.length ? parts.join(" · ") : "No changes"}
       </p>
       {c.largest_moves.length > 0 && (
-        <table className="ver-table w-full text-[13.5px]">
+        <table className="ver-table stack-sm w-full text-[13.5px]">
           <caption className="px-5 pt-3 text-left text-[12.5px] text-muted">Largest score movements</caption>
           <thead><tr><th scope="col">Country</th><th scope="col">Pillar</th><th scope="col" className="!text-right">Score</th></tr></thead>
           <tbody>
@@ -163,8 +163,8 @@ function Changes({ v }: { v: VersionRecord }) {
               return (
                 <tr key={k}>
                   <td className="font-semibold text-ink">{m.country}</td>
-                  <td className="text-ink-2">{m.pillar}</td>
-                  <td className="whitespace-nowrap text-right text-ink num">{fmtScore(m.before)} → {fmtScore(m.after)} <span className="ml-1 text-muted">({d > 0 ? "+" : "−"}{fmtScore(Math.abs(d))})</span></td>
+                  <td className="stack-full order-last text-ink-2 sm:order-none">{m.pillar}</td>
+                  <td className="ml-auto whitespace-nowrap text-right text-ink num">{fmtScore(m.before)} → {fmtScore(m.after)} <span className="ml-1 text-muted">({d > 0 ? "+" : "−"}{fmtScore(Math.abs(d))})</span></td>
                 </tr>
               );
             })}

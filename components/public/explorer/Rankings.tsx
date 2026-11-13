@@ -160,7 +160,7 @@ export function Rankings() {
 
   const countryCell = (c: SummaryCountry) => (
     <span className="flex items-center gap-1.5">
-      <Link href={`/country/${c.slug}`} onClick={remember} className="country-link text-[14.5px] font-medium leading-snug text-ink hover:text-link hover:underline hover:underline-offset-4">
+      <Link href={`/country/${c.slug}`} onClick={remember} className="country-link tap text-[14.5px] font-medium leading-snug text-ink hover:text-link hover:underline hover:underline-offset-4">
         {c.name}<span aria-hidden className="country-arrow ml-1 text-muted">→</span>
       </Link>
     </span>
@@ -172,7 +172,7 @@ export function Rankings() {
     return (
       <tr key={c.country_id} className={`rank-row group border-b border-line ${sel ? "is-selected" : ""}`}>
         {mode === "ranked" && <td className="sticky-col left-0 w-12 py-1.5 pr-2 text-right text-[13px] text-muted num">{r ?? "–"}</td>}
-        <th scope="row" className={`sticky-col ${mode === "ranked" ? "left-12" : "left-0"} min-w-[180px] max-w-[240px] py-1.5 pl-3 pr-3 text-left font-normal`}>{countryCell(c)}</th>
+        <th scope="row" className={`sticky-col ${mode === "ranked" ? "left-12" : "left-0"} min-w-[124px] max-w-[240px] py-1.5 pl-3 pr-3 text-left font-normal lg:min-w-[180px]`}>{countryCell(c)}</th>
         {columns.map((col) => (
           <td key={col.key} className={`px-1 py-1 ${col.key === COMPOSITE ? "composite-col" : ""} ${sortedCol === col.key ? "is-sorted" : ""}`}>
             {scoreCell(c, col.key, col.label, col.key === COMPOSITE)}
@@ -218,13 +218,13 @@ export function Rankings() {
           {q && <button type="button" onClick={() => setQ("")} aria-label="Clear search" className="grid size-6 place-items-center text-muted hover:text-ink"><Close size={14} /></button>}
         </label>
         <Select label="Band" value={singleBand != null ? String(singleBand) : filterBand ? "multi" : "all"} active={!!filterBand} minMenuWidth={260}
-          onChange={(v) => setBands(v === "all" ? null : new Set([Number(v)]))} className="w-full sm:w-auto [&>button]:sm:w-[200px]"
+          onChange={(v) => setBands(v === "all" ? null : new Set([Number(v)]))} className="w-full sm:w-auto [&>span]:w-[52px] sm:[&>span]:w-auto [&>button]:sm:w-[200px]"
           options={[
             { value: "all", label: "All bands", meta: `${bandCounts.reduce((t, n) => t + n, 0)}` },
             ...bands.map((b, i) => ({ value: String(i), label: b.label, hint: `${b.min}–${b.max}`, swatch: b.fill, meta: `${bandCounts[i]}`, disabled: bandCounts[i] === 0 })),
             ...(filterBand && singleBand == null ? [{ value: "multi", label: "Several bands", disabled: true }] : []),
           ]} />
-        <Select label="Rank by" value={measure} minMenuWidth={240} className="w-full sm:w-auto [&>button]:sm:w-[230px]"
+        <Select label="Rank by" value={measure} minMenuWidth={240} className="w-full sm:w-auto [&>span]:w-[52px] sm:[&>span]:w-auto [&>button]:sm:w-[230px]"
           onChange={(v) => { setMeasure(v); setDir("desc"); setMode("ranked"); }}
           options={[...columns].reverse().map((c) => ({ value: c.key, label: c.label }))} />
         {narrowed && <button type="button" onClick={clearAll} className="h-10 px-1 text-[13px] font-semibold text-link underline decoration-1 underline-offset-4">Clear filters</button>}
@@ -328,7 +328,7 @@ export function Rankings() {
                 <li className={`border-b border-line ${c.country_id === selectedId ? "bg-sunken" : ""}`}>
                   <div className="flex items-center gap-2 py-2.5 pr-1">
                     {mode === "ranked" && <span className="w-8 shrink-0 text-right text-[13px] text-muted num">{ranks.get(c.country_id) ?? "–"}</span>}
-                    <Link href={`/country/${c.slug}`} onClick={remember} className="min-w-0 flex-1 pl-1 text-[15px] font-medium leading-snug text-ink">{c.name}</Link>
+                    <Link href={`/country/${c.slug}`} onClick={remember} className="tap min-w-0 flex-1 pl-1 text-[15px] font-medium leading-snug text-ink">{c.name}</Link>
                     <span className="shrink-0" title={b ? `${b.label} (${b.min}–${b.max})` : undefined}>
                       {v != null && b ? <><ScoreChipCell value={fmtScore(v)} fill={b.fill} ink={b.ink} composite={measure === COMPOSITE} /><span className="sr-only">, {b.label} band</span></> : <span className="text-[12px] text-muted">Not available</span>}
                     </span>
@@ -347,7 +347,7 @@ export function Rankings() {
                         ))}
                       </ul>
                       <div className="mt-2 flex gap-4 text-[13px] font-semibold">
-                        <Link href={`/country/${c.slug}`} onClick={remember} className="text-link underline decoration-1 underline-offset-4">Country profile</Link>
+                        <Link href={`/country/${c.slug}`} onClick={remember} className="tap text-link underline decoration-1 underline-offset-4">Country profile</Link>
                       </div>
                     </div>
                   )}

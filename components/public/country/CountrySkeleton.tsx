@@ -7,7 +7,7 @@ export function CountrySkeleton() {
     <Loading label="Loading country profile">
       <div className="country-hero skel-on-dark">
         <div aria-hidden className="country-hero-grid" />
-        <div className="wrap relative grid gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-center lg:gap-12 lg:py-10">
+        <div className="wrap relative grid gap-8 py-8 md:grid-cols-[minmax(0,1fr)_220px] md:items-center lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:gap-12 lg:py-10">
           <div className="min-w-0">
             <Skel className="h-3.5 w-48" />
             <div className="mt-5 flex items-center gap-3.5"><Skel className="h-8 w-11 rounded-[5px]" /><Skel className="h-10 w-64 max-w-[70%]" /></div>
@@ -20,7 +20,7 @@ export function CountrySkeleton() {
             <SkelText className="mt-5 max-w-[64ch]" widths={[100, 72]} line="h-3.5" />
             <Skel className="mt-6 h-11 w-36" />
           </div>
-          <div className="mx-auto hidden aspect-square w-full max-w-[340px] place-items-center sm:grid lg:-my-6 lg:max-w-none">
+          <div className="mx-auto hidden aspect-square w-full max-w-[340px] place-items-center md:grid lg:-my-6 lg:max-w-none">
             <Skel className="size-[62%] rounded-full" />
           </div>
         </div>

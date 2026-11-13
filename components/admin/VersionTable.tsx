@@ -56,7 +56,7 @@ export function VersionTable({ rows, caption }: { rows: Row[]; caption: string }
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <Link href={href(v)} className="ver-link text-[15px]">{versionLabel(v)}</Link>{v.demo && <span className="demo-tag ml-2">Demo</span>}
-                <span className="text-[13.5px] text-muted"> · {period}</span>
+                <span className="block text-[13.5px] text-muted">{period}</span>
                 <span className="block truncate text-[12.5px] text-muted" title={v.source_file.filename}>{v.source_file.filename}</span>
               </div>
               <div className="flex shrink-0 items-center gap-2"><StatusLabel v={v} /><RowMenu label={`${versionLabel(v)}, ${period}`} href={href(v)} actions={actions} /></div>

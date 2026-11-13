@@ -41,7 +41,7 @@ export function CountryCombobox({
           id={`${id}-in`} role="combobox" aria-expanded={showList} aria-controls={`${id}-list`} aria-autocomplete="list"
           aria-activedescendant={showList && results[active] ? `${id}-o${active}` : undefined}
           autoFocus={autoFocus} autoComplete="off" spellCheck={false} placeholder={placeholder} value={q}
-          className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-muted focus:outline-none"
+          className="min-w-0 flex-1 self-stretch bg-transparent text-[15px] text-ink placeholder:text-muted focus:outline-none"
           onChange={(e) => { setQ(e.target.value); setOpen(true); setActive(0); }}
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 120)}

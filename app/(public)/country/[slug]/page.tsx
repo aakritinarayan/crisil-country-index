@@ -133,11 +133,11 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
       {/* ── compact summary header: identity, the numbers, one line, actions; map card right ── */}
       <header className="country-hero">
         <div aria-hidden className="country-hero-grid" />
-        <div className="wrap relative grid gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-center lg:gap-12 lg:py-10">
+        <div className="wrap relative grid gap-8 py-8 md:grid-cols-[minmax(0,1fr)_220px] md:items-center lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:gap-12 lg:py-10">
           <div className="min-w-0">
             <nav aria-label="Breadcrumb" className="text-[13px]">
               <ol className="flex flex-wrap items-center gap-2 text-[rgb(232_239_236/0.6)]">
-                <li><Link href="/#map" className="transition-colors hover:text-white">Explore countries</Link></li>
+                <li><Link href="/#map" className="tap transition-colors hover:text-white">Explore countries</Link></li>
                 <li aria-hidden>/</li>
                 <li aria-current="page" className="text-[rgb(232_239_236/0.9)]">{country.name}</li>
               </ol>
@@ -162,7 +162,7 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
                 </div>
                 <div>
                   <dt className="text-[12.5px] text-[rgb(232_239_236/0.6)]">Global rank</dt>
-                  <dd className="mt-1 text-[22px] font-semibold text-white num"><Link href="/#rankings" className="transition-colors hover:text-[#9fe3d6]">#{me.rank}<span className="text-[14px] font-normal text-[rgb(232_239_236/0.6)]"> of {composites.length}</span></Link></dd>
+                  <dd className="mt-1 text-[22px] font-semibold text-white num"><Link href="/#rankings" className="tap transition-colors hover:text-[#9fe3d6]">#{me.rank}<span className="text-[14px] font-normal text-[rgb(232_239_236/0.6)]"> of {composites.length}</span></Link></dd>
                 </div>
                 {compositeMedian != null && (
                   <div>
@@ -182,7 +182,7 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
 
           {/* the country alone, floating on the hero ground (no card, no map) */}
           <Link href={`/?select=${encodeURIComponent(country.country_id)}#map`} aria-label={`Show ${country.name} on the world map`}
-            className="country-float mx-auto hidden aspect-square w-full max-w-[340px] sm:block lg:-my-6 lg:max-w-none">
+            className="country-float mx-auto hidden aspect-square w-full max-w-[340px] md:block lg:-my-6 lg:max-w-none">
             <CountryShape iso={country.iso_code} name={country.name} fill="" variant="float" />
           </Link>
         </div>
@@ -235,7 +235,7 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
               <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
                 {similar.map(({ c }) => (
                   <li key={c.country_id}>
-                    <Link href={`/country/${c.slug}`} className="group inline-flex items-baseline gap-1.5 text-[14.5px] text-ink hover:text-link">
+                    <Link href={`/country/${c.slug}`} className="tap group inline-flex items-baseline gap-1.5 text-[14.5px] text-ink hover:text-link">
                       <span className="group-hover:underline group-hover:underline-offset-4">{c.name}</span>
                       {meta.show_composite && c.composite_score != null && <span className="text-[12.5px] text-muted num">{fmtScore(c.composite_score)}</span>}
                     </Link>
@@ -245,7 +245,7 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
             </div>
           )}
 
-          <Link href="/#rankings" className="mt-8 inline-flex items-center gap-1.5 text-[14px] font-semibold text-link underline decoration-1 underline-offset-4">Back to country rankings</Link>
+          <Link href="/#rankings" className="tap mt-8 inline-flex items-center gap-1.5 text-[14px] font-semibold text-link underline decoration-1 underline-offset-4">Back to country rankings</Link>
         </section>
       </div>
     </article>

@@ -13,8 +13,8 @@ export function AdminMark() {
   return (
     <span className="flex items-center gap-2.5 font-bold tracking-tight text-ink">
       <IndexMark />
-      <span className="ml-1">Country Index</span>
-      <span className="admin-tag">Admin</span>
+      <span className="ml-1 whitespace-nowrap">Country Index</span>
+      <span className="admin-tag hidden min-[360px]:inline-block">Admin</span>
     </span>
   );
 }

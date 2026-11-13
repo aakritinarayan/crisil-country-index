@@ -35,7 +35,7 @@ export default async function MethodologyPage() {
       <header className="max-w-[1040px] border-b border-line pb-8 pt-10 sm:pt-12">
         <nav aria-label="Breadcrumb" className="text-[13px] text-muted">
           <ol className="flex flex-wrap items-center gap-2">
-            <li><Link href="/" className="transition-colors hover:text-ink">{meta.index_name}</Link></li>
+            <li><Link href="/" className="tap transition-colors hover:text-ink">{meta.index_name}</Link></li>
             <li aria-hidden>/</li>
             <li aria-current="page" className="text-ink-2">Methodology</li>
           </ol>

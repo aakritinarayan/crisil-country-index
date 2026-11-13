@@ -26,7 +26,7 @@ export default function UploadPage() {
   return (
     <>
       <PageHead title="Upload data" description="Upload the finalised monthly assessment workbook. Nothing reaches the public site until it’s validated, reviewed and published." />
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <section aria-labelledby="up-h" className="admin-card p-5 sm:p-6">
           <h2 id="up-h" className="sr-only">Workbook</h2>
           <Suspense fallback={<UploadSkeleton />}><Upload /></Suspense>

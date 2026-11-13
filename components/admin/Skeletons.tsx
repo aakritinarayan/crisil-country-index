@@ -88,7 +88,7 @@ export function VersionSkeleton() {
         <div><Skel className="h-3.5 w-28" /><Skel className="mt-4 h-9 w-48" /><Skel className="mt-3 h-4 w-80 max-w-full" /></div>
         <div className="flex gap-2"><Skel className="h-9 w-24" /><Skel className="h-9 w-24" /><Skel className="h-9 w-28" /></div>
       </div>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <div className="grid min-w-0 gap-8">
           {block("Validation", <div className="admin-card grid gap-3 p-5">{[0, 1, 2, 3].map((i) => <div key={i} className="grid grid-cols-[72px_160px_1fr] gap-4"><Skel className="h-3.5" /><Skel className="h-3.5" /><Skel className="h-3.5" /></div>)}</div>)}
           {block("Change summary", <div className="admin-card p-5"><Skel className="h-4 w-2/3" /><div className="mt-4 grid gap-3">{[0, 1, 2].map((i) => <div key={i} className="grid grid-cols-[1fr_1fr_120px] gap-4"><Skel className="h-3.5" /><Skel className="h-3.5" /><Skel className="h-3.5" /></div>)}</div></div>)}

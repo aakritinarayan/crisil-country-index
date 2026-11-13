@@ -291,7 +291,7 @@ export function ExploreWorkspace() {
               </div>
             </div>
             {!expanded && (
-              <a href="#rankings" className="explore-reveal mt-3 inline-block text-[12.5px] font-semibold text-link underline decoration-1 underline-offset-4">Browse all countries as a list</a>
+              <a href="#rankings" className="explore-reveal tap mt-3 inline-block text-[12.5px] font-semibold text-link underline decoration-1 underline-offset-4">Browse all countries as a list</a>
             )}
           </div>
 

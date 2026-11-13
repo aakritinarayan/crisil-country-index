@@ -64,7 +64,7 @@ export function ScoreDrawer({ target, onClose, onNavigate }: {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       className="drawer m-0 ml-auto h-dvh max-h-none w-full max-w-none bg-transparent p-0 backdrop:bg-[var(--scrim)] sm:max-w-[480px]">
       {country && pillar && (
-        <div className="flex h-full flex-col border-l border-line bg-bg text-ink shadow-lift">
+        <div className="drawer-panel flex h-full flex-col border-l border-line bg-bg text-ink shadow-lift">
           <div className="flex items-start justify-between gap-4 px-6 pb-4 pt-5 sm:px-7">
             <div className="min-w-0">
               <p className="text-[13px] text-muted num">{country.name} <span className="text-line-strong">·</span> {country.iso_code}</p>
@@ -73,7 +73,7 @@ export function ScoreDrawer({ target, onClose, onNavigate }: {
             <button type="button" onClick={onClose} className="grid size-10 shrink-0 place-items-center text-muted transition-colors hover:bg-sunken hover:text-ink" aria-label="Close score rationale"><Close /></button>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-6 pb-8 sm:px-7">
+          <div className="drawer-body flex-1 overflow-y-auto px-6 pb-8 sm:px-7">
             {value != null && band ? (
               <>
                 {/* the score, its band and range, then where it sits on the full scale */}
