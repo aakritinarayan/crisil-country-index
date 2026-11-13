@@ -1,5 +1,5 @@
 import type { IndexSummary } from "@/lib/types";
-import { formatAsOf } from "@/lib/bands";
+import { formatAsOfShort } from "@/lib/bands";
 import { ExploreCta, HeroHalfGlobe, MethodologyCta } from "./HeroActions";
 import { HeroStars } from "./HeroStars";
 import { HeroMetrics, type HeroMetricData } from "./HeroMetrics";
@@ -23,7 +23,7 @@ export function Hero({ summary, sample = true }: { summary: IndexSummary; sample
 
   // global figures only: the hero never singles out one country (a global site; with few
   // countries assessed, even an average would effectively be one country's score)
-  const metrics: HeroMetricData = { count: countries.length, pillars: summary.pillars.length, asOf: formatAsOf(meta.as_of) };
+  const metrics: HeroMetricData = { count: countries.length, pillars: summary.pillars.length, asOf: formatAsOfShort(meta.as_of) };
 
   return (
     <>

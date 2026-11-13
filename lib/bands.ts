@@ -44,3 +44,9 @@ export function formatAsOf(asOf: string) {
   const [y, m] = asOf.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, 1)).toLocaleString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
 }
+
+/** The reporting period, short: "2026-11" → "Nov 2026" (en-US, so September is "Sep"). */
+export function formatAsOfShort(asOf: string) {
+  const [y, m] = asOf.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, 1)).toLocaleString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
+}
