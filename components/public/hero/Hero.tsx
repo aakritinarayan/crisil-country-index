@@ -43,7 +43,7 @@ export function Hero({ summary, sample = true }: { summary: IndexSummary; sample
           <p className="mx-auto mt-4 max-w-[640px] text-[16px] leading-[1.65] text-[var(--h-muted)] sm:text-[17px]">
             Explore country-level readiness across key assessment pillars, supported by transparent scoring, methodology and evidence.
           </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <div className="hero-ctas mt-8 flex flex-wrap items-center justify-center gap-3">
             <ExploreCta />
             <MethodologyCta />
           </div>

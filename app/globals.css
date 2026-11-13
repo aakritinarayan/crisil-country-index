@@ -255,6 +255,14 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-sans); 
 .hero-btn-primary:hover .box { transform: translateX(2px); background: rgb(0 0 0 / 0.1); }
 .hero-btn-ghost { padding: 0 22px; color: var(--h-ink); border: 1px solid rgb(255 255 255 / 0.24); background: transparent; }
 .hero-btn-ghost:hover { border-color: rgb(255 255 255 / 0.5); background: rgb(255 255 255 / 0.04); }
+/* phones: the two CTAs side by side, sharing the width; the arrow keeps no box (and goes
+   under 360px, where both labels only just fit) */
+@media (max-width: 639px) {
+  .hero-ctas { flex-wrap: nowrap; gap: 10px; }
+  .hero-ctas .hero-btn { flex: 1 1 0; min-width: 0; max-width: 220px; height: 48px; padding: 0 12px; gap: 6px; justify-content: center; font-size: 13.5px; white-space: nowrap; }
+  .hero-ctas .hero-btn-primary .box { width: auto; height: auto; background: none; }
+}
+@media (max-width: 359px) { .hero-ctas .hero-btn-primary .box { display: none; } }
 /* a lone floating arrow at the hero's lower edge, linking to the explorer */
 .hero-scroll { display: inline-grid; place-items: center; width: 44px; height: 44px; color: rgb(244 247 245 / 0.9); filter: drop-shadow(0 1px 6px rgb(0 0 0 / 0.55)); animation: float-down 2.4s ease-in-out infinite; transition: color .15s; }
 .hero-scroll:hover { color: #fff; }
