@@ -3,10 +3,10 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { actionContext, dataSource, demoMode, listVersions } from "@/lib/admin/store";
-import { actionsFor, capabilitiesFor } from "@/lib/admin/permissions";
 import { zoneName } from "@/lib/admin/format";
 import { DemoNotice, PageHead, UploadButton } from "@/components/admin/Page";
-import { VersionTable } from "@/components/admin/VersionTable";
+import { VersionHistory } from "@/components/admin/VersionHistory";
+import { tableRows } from "@/lib/admin/rows";
 import { ArrowRight } from "@/components/ui/icons";
 import { HistorySkeleton } from "@/components/admin/Skeletons";
 
@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Version history · Admin" };
 export default function VersionsPage() {
   return (
     <>
-      <PageHead title="Version history" description="Every uploaded workbook, newest first. Exactly one version is live at a time. Earlier live versions are Archived; a new upload is Final until it’s published." action={<UploadButton />} />
+      <PageHead title="Version history" description="Every uploaded workbook. Exactly one version is live at a time. Earlier live versions are Archived; a new upload is Final until it’s published." action={<UploadButton />} />
       <Suspense fallback={<HistorySkeleton />}><Content /></Suspense>
     </>
   );
@@ -24,7 +24,6 @@ export default function VersionsPage() {
 async function Content() {
   const admin = await requireAdmin();
   const source = dataSource();
-  const caps = capabilitiesFor(admin);
   const versions = await listVersions();
   if (!versions.length) {
     return (
@@ -37,13 +36,11 @@ async function Content() {
       </div>
     );
   }
-  const n = versions.length;
   const ctx = await actionContext(admin, versions);
   return (
     <>
       {demoMode() !== "off" && <DemoNotice merged={demoMode() === "merge"} />}
-      <p className="mb-3 text-[13.5px] text-muted">{n} upload{n === 1 ? "" : "s"} · times in {zoneName()}</p>
-      <VersionTable caption="All versions, newest first" rows={versions.map((v) => ({ v, actions: actionsFor(v, caps, source, ctx) }))} />
+      <VersionHistory rows={tableRows(versions, admin, source, ctx)} zone={zoneName()} />
     </>
   );
 }

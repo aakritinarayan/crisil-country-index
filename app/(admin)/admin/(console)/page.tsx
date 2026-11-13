@@ -5,13 +5,13 @@ import { requireAdmin } from "@/lib/auth";
 import { getPublishedSnapshot } from "@/lib/data";
 import { formatAsOf } from "@/lib/bands";
 import { actionContext, dataSource, demoMode, listVersions, overview } from "@/lib/admin/store";
-import { actionsFor, capabilitiesFor } from "@/lib/admin/permissions";
 import { fmtDate, fmtDateTime, fmtPeriod } from "@/lib/admin/format";
 import { versionLabel } from "@/lib/admin/types";
 import { awaitingApproval } from "@/lib/admin/workflow";
 import { DemoNotice, PageHead, SectionHead, UploadButton } from "@/components/admin/Page";
 import { ActorLabel, StatusLabel, ValidationLabel, actorName } from "@/components/admin/Status";
 import { VersionTable } from "@/components/admin/VersionTable";
+import { tableRows } from "@/lib/admin/rows";
 import { ArrowRight, ArrowUpRight } from "@/components/ui/icons";
 import { OverviewSkeleton } from "@/components/admin/Skeletons";
 
@@ -30,7 +30,6 @@ export default function AdminOverview() {
 async function Content() {
   const admin = await requireAdmin(); // authorisation on the server, not only in middleware
   const source = dataSource();
-  const caps = capabilitiesFor(admin);
   const { live, pending, recent, total } = await overview();
   const ctx = await actionContext(admin, await listVersions());
 
@@ -77,7 +76,7 @@ async function Content() {
           {total > recent.length && <Link href="/admin/versions" className="admin-link text-[13.5px] font-semibold">View all {total}</Link>}
         </SectionHead>
         {recent.length
-          ? <VersionTable caption="Recent versions, newest first" rows={recent.map((v) => ({ v, actions: actionsFor(v, caps, source, ctx) }))} />
+          ? <VersionTable caption="Recent versions, newest first" rows={tableRows(recent, admin, source, ctx)} />
           : (
             <div className="admin-card flex flex-col items-start gap-4 px-5 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6">
               <div>

@@ -60,11 +60,14 @@ export function OverviewSkeleton() {
   );
 }
 
-/** Version history: the count line, then the table. */
+/** Version history: the search and filter row, the count line, then the table. */
 export function HistorySkeleton() {
   return (
     <Loading label="Loading version history">
-      <Skel className="mb-3 h-3.5 w-40" />
+      <div aria-hidden className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-3">
+        <Skel className="h-11 min-w-[240px] flex-[1_1_320px]" /><Skel className="h-11 w-[226px]" /><Skel className="h-11 w-[190px]" /><Skel className="h-11 w-[190px]" />
+      </div>
+      <Skel className="mb-3 h-3.5 w-56" />
       <VersionTableSkeleton rows={6} />
     </Loading>
   );
