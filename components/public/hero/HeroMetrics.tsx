@@ -33,9 +33,16 @@ export function HeroMetrics({ count, pillars, asOf }: HeroMetricData) {
         </dd>
       </div>
 
-      <div className={`${cell} col-span-2 border-t border-white/[0.07] sm:col-span-1 sm:border-t-0`}>
+      {/* the data period: a figure beside the others from sm; on phones a small pill under them */}
+      <div className={`${cell} hidden sm:flex`}>
         <dt className="order-2"><span className={label}>Data as of</span></dt>
         <dd className={`order-1 ${value} whitespace-nowrap`}>{asOf}</dd>
+      </div>
+      <div className="col-span-2 flex justify-center pt-4 sm:hidden">
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.14] bg-white/[0.04] px-3.5 py-1.5 text-[12.5px] leading-none">
+          <dt className="text-[var(--h-muted)]">Data as of</dt>
+          <dd className="font-medium text-[var(--h-ink)]/90 num">{asOf}</dd>
+        </div>
       </div>
     </dl>
   );
