@@ -78,7 +78,7 @@ export const load = (src: string) => new Promise<HTMLImageElement>((res, rej) =>
   i.src = src;
 });
 
-export function EarthCanvas({ rotate, radius, onFail }: { rotate: [number, number]; radius: number /* CSS px */; onFail: () => void }) {
+export function EarthCanvas({ rotate, radius, onFail, onReady }: { rotate: [number, number]; radius: number /* CSS px */; onFail: () => void; onReady?: () => void }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const gl = useRef<{ ctx: WebGLRenderingContext; uRot: WebGLUniformLocation; uRad: WebGLUniformLocation; uAa: WebGLUniformLocation; uRes: WebGLUniformLocation } | null>(null);
   const scale = useRef(1); // backing pixels per CSS pixel
@@ -126,6 +126,7 @@ export function EarthCanvas({ rotate, radius, onFail }: { rotate: [number, numbe
         texture(ctx, 1, cl);
         gl.current = { ctx, uRot: ctx.getUniformLocation(prog, "rot")!, uRad: ctx.getUniformLocation(prog, "radius")!, uAa: ctx.getUniformLocation(prog, "aa")!, uRes: ctx.getUniformLocation(prog, "res")! };
         setReady(true);
+        onReady?.();
       }, () => { if (!cancelled) onFail(); });
     } catch { onFail(); }
     return () => { cancelled = true; };

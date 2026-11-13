@@ -13,6 +13,7 @@ import { DemoNotice, PageHead, SectionHead, UploadButton } from "@/components/ad
 import { ActorLabel, StatusLabel, ValidationLabel, actorName } from "@/components/admin/Status";
 import { VersionTable } from "@/components/admin/VersionTable";
 import { ArrowRight, ArrowUpRight } from "@/components/ui/icons";
+import { OverviewSkeleton } from "@/components/admin/Skeletons";
 
 export const metadata: Metadata = { title: "Overview · Admin" };
 
@@ -21,7 +22,7 @@ export default function AdminOverview() {
   return (
     <>
       <PageHead title="Overview" description="Manage the published Country Index and monthly assessment updates." action={<UploadButton />} />
-      <Suspense fallback={<div className="admin-card h-[96px]" />}><Content /></Suspense>
+      <Suspense fallback={<OverviewSkeleton />}><Content /></Suspense>
     </>
   );
 }

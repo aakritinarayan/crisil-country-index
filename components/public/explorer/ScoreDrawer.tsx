@@ -5,6 +5,7 @@ import { allBands, bandFor, fmtScore } from "@/lib/bands";
 import type { CountryDetail } from "@/lib/data";
 import { KpiBreakdown } from "@/components/public/country/KpiBreakdown";
 import { ArrowLeft, ArrowRight, ArrowUpRight, Close } from "@/components/ui/icons";
+import { Loading, Skel, SkelText } from "@/components/ui/Skeleton";
 import { useExplorer } from "./ExplorerContext";
 
 type Detail = Pick<CountryDetail, "country" | "scores" | "kpis">;
@@ -99,7 +100,21 @@ export function ScoreDrawer({ target, onClose, onNavigate }: {
               <p className="border-t border-line pt-5 text-[15px] text-muted">No score is published for {country.name} on this pillar.</p>
             )}
 
-            {detail?.kpis && target ? (
+            {!detail && !error ? (
+              // the country's evidence is loading: the shape of what comes, under no heading
+              // yet (it depends on the data: indicators, or a rationale and sources)
+              <Loading label="Loading the evidence for this score" className="mt-8">
+                <Skel className="h-3 w-40" />
+                <div className="mt-4 grid gap-5 border-t border-line pt-4">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="grid gap-2">
+                      <div className="flex items-center justify-between gap-4"><Skel className="h-4 w-3/5" /><Skel className="h-5 w-12" /></div>
+                      <SkelText widths={[100, 82]} line="h-3" gap="gap-2" />
+                    </div>
+                  ))}
+                </div>
+              </Loading>
+            ) : detail?.kpis && target ? (
               <>
                 <h3 className="label mt-8 text-muted">What the score is built from</h3>
                 <div className="mt-3"><KpiBreakdown kpis={detail.kpis.byPillar[target.pillarId] ?? []} levels={detail.kpis.levels} max={detail.kpis.max} compact /></div>
@@ -108,8 +123,7 @@ export function ScoreDrawer({ target, onClose, onNavigate }: {
             <h3 className="label mt-8 text-muted">Why this score</h3>
             {error ? <p className="mt-2 text-[15px] text-muted">The rationale could not be loaded. Check your connection and open the score again.</p>
               : s ? <p className="mt-2 whitespace-pre-line text-[15.5px] leading-[1.7] text-ink-2">{s.rationale}</p>
-              : detail ? <p className="mt-2 text-[15px] text-muted">No rationale is published for this score.</p>
-              : <div className="mt-3 space-y-2" aria-label="Loading rationale">{[100, 94, 70].map((w) => <div key={w} className="h-3.5 animate-pulse bg-sunken" style={{ width: `${w}%` }} />)}</div>}
+              : <p className="mt-2 text-[15px] text-muted">No rationale is published for this score.</p>}
 
             <h3 className="label mt-8 text-muted">Sources{s && s.references.length > 0 && <span className="num"> · {s.references.length}</span>}</h3>
             {s && (s.references.length === 0 ? <p className="mt-2 text-[14px] text-muted">No sources are listed for this score.</p> : (

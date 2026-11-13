@@ -15,6 +15,8 @@
   --bg: #f5f6f1;
   --bg-raised: #ffffff;
   --bg-sunken: #eceee6;
+  --skel: #e5e8df;               /* skeleton base: soft grey-green */
+  --skel-hi: #f0f2eb;            /* skeleton shimmer highlight */
   --ink: #1f211c;
   --ink-2: #353535;
   --muted: #5c6057;
@@ -77,6 +79,8 @@
   --bg: #0d0f0c;
   --bg-raised: #171a15;
   --bg-sunken: #121410;
+  --skel: #1b201c;               /* skeleton base: muted charcoal-teal */
+  --skel-hi: #242a25;
   --ink: #f1f3ec;
   --ink-2: #dfe2d8;
   --muted: #a3a89c;
@@ -737,3 +741,33 @@ button.score-cell:hover .rank-score { box-shadow: inset 0 0 0 1px color-mix(in s
 .route-why > summary { cursor: pointer; width: fit-content; font-size: 13px; font-weight: 600; color: var(--link); }
 .route-why > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
 .route-why > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ── Skeletons (components/ui/Skeleton.tsx) ───────────────────────────────────
+ * A slow, faint sweep (1.8s); static under reduced motion. */
+.skel { display: block; border-radius: 4px; background-color: var(--skel);
+  background-image: linear-gradient(90deg, transparent 0%, var(--skel-hi) 50%, transparent 100%);
+  background-size: 200% 100%; background-repeat: no-repeat; animation: skel-sweep 1.8s ease-in-out infinite; }
+@keyframes skel-sweep { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+.skel-on-dark { --skel: rgb(255 255 255 / .055); --skel-hi: rgb(255 255 255 / .09); }
+@media (prefers-reduced-motion: reduce) { .skel { animation: none !important; background-image: none; } }
+/* the globe's placeholder: a disc the size of the sphere (radius = 47% of the shorter side) */
+.skel-globe-box { position: absolute; inset: 0; display: grid; place-items: center; container-type: size; pointer-events: none; }
+.skel-globe { width: 94cqmin; height: 94cqmin; border-radius: 999px; }
+
+/* upload progress (admin/upload): real upload percentage, then an indeterminate check */
+.drop-zone.is-busy { cursor: progress; border-style: solid; border-color: var(--teal); }
+.upload-progress { display: grid; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg-raised); }
+.up-step { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+.up-step.is-now { color: var(--ink); font-weight: 600; }
+.up-step.is-done { color: var(--ink-2); }
+.up-dot { width: 9px; height: 9px; flex-shrink: 0; border-radius: 999px; border: 1.5px solid currentColor; }
+.up-step.is-done .up-dot { background: var(--teal); border-color: var(--teal); }
+.up-step.is-now .up-dot { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 20%, transparent); }
+.up-bar { width: 100%; height: 4px; appearance: none; border: 0; border-radius: 999px; overflow: hidden; background: var(--skel); }
+.up-bar::-webkit-progress-bar { background: var(--skel); }
+.up-bar::-webkit-progress-value { background: var(--teal); transition: width .2s; }
+.up-bar::-moz-progress-bar { background: var(--teal); }
+.up-bar:indeterminate { background: linear-gradient(90deg, transparent, var(--teal), transparent) var(--skel); background-size: 40% 100%; background-repeat: no-repeat; animation: up-run 1.4s ease-in-out infinite; }
+.up-bar:indeterminate::-webkit-progress-bar { background: transparent; }
+@keyframes up-run { from { background-position: -40% 0; } to { background-position: 140% 0; } }
+@media (prefers-reduced-motion: reduce) { .up-bar:indeterminate { animation: none; background: var(--teal); opacity: .5; } }

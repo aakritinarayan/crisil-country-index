@@ -7,9 +7,10 @@ import type { Feature, Geometry } from "geojson";
 import smallStates from "@/data/small-states.json";
 import { bandFor, fmtScore } from "@/lib/bands";
 import type { ScoreBand } from "@/lib/types";
-import { ISO_TO_NUM, SMALL_AREA, loadTopo } from "../geo";
+import { ISO_TO_NUM, SMALL_AREA, loadTopo, loadedTopo } from "../geo";
 import type { GeoViewHandle } from "./Globe";
 import { MapControls, WheelHint, tween, useWheelZoom } from "./MapControls";
+import { Skel } from "@/components/ui/Skeleton";
 
 export type MapItem = { id: string; iso: string; name: string; value: number | null; rank: number };
 
@@ -44,7 +45,7 @@ export function WorldMap({ ref, items, bands, activeBands, selectedId, onSelect,
   }, []);
   const { w: W, h: H } = size;
 
-  const [topo, setTopo] = useState<Topology | null>(null);
+  const [topo, setTopo] = useState<Topology | null>(() => loadedTopo("50m"));
   useEffect(() => { loadTopo("50m").then(setTopo); }, []);
   // The visitor's own zoom/pan, remembered for the selection it was made under.
   // Changing the selection hands control back to the selection's own view.
@@ -305,7 +306,12 @@ export function WorldMap({ ref, items, bands, activeBands, selectedId, onSelect,
         </svg>
       )}
 
-      {!topo && <div className="absolute inset-0 grid place-items-center text-sm text-muted">Loading map…</div>}
+      {!topo && (
+        <div aria-busy="true" className="absolute inset-0 p-[4%]">
+          <span role="status" className="sr-only">Loading map</span>
+          <Skel className="size-full rounded-[10px]" />
+        </div>
+      )}
 
       {hover && (
         <div className="pointer-events-none absolute z-10 border border-line bg-raised/95 px-3 py-2 shadow-soft backdrop-blur-sm"

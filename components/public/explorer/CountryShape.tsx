@@ -4,7 +4,8 @@ import { geoArea, geoCentroid, geoCircle, geoDistance, geoMercator, geoPath } fr
 import { feature, mesh } from "topojson-client";
 import type { GeometryCollection, Topology } from "topojson-specification";
 import type { Feature, Geometry, MultiPolygon } from "geojson";
-import { ISO_TO_NUM, SMALL_AREA, loadTopo } from "../geo";
+import { ISO_TO_NUM, SMALL_AREA, loadTopo, loadedTopo } from "../geo";
+import { Skel } from "@/components/ui/Skeleton";
 
 const W = 320, H = 320, PAD = 36;
 // the country alone, no map: the explorer panel preview (wide, short) and the profile hero (square)
@@ -19,7 +20,7 @@ const ALONE = { solo: [400, 210, 22], float: [400, 400, 14] } as const;
  *  with a ring marking them, rather than blown up into a crude polygon. Countries missing
  *  from the geometry get no shape and the panel reads fine without it. */
 export function CountryShape({ iso, name, fill, variant = "tile" }: { iso: string; name: string; fill: string; variant?: "tile" | "hero" | "solo" | "float" }) {
-  const [topo, setTopo] = useState<Topology | null>(null);
+  const [topo, setTopo] = useState<Topology | null>(() => loadedTopo("50m"));
   useEffect(() => { loadTopo("50m").then(setTopo); }, []);
 
   const drawing = useMemo(() => {
@@ -46,6 +47,11 @@ export function CountryShape({ iso, name, fill, variant = "tile" }: { iso: strin
     };
   }, [topo, iso, variant]);
 
+  // outlines still loading: a placeholder the size of the drawing (it fills its box);
+  // loaded but no outline for this territory: nothing
+  if (!topo) return variant === "tile"
+    ? <Skel className="size-full rounded-[6px]" />
+    : <span aria-hidden className="grid size-full place-items-center"><Skel className={`size-[62%] rounded-full ${variant === "float" ? "skel-on-dark" : ""}`} /></span>;
   if (!drawing) return <div aria-hidden className="h-4" />;
   if (variant === "solo" || variant === "float") {
     // only the country: no neighbours, borders or sea; fitted (never stretched), transparent ground

@@ -8,6 +8,7 @@ import { zoneName } from "@/lib/admin/format";
 import { DemoNotice, PageHead, UploadButton } from "@/components/admin/Page";
 import { VersionTable } from "@/components/admin/VersionTable";
 import { ArrowRight } from "@/components/ui/icons";
+import { HistorySkeleton } from "@/components/admin/Skeletons";
 
 export const metadata: Metadata = { title: "Version history · Admin" };
 
@@ -15,7 +16,7 @@ export default function VersionsPage() {
   return (
     <>
       <PageHead title="Version history" description="Every uploaded workbook, newest first. Exactly one version is live at a time. Earlier live versions are Archived; a new upload is Final until it’s published." action={<UploadButton />} />
-      <Suspense fallback={<div className="admin-card h-[240px]" />}><Content /></Suspense>
+      <Suspense fallback={<HistorySkeleton />}><Content /></Suspense>
     </>
   );
 }

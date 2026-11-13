@@ -7,7 +7,7 @@ import type { Feature, Geometry, MultiPolygon, Polygon, Position } from "geojson
 import smallStates from "@/data/small-states.json";
 import { bandFor, fmtScore } from "@/lib/bands";
 import type { ScoreBand } from "@/lib/types";
-import { ISO_TO_NUM, SMALL_AREA, loadTopo } from "../geo";
+import { ISO_TO_NUM, SMALL_AREA, loadTopo, loadedTopo } from "../geo";
 import { EarthCanvas } from "../hero/EarthCanvas";
 import { GlobeAtmos } from "./GlobeAtmos";
 import { MapControls, WheelHint, tween, useWheelZoom } from "./MapControls";
@@ -109,7 +109,7 @@ export function Globe({ ref, items, bands, neutral, activeBands, selectedId, onS
   const { w, h } = size;
   const R0 = Math.min(w, h) * FILL;
 
-  const [lo, setLo] = useState<Topology | null>(null);
+  const [lo, setLo] = useState<Topology | null>(() => loadedTopo("110m"));
   const [mid, setMid] = useState<Topology | null>(null);
   const [hi, setHi] = useState<Topology | null>(null);
   const [rot, setRot] = useState<Rot | null>(null);
@@ -127,6 +127,7 @@ export function Globe({ ref, items, bands, neutral, activeBands, selectedId, onS
   const [moving, setMoving] = useState(false);
   const [grabbing, setGrabbing] = useState(false);
   const [photoOk, setPhotoOk] = useState(true);
+  const [photoReady, setPhotoReady] = useState(false);
 
   const geoLo = useMemo(() => geography(lo), [lo]);
   const geoMid = useMemo(() => geography(mid), [mid]);
@@ -318,6 +319,9 @@ export function Globe({ ref, items, bands, neutral, activeBands, selectedId, onS
   };
 
   const R = R0 * viewZoom;
+  // the hero shows the photographic Earth (its SVG layers are faded out), so it is ready
+  // when that has painted — or failed, and the SVG takes over
+  const initialising = !lo || (!explore && photo && photoOk && w > 0 && !photoReady); // w = 0: not shown at this size
   return (
     <div ref={box} data-mode={mode} className={`globe absolute inset-0 select-none ${explore ? (grabbing ? "cursor-grabbing" : "cursor-grab") : ""}`}
       style={{ touchAction: explore ? (expanded ? "none" : "pan-y") : undefined }}
@@ -325,8 +329,12 @@ export function Globe({ ref, items, bands, neutral, activeBands, selectedId, onS
       onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}
       onPointerLeave={() => setHover(null)}
       onDoubleClick={explore ? (e) => { const p = local(e); stop.current(); zoomAt(1.8, p.x, p.y); } : undefined}
-      aria-label={explore ? "Globe. Drag or use the arrow keys to turn it, plus and minus to zoom." : undefined}>
-      {photo && photoOk && w > 0 && <div className="gl-photo absolute inset-0"><EarthCanvas rotate={viewRot} radius={R} onFail={() => setPhotoOk(false)} /></div>}
+      aria-label={explore ? "Globe. Drag or use the arrow keys to turn it, plus and minus to zoom." : undefined}
+      aria-busy={initialising || undefined}>
+      {/* until the globe can be drawn (outlines, and in the hero the photographic Earth):
+          a disc the size of the sphere */}
+      {initialising && <div aria-hidden className={`skel-globe-box ${explore ? "" : "skel-on-dark"}`}><span className="skel skel-globe" /></div>}
+      {photo && photoOk && w > 0 && <div className="gl-photo absolute inset-0"><EarthCanvas rotate={viewRot} radius={R} onFail={() => setPhotoOk(false)} onReady={() => setPhotoReady(true)} /></div>}
       {drawing && (
         <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} className={`relative block ${viewZoom > 1.02 ? "overflow-hidden" : "overflow-visible"}`}
           role={explore ? "img" : undefined} aria-hidden={explore ? undefined : true}

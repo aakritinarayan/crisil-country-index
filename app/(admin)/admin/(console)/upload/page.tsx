@@ -9,6 +9,7 @@ import { fmtPeriod } from "@/lib/admin/format";
 import { PageHead } from "@/components/admin/Page";
 import { Download } from "@/components/ui/icons";
 import { UploadForm } from "./UploadForm";
+import { StepsSkeleton, UploadSkeleton } from "@/components/admin/Skeletons";
 
 export const metadata: Metadata = { title: "Upload data · Admin" };
 
@@ -28,11 +29,11 @@ export default function UploadPage() {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <section aria-labelledby="up-h" className="admin-card p-5 sm:p-6">
           <h2 id="up-h" className="sr-only">Workbook</h2>
-          <Suspense fallback={<div className="drop-zone h-[180px]" />}><Upload /></Suspense>
+          <Suspense fallback={<UploadSkeleton />}><Upload /></Suspense>
         </section>
         <section aria-labelledby="how-h" className="admin-card p-5">
           <h2 id="how-h" className="text-[15px] font-semibold text-ink">How an update goes live</h2>
-          <Suspense fallback={<div className="mt-3 h-[260px]" />}><Steps /></Suspense>
+          <Suspense fallback={<StepsSkeleton />}><Steps /></Suspense>
         </section>
       </div>
     </>

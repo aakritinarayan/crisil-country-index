@@ -8,6 +8,7 @@ import { allBands, bandFor, fmtScore, formatAsOf } from "@/lib/bands";
 import type { Reference } from "@/lib/types";
 import { ArrowLeft, ArrowRight } from "@/components/ui/icons";
 import { CountryShape } from "@/components/public/explorer/CountryShape";
+import { CountrySkeleton } from "@/components/public/country/CountrySkeleton";
 import ALPHA2 from "@/data/iso-alpha3-to-alpha2.json";
 import { PillarExplorer, type PillarRow } from "@/components/public/country/PillarExplorer";
 import { NotPublished } from "@/components/public/NotPublished";
@@ -53,20 +54,6 @@ const fmtDate = (d: string | null) => {
 // at once. Direct visits still get the fully prerendered page for every slug.
 export default function CountryPage({ params }: PageProps<"/country/[slug]">) {
   return <Suspense fallback={<CountrySkeleton />}><CountryProfile params={params} /></Suspense>;
-}
-
-function CountrySkeleton() {
-  return (
-    <div className="wrap pt-8 sm:pt-10" aria-busy="true" aria-label="Loading country profile">
-      <div className="h-4 w-48 bg-sunken" />
-      <div className="mt-10 h-14 w-72 max-w-full bg-sunken" />
-      <div className="mt-6 h-4 w-56 bg-sunken" />
-      <div className="mt-12 grid gap-10 border-t border-line pt-12 lg:grid-cols-[360px_1fr]">
-        <div className="h-64 bg-sunken" />
-        <div className="grid content-start gap-3"><div className="h-5 bg-sunken" /><div className="h-5 bg-sunken" /><div className="h-5 w-2/3 bg-sunken" /></div>
-      </div>
-    </div>
-  );
 }
 
 async function CountryProfile({ params }: { params: Promise<{ slug: string }> }) {

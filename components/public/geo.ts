@@ -10,11 +10,16 @@ export const ISO_TO_NUM = isoTable as Record<string, string>;
 
 export type Resolution = "110m" | "50m" | "50m-globe";
 const cache: Partial<Record<Resolution, Promise<Topology>>> = {};
+const ready: Partial<Record<Resolution, Topology>> = {};
 const read = (m: { default?: unknown }) => (m.default ?? m) as unknown as Topology;
 export const loadTopo = (res: Resolution = "110m"): Promise<Topology> =>
-  (cache[res] ??= res === "110m" ? import("world-atlas/countries-110m.json").then(read)
+  (cache[res] ??= (res === "110m" ? import("world-atlas/countries-110m.json").then(read)
     : res === "50m" ? import("world-atlas/countries-50m.json").then(read)
-    : loadTopo("50m").then((t) => thin(t, 0.1)));
+    : loadTopo("50m").then((t) => thin(t, 0.1))).then((t) => (ready[res] = t)));
+
+/** The geometry if it has already loaded, else null — to start a newly mounted map from it
+ *  (no loading placeholder when switching country or view once the data is here). */
+export const loadedTopo = (res: Resolution): Topology | null => ready[res] ?? null;
 
 /** Drop arc points closer than `tol` degrees to the last kept one. Works on the
  *  topology's shared arcs, so neighbouring countries stay seamless. Short arcs (tiny

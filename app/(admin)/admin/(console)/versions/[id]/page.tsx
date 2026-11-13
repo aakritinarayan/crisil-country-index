@@ -15,11 +15,12 @@ import { PublishControl } from "@/components/admin/PublishControl";
 import { ActorLabel, StatusLabel, ValidationLabel, actorName } from "@/components/admin/Status";
 import { Check, Download, Eye, Publish, Restore } from "@/components/ui/icons";
 import { nCountries } from "@/lib/plural";
+import { VersionSkeleton } from "@/components/admin/Skeletons";
 
 export const metadata: Metadata = { title: "Version details · Admin" };
 
 export default function VersionPage({ params, searchParams }: PageProps<"/admin/versions/[id]">) {
-  return <Suspense fallback={<div className="admin-card h-[320px]" />}><Detail params={params} searchParams={searchParams} /></Suspense>;
+  return <Suspense fallback={<VersionSkeleton />}><Detail params={params} searchParams={searchParams} /></Suspense>;
 }
 
 async function Detail({ params, searchParams }: { params: PageProps<"/admin/versions/[id]">["params"]; searchParams: PageProps<"/admin/versions/[id]">["searchParams"] }) {
