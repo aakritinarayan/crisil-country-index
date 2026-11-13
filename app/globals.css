@@ -398,6 +398,12 @@ html.tx-ready .explore-reveal { opacity: var(--explore-in, 1); transform: transl
 .rank-table .score-cell { transition: background-color .12s; }
 .rank-table .score-cell:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .rank-table .sort-btn.is-sorted { box-shadow: inset 0 -2px 0 var(--teal); padding-bottom: 4px; }
+/* the Rank column's sort: label + two arrows, the active direction solid */
+.rank-sort { display: inline-flex; align-items: center; justify-content: flex-end; gap: 3px; margin: -5px -5px -5px 0; padding: 5px; border-radius: 4px; /* a larger target, label on the row's line */
+  font: inherit; color: var(--muted); transition: color .15s, background-color .15s; }
+.rank-sort svg { flex-shrink: 0; color: var(--ink-2); }
+.rank-sort:hover { color: var(--ink); background: var(--bg-sunken); }
+.rank-sort:active { background: color-mix(in srgb, var(--teal) 12%, var(--bg-sunken)); }
 .rank-table .country-arrow, .rank-table .locate-btn { opacity: 0; transition: opacity .12s; }
 .rank-row:hover .country-arrow, .rank-row:focus-within .country-arrow, .rank-row:hover .locate-btn, .rank-row:focus-within .locate-btn { opacity: 1; }
 .az-head { background: var(--bg); }

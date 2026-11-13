@@ -13,6 +13,13 @@ export const Plus = ({ size, className }: P) => (<svg {...base(size)} className=
 export const Minus = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M5 12h14" /></svg>);
 export const Reset = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></svg>);
 export const ChevronDown = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="m6 9 6 6 6-6" /></svg>);
+/** Up and down arrows side by side (sort). `active` strengthens one and fades the other. */
+export const SortArrows = ({ size, className, active }: P & { active?: "up" | "down" }) => (
+  <svg {...base(size)} className={className}>
+    <path d="M8 19V5M4.5 8.5 8 5l3.5 3.5" opacity={active === "down" ? 0.32 : 1} />
+    <path d="M16 5v14M12.5 15.5 16 19l3.5-3.5" opacity={active === "up" ? 0.32 : 1} />
+  </svg>
+);
 export const ChevronLeft = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="m15 18-6-6 6-6" /></svg>);
 export const Sort = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M8 4v16M4 8l4-4 4 4M16 20V4M12 16l4 4 4-4" /></svg>);
 export const Crosshair = ({ size, className }: P) => (<svg {...base(size)} className={className}><circle cx="12" cy="12" r="7" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" /></svg>);

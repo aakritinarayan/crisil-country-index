@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { allBands, bandFor, fmtScore } from "@/lib/bands";
-import { ChevronDown, Close, Search } from "@/components/ui/icons";
+import { ChevronDown, Close, Search, SortArrows } from "@/components/ui/icons";
 import { Select } from "@/components/ui/Select";
 import { COMPOSITE, useExplorer, type SummaryCountry } from "./ExplorerContext";
 import { nCountries } from "@/lib/plural";
@@ -275,7 +275,15 @@ export function Rankings() {
             </caption>
             <thead className="z-10 xl:sticky xl:top-0">
               <tr className="border-b border-line-strong">
-                {mode === "ranked" && <th scope="col" className="sticky-col left-0 w-12 pb-2 pr-2 text-right align-bottom text-[12px] font-medium text-muted">Rank<span className="sr-only"> on {rankLabel}</span></th>}
+                {mode === "ranked" && (
+                  <th scope="col" className="sticky-col left-0 w-12 pb-2 pr-1 text-right align-bottom text-[12px] font-medium text-muted">
+                    {/* rank order is the measure's order: rank 1 first = highest score first */}
+                    <button type="button" onClick={() => setDir((d) => (d === "desc" ? "asc" : "desc"))} title="Sort by rank"
+                      className="rank-sort" aria-label={`Rank on ${rankLabel}, ${dir === "desc" ? "1 first" : "last first"}. Select to show ${dir === "desc" ? "the last rank" : "rank 1"} first`}>
+                      Rank<SortArrows size={14} active={dir === "desc" ? "up" : "down"} />
+                    </button>
+                  </th>
+                )}
                 <th scope="col" className={`sticky-col ${mode === "ranked" ? "left-12" : "left-0"} pb-2 pl-3 text-left align-bottom text-[12.5px] font-medium text-muted`}>Country</th>
                 {columns.map((col) => (
                   <th key={col.key} scope="col" aria-sort={ariaSort(col.key)} className={`px-1 pb-2 text-left align-bottom ${col.key === COMPOSITE ? "composite-col" : ""}`}>
