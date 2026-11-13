@@ -239,10 +239,12 @@ export function Rankings() {
       </div>
 
       {/* the one readiness key for every chip in the table */}
-      <ul aria-label="Readiness bands" className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[12.5px]">
-        <li className="text-muted">Readiness</li>
+      {/* one line on phones (label for screen readers only, a touch smaller; scrolls rather
+          than wraps if a dataset ever has more bands than fit); wraps freely from sm */}
+      <ul aria-label="Readiness bands" className="rank-legend mt-4 flex items-center gap-x-3 overflow-x-auto whitespace-nowrap text-[12px] max-[359px]:gap-x-2 max-[359px]:text-[11.5px] [scrollbar-width:none] sm:flex-wrap sm:gap-x-4 sm:gap-y-2 sm:overflow-visible sm:text-[12.5px]">
+        <li className="text-muted max-sm:sr-only">Readiness</li>
         {bands.map((b) => (
-          <li key={b.label} className="flex items-center gap-1.5">
+          <li key={b.label} className="flex shrink-0 items-center gap-1.5 max-[359px]:gap-1">
             <span aria-hidden className="legend-chip" style={{ "--chip": b.fill } as React.CSSProperties} />
             <span className="text-ink-2">{b.label}</span><span className="text-muted num">{b.min}–{b.max}</span>
           </li>

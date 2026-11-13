@@ -534,6 +534,7 @@ button.score-cell:hover .rank-score { box-shadow: inset 0 0 0 1px color-mix(in s
 .legend-chip { display: inline-block; width: 22px; height: 14px; border-radius: 3px; --chip-mix: 45%;
   background: color-mix(in srgb, var(--chip) var(--chip-mix), var(--bg-raised)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 7%, transparent); }
 :root[data-theme="dark"] .legend-chip { --chip-mix: 34%; }
+@media (max-width: 639px) { .rank-legend .legend-chip { width: 16px; height: 12px; } }
 /* published long-form text (components/public/Prose.tsx): a calm reading column */
 .prose-doc { max-width: 68ch; color: var(--ink-2); font-size: 15.5px; line-height: 1.75; }
 .prose-doc > * + * { margin-top: .9em; }
