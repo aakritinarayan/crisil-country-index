@@ -70,7 +70,7 @@ export function ScoreDistribution() {
   };
 
   return (
-    <section id="distribution" aria-labelledby="dist-h" className="wrap pb-[clamp(4rem,9vh,6.5rem)]">
+    <section id="distribution" aria-labelledby="dist-h" className="wrap pb-[clamp(1rem,3vh,2rem)]">
       <p className="eyebrow">Global performance</p>
       <h2 id="dist-h" className="mt-3 text-[clamp(1.75rem,2.8vw,2.5rem)] font-bold leading-[1.1] tracking-[-0.025em] text-ink">
         Where countries <span className="grad-text">stand</span>
@@ -160,8 +160,9 @@ export function ScoreDistribution() {
           </>
         )}
 
-        {/* the selection: summary and the way to the countries (never navigates on its own) */}
-        <div className={`mt-5 flex min-h-11 flex-wrap items-center gap-x-5 gap-y-2 ${picked && pickedBand ? "" : "invisible"}`} aria-live="polite">
+        {/* the selection: summary and the way to the countries (never navigates on its own).
+            Takes no space until a band is picked (the live region itself is always there). */}
+        <div className={`flex flex-wrap items-center gap-x-5 gap-y-2 ${picked && pickedBand ? "mt-5 min-h-11" : ""}`} aria-live="polite">
           {picked && pickedBand && <>
             <p className="text-[14px] text-ink-2"><span className="font-semibold text-ink">{picked.name}</span> · {pickedBand.label} · {pickedBand.count} {plural(pickedBand.count)} ({pickedBand.pct}%)</p>
             <button type="button" onClick={viewCountries} className="btn">View countries<span className="box"><ArrowRight size={16} /></span></button>
