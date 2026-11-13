@@ -200,37 +200,42 @@ export function Rankings() {
       </p>
       <p className="mt-2 text-[13.5px] text-muted num">Scores range from {meta.score_min} to {meta.score_max} and are grouped into {WORDS[bands.length] ?? bands.length} readiness bands. Select a score to explore its rationale and sources.</p>
 
-      {/* toolbar: browse mode · search · band · rank by · clear */}
-      <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2.5">
-        <div role="radiogroup" aria-label="Browse" className="flex h-11 shrink-0 border border-line bg-raised p-[3px]">
+      {/* toolbar: browse mode · search · band · rank by · clear. Below lg a 20-column grid —
+          toggle 40% + search 60%, then the two selects at 50% (their labels kept for screen
+          readers only), then the count; under 360px search takes its own row. From lg the
+          one-row desktop arrangement. */}
+      <div className="rank-toolbar mt-7 grid grid-cols-[repeat(20,minmax(0,1fr))] items-center gap-2.5 lg:flex lg:flex-wrap lg:gap-x-3">
+        <div role="radiogroup" aria-label="Browse" className="col-span-8 flex h-11 border border-line bg-raised p-[3px] max-[359px]:col-span-20 lg:shrink-0">
           {(["ranked", "az"] as const).map((m) => (
-            <label key={m} className="relative flex cursor-pointer">
+            <label key={m} className="relative flex flex-1 cursor-pointer lg:flex-none">
               <input type="radio" name="rank-mode" value={m} checked={mode === m} onChange={() => setMode(m)} className="peer sr-only" />
-              <span className="flex items-center px-3.5 text-[13px] font-medium text-muted transition-colors hover:text-ink peer-checked:bg-sunken peer-checked:text-ink peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2 peer-focus-visible:outline-focus">
+              <span className="flex w-full items-center justify-center whitespace-nowrap px-2.5 lg:px-3.5 text-[13px] font-medium text-muted transition-colors hover:text-ink peer-checked:bg-sunken peer-checked:text-ink peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2 peer-focus-visible:outline-focus">
                 {m === "ranked" ? "Ranked" : "A–Z"}
               </span>
             </label>
           ))}
         </div>
-        <label className="field flex h-11 min-w-[200px] flex-1 items-center gap-2.5 bg-raised px-3 sm:max-w-[300px]">
+        <label className="field col-span-12 flex h-11 min-w-0 items-center gap-2.5 bg-raised px-3 max-[359px]:col-span-20 lg:min-w-[200px] lg:max-w-[300px] lg:flex-1">
           <Search size={16} className="shrink-0 text-muted" /><span className="sr-only">Search countries</span>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search countries…" className="min-w-0 flex-1 bg-transparent text-[14px] text-ink placeholder:text-muted outline-none" />
           {q && <button type="button" onClick={() => setQ("")} aria-label="Clear search" className="grid size-6 place-items-center text-muted hover:text-ink"><Close size={14} /></button>}
         </label>
         <Select label="Band" value={singleBand != null ? String(singleBand) : filterBand ? "multi" : "all"} active={!!filterBand} minMenuWidth={260}
-          onChange={(v) => setBands(v === "all" ? null : new Set([Number(v)]))} className="w-full sm:w-auto [&>span]:w-[52px] sm:[&>span]:w-auto [&>button]:sm:w-[200px]"
+          onChange={(v) => setBands(v === "all" ? null : new Set([Number(v)]))} className="col-span-10 min-w-0 [&>span]:sr-only lg:w-auto lg:[&>span]:not-sr-only [&>button]:lg:w-[200px]"
           options={[
             { value: "all", label: "All bands", meta: `${bandCounts.reduce((t, n) => t + n, 0)}` },
             ...bands.map((b, i) => ({ value: String(i), label: b.label, hint: `${b.min}–${b.max}`, swatch: b.fill, meta: `${bandCounts[i]}`, disabled: bandCounts[i] === 0 })),
             ...(filterBand && singleBand == null ? [{ value: "multi", label: "Several bands", disabled: true }] : []),
           ]} />
-        <Select label="Rank by" value={measure} minMenuWidth={240} className="w-full sm:w-auto [&>span]:w-[52px] sm:[&>span]:w-auto [&>button]:sm:w-[230px]"
+        <Select label="Rank by" value={measure} minMenuWidth={240} className="col-span-10 min-w-0 [&>span]:sr-only lg:w-auto lg:[&>span]:not-sr-only [&>button]:lg:w-[230px]"
           onChange={(v) => { setMeasure(v); setDir("desc"); setMode("ranked"); }}
           options={[...columns].reverse().map((c) => ({ value: c.key, label: c.label }))} />
+        <div className="col-span-20 flex flex-wrap items-center gap-x-3 lg:contents">
         {narrowed && <button type="button" onClick={clearAll} className="h-10 px-1 text-[13px] font-semibold text-link underline decoration-1 underline-offset-4">Clear filters</button>}
-        <p className="ml-auto text-[13px] text-muted num" aria-live="polite">
+        <p className="ml-auto text-[12.5px] text-muted num lg:text-[13px]" aria-live="polite">
           {rows.length} of {nCountries(countries.length)}{filterBand && <> · {singleBand != null ? bands[singleBand].label : "several bands"} on {rankLabel.toLowerCase()}</>}
         </p>
+        </div>
       </div>
 
       {/* the one readiness key for every chip in the table */}
