@@ -144,6 +144,8 @@ export function Rankings() {
   const singleBand = filterBand?.size === 1 ? [...filterBand][0] : null;
   const bandCounts = bands.map((b) => searched.filter((c) => { const v = valueOf(c); return v != null && bandFor(v, meta.score_bands).index === b.index; }).length);
   const rankLabel = measure === COMPOSITE ? "Composite" : measureLabel;
+  // in running text: "composite", but a pillar keeps its own casing ("Corporate RE market")
+  const rankLabelInText = measure === COMPOSITE ? "composite" : measureLabel;
   const sortedCol = mode === "ranked" ? measure : null;
 
   const scoreCell = (c: SummaryCountry, key: string, label: string, composite = false) => {
@@ -242,7 +244,7 @@ export function Rankings() {
         <div className="col-span-20 flex flex-wrap items-center gap-x-3 lg:contents">
         {narrowed && <button type="button" onClick={clearAll} className="h-10 px-1 text-[13px] font-semibold text-link underline decoration-1 underline-offset-4">Clear filters</button>}
         <p className="ml-auto text-[12.5px] text-muted num lg:text-[13px]" aria-live="polite">
-          {rows.length} of {nCountries(countries.length)}{filterBand && <> · {singleBand != null ? bands[singleBand].label : "several bands"} on {rankLabel.toLowerCase()}</>}
+          {rows.length} of {nCountries(countries.length)}{filterBand && <> · {singleBand != null ? bands[singleBand].label : "several bands"} on {rankLabelInText}</>}
         </p>
         </div>
       </div>
@@ -394,10 +396,10 @@ export function Rankings() {
       <div className="mt-4 grid gap-1 text-[12.5px] leading-relaxed text-muted">
         {mode === "ranked" && (
           <p>{previous
-            ? <>Previous ranking and movement compare {rankLabel.toLowerCase()} ranks with the {formatAsOfShort(previous.as_of)} assessment. Movement is shown only when the same countries were ranked in both.</>
+            ? <>Previous ranking and movement compare {rankLabelInText} ranks with the {formatAsOfShort(previous.as_of)} assessment. Movement is shown only when the same countries were ranked in both.</>
             : <>Previous ranking and movement will appear once an earlier assessment period has been published.</>}</p>
         )}
-        {mode === "ranked" && unranked > 0 && <p>{nCountries(unranked)} without a {rankLabel.toLowerCase()} score {unranked === 1 ? "is" : "are"} not ranked.</p>}
+        {mode === "ranked" && unranked > 0 && <p>{nCountries(unranked)} without a {rankLabelInText} score {unranked === 1 ? "is" : "are"} not ranked.</p>}
         {notAssessed.length > 0 && <p>In the assessment scope, not yet assessed: {notAssessed.map((x) => x.name).join(", ")}. {notAssessed.length === 1 ? "It has" : "They have"} no scores or rankings yet.</p>}
       </div>
 
