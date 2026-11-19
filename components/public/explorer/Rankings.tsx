@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { allBands, bandFor, fmtScore, formatAsOfShort } from "@/lib/bands";
 import { compareRanks, ranksOn, type RankChange } from "@/lib/ranking";
-import { ArrowDown, ArrowUp, ChevronDown, Close, Search, SortArrows } from "@/components/ui/icons";
+import { ChevronDown, Close, Search, SortArrows } from "@/components/ui/icons";
 import { Select } from "@/components/ui/Select";
 import { COMPOSITE, useExplorer, type SummaryCountry } from "./ExplorerContext";
 import { nCountries } from "@/lib/plural";
@@ -433,16 +433,16 @@ function PreviousRank({ change }: { change?: RankChange }) {
   return <span className="text-[13px] text-ink-2 num" title={change.reason ?? undefined}>{change.previous}<span className="sr-only"> of {change.previousOf}</span></span>;
 }
 
-/** Rank movement: previous − current. An arrow and the number of places, with the direction in
+/** Rank movement: previous − current. A tinted chip with a triangle and the number of places, with the direction in
  *  words for screen readers (never colour alone); "—" when there is no valid comparison. */
 function Movement({ change }: { change?: RankChange }) {
   const m = change?.movement;
   if (m == null) return <span className="text-[13px] text-muted" title={change?.reason ?? "Previous ranking unavailable."}>—<span className="sr-only">{change?.reason ?? "Movement unavailable."}</span></span>;
-  if (m === 0) return <span className="rank-move is-same num"><span aria-hidden>–</span>0<span className="sr-only"> places, unchanged</span></span>;
+  if (m === 0) return <span className="rank-move is-same num" title="Unchanged since the previous assessment"><span aria-hidden>–</span>0<span className="sr-only"> places, unchanged</span></span>;
   const up = m > 0;
   return (
-    <span className={`rank-move num ${up ? "is-up" : "is-down"}`}>
-      {up ? <ArrowUp size={13} /> : <ArrowDown size={13} />}{Math.abs(m)}<span className="sr-only"> {Math.abs(m) === 1 ? "place" : "places"} {up ? "up" : "down"}</span>
+    <span className={`rank-move num ${up ? "is-up" : "is-down"}`} title={`${Math.abs(m)} ${Math.abs(m) === 1 ? "place" : "places"} ${up ? "up" : "down"} since the previous assessment`}>
+      <svg aria-hidden width="9" height="8" viewBox="0 0 9 8" fill="currentColor">{up ? <path d="M4.5 0 9 8H0z" /> : <path d="M4.5 8 0 0h9z" />}</svg>{Math.abs(m)}<span className="sr-only"> {Math.abs(m) === 1 ? "place" : "places"} {up ? "up" : "down"}</span>
     </span>
   );
 }

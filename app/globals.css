@@ -835,13 +835,17 @@ button.score-cell:hover .rank-score { box-shadow: inset 0 0 0 1px color-mix(in s
 @keyframes panel-swap { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .panel-swap { animation: none; } }
 
-/* Rank movement vs. the previous period: a small arrow and the number of places. Restrained
+/* Rank movement vs. the previous period: a tinted chip (the score chips' shape and height)
+   with a solid triangle and the number of places. Restrained
    green up, muted orange down, neutral when unchanged; the direction is also in words for
    screen readers, so colour is never the only signal. Both pass AA on the page background. */
-.rank-move { display: inline-flex; align-items: center; gap: 3px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
-.rank-move.is-up { color: var(--move-up); }
-.rank-move.is-down { color: var(--move-down); }
-.rank-move.is-same { color: var(--muted); font-weight: 500; gap: 4px; }
+.rank-move { --move: var(--muted); display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 28px; min-width: 50px; padding: 0 9px;
+  border-radius: 3px; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums lining-nums; color: var(--move);
+  background: color-mix(in srgb, var(--move) 13%, var(--bg-raised)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--move) 22%, transparent); }
+.rank-move svg { flex-shrink: 0; }
+.rank-move.is-up { --move: var(--move-up); }
+.rank-move.is-down { --move: var(--move-down); }
+.rank-move.is-same { --move: var(--muted); font-weight: 500; }
 :root { --move-up: #2f7a3e; --move-down: #a4561b; }
 :root[data-theme="dark"] { --move-up: #7cc98a; --move-down: #e0a06a; }
 /* Ranking table headers: one rule for every column label — same type and colour, left
