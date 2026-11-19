@@ -230,7 +230,7 @@ export function ExploreWorkspace() {
         role={expanded ? "dialog" : undefined} aria-modal={expanded || undefined} aria-label={expanded ? "Expanded map" : undefined}>
         {/* one toolbar: search | map view | assessment tabs (only the tabs may scroll) */}
         <div className="explorer-toolbar explore-reveal relative z-[2]">
-          <CountryCombobox countries={options} bands={meta.score_bands} size="toolbar" showCount={false} placeholder="Search a country"
+          <CountryCombobox countries={options} unavailable={summary.notAssessed} bands={meta.score_bands} size="toolbar" showCount={false} placeholder="Search a country"
             onSelect={(c) => select(c.country_id)} className="explore-search order-1 min-w-0 flex-1 lg:w-[280px] lg:flex-none" />
           <div role="radiogroup" aria-label="Map view" className="view-toggle order-2">
             {(["globe", "flat"] as const).map((v) => {

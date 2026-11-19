@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import { allBands, bandFor, fmtScore } from "@/lib/bands";
-import { ChevronDown, Close, Search, SortArrows } from "@/components/ui/icons";
+import { allBands, bandFor, fmtScore, formatAsOfShort } from "@/lib/bands";
+import { compareRanks, ranksOn, type RankChange } from "@/lib/ranking";
+import { ArrowDown, ArrowUp, ChevronDown, Close, Search, SortArrows } from "@/components/ui/icons";
 import { Select } from "@/components/ui/Select";
 import { COMPOSITE, useExplorer, type SummaryCountry } from "./ExplorerContext";
 import { nCountries } from "@/lib/plural";
@@ -22,12 +23,17 @@ type Dir = "desc" | "asc";
  *    zero — they are unranked, listed last and marked "Not available".
  *  A–Z — by name, in letter groups, with a letter row that jumps anywhere in the list
  *    (rendering more rows first if needed). No rank numbers.
+ *  Ranked lists only the countries with a score on the active measure; the rest are counted
+ *  in a note under the table, as are countries in scope but not yet assessed.
+ *  Previous ranking / Movement vs. previous (ranked only) follow the active measure too, and
+ *  come from the previous assessment period's stored scores (lib/ranking.ts compareRanks):
+ *  "—" with the reason whenever there is no valid comparison — never an inferred rank.
  *  Search (name or ISO code) and the band filter (on the active measure; shared with the
  *  map legend) work in both modes. Rows appear 25 at a time. Every score opens the
  *  rationale drawer; a country name opens its profile directly. Columns, bands and labels all come from the workbook. */
 export function Rankings() {
   const { summary, selectedId, measure, setMeasure, measureLabel, valueOf, overview, bandFilter, setBands, openScore, activeScore } = useExplorer();
-  const { meta, pillars, countries } = summary;
+  const { meta, pillars, countries, notAssessed, previous } = summary;
   const bands = allBands(meta.score_bands);
   const [mode, setMode] = useState<Mode>("ranked");
   const [dir, setDir] = useState<Dir>("desc");
@@ -45,17 +51,16 @@ export function Rankings() {
   const n = norm(q.trim());
   const searched = useMemo(() => countries.filter((c) => !n || norm(c.name).includes(n) || norm(c.iso_code).startsWith(n)), [countries, n]);
 
-  // ranks on the active measure, over every country (never just the rows on screen)
-  const ranks = useMemo(() => {
-    const valid = countries.filter((c) => valueOf(c) != null).sort((a, b) => valueOf(b)! - valueOf(a)!);
-    const m = new Map<string, number>();
-    valid.forEach((c, i) => m.set(c.country_id, i > 0 && valueOf(valid[i - 1]) === valueOf(c) ? m.get(valid[i - 1].country_id)! : i + 1));
-    return m;
-  }, [countries, valueOf]);
+  // ranks on the active measure, over every country (never just the rows on screen), and the
+  // same measure's ranks in the previous period
+  const ranks = useMemo(() => ranksOn(countries, measure), [countries, measure]);
+  const changes = useMemo(() => compareRanks(countries, previous, measure), [countries, previous, measure]);
+  const unranked = countries.filter((c) => valueOf(c) == null).length;
 
   const filterBand = bandFilter;
   const rows = useMemo(() => {
     const list = searched.filter((c) => {
+      if (mode === "ranked" && valueOf(c) == null) return false; // only what is ranked on this measure
       if (!filterBand) return true;
       const v = valueOf(c);
       return v != null && filterBand.has(bandFor(v, meta.score_bands).index);
@@ -173,6 +178,10 @@ export function Rankings() {
       <tr key={c.country_id} className={`rank-row group border-b border-line ${sel ? "is-selected" : ""}`}>
         {mode === "ranked" && <td className="sticky-col left-0 w-12 py-1.5 pr-2 text-right text-[13px] text-muted num">{r ?? "–"}</td>}
         <th scope="row" className={`sticky-col ${mode === "ranked" ? "left-12" : "left-0"} min-w-[124px] max-w-[240px] py-1.5 pl-3 pr-3 text-left font-normal lg:min-w-[180px]`}>{countryCell(c)}</th>
+        {mode === "ranked" && <>
+          <td className="hist-col px-2 py-1.5 text-right"><PreviousRank change={changes.get(c.country_id)} /></td>
+          <td className="hist-col px-2 py-1.5"><Movement change={changes.get(c.country_id)} /></td>
+        </>}
         {columns.map((col) => (
           <td key={col.key} className={`px-1 py-1 ${col.key === COMPOSITE ? "composite-col" : ""} ${sortedCol === col.key ? "is-sorted" : ""}`}>
             {scoreCell(c, col.key, col.label, col.key === COMPOSITE)}
@@ -184,7 +193,7 @@ export function Rankings() {
 
   const groupRow = (L: string) => (
     <tr key={`g-${L}`} aria-hidden="false">
-      <th colSpan={columns.length + 1} scope="rowgroup" data-letter={L} className="az-head scroll-mt-32 border-b border-line pb-1.5 pt-5 pl-3 text-left text-[13px] font-semibold text-ink">{L}</th>
+      <th colSpan={columns.length + (mode === "ranked" ? 4 : 1)} scope="rowgroup" data-letter={L} className="az-head scroll-mt-32 border-b border-line pb-1.5 pt-5 pl-3 text-left text-[13px] font-semibold text-ink">{L}</th>
     </tr>
   );
 
@@ -292,6 +301,10 @@ export function Rankings() {
                   </th>
                 )}
                 <th scope="col" className={`sticky-col ${mode === "ranked" ? "left-12" : "left-0"} pb-2 pl-3 text-left align-bottom text-[12.5px] font-medium text-muted`}>Country</th>
+                {mode === "ranked" && <>
+                  <th scope="col" className="hist-col px-2 pb-2 text-right align-bottom text-[12.5px] font-medium leading-tight text-muted">Previous ranking</th>
+                  <th scope="col" className="hist-col px-2 pb-2 text-left align-bottom text-[12.5px] font-medium leading-tight text-muted">Movement vs. previous</th>
+                </>}
                 {columns.map((col) => (
                   <th key={col.key} scope="col" aria-sort={ariaSort(col.key)} className={`px-1 pb-2 text-left align-bottom ${col.key === COMPOSITE ? "composite-col" : ""}`}>
                     <button type="button" onClick={() => sortBy(col.key)} className={`sort-btn group/s inline-flex items-end gap-1 pl-1 text-left text-[12.5px] leading-tight ${sortedCol === col.key ? "is-sorted font-semibold text-ink" : "font-medium text-ink-2 hover:text-ink"}`}>
@@ -311,7 +324,7 @@ export function Rankings() {
               })}
               {pinned && (
                 <Fragment>
-                  <tr aria-hidden><td colSpan={columns.length + 2} className="py-1 text-center text-xs text-muted">· · ·</td></tr>
+                  <tr aria-hidden><td colSpan={columns.length + (mode === "ranked" ? 4 : 1)} className="py-1 text-center text-xs text-muted">· · ·</td></tr>
                   {renderRow(pinned)}
                 </Fragment>
               )}
@@ -345,6 +358,18 @@ export function Rankings() {
                   </div>
                   {open && (
                     <div className="pb-3 pl-10 pr-2">
+                      {mode === "ranked" && (
+                        <dl className="grid">
+                          <div className="flex items-center justify-between gap-3 border-t border-line py-1.5">
+                            <dt className="text-[13.5px] text-ink-2">Previous ranking</dt>
+                            <dd className="w-28 shrink-0 text-[13.5px]"><PreviousRank change={changes.get(c.country_id)} /></dd>
+                          </div>
+                          <div className="flex items-center justify-between gap-3 border-t border-line py-1.5">
+                            <dt className="text-[13.5px] text-ink-2">Movement vs. previous</dt>
+                            <dd className="w-28 shrink-0"><Movement change={changes.get(c.country_id)} /></dd>
+                          </div>
+                        </dl>
+                      )}
                       <ul className="grid">
                         {columns.map((col) => (
                           <li key={col.key} className="flex items-center justify-between gap-3 border-t border-line py-1.5">
@@ -364,6 +389,17 @@ export function Rankings() {
           })}
         </ol>
       )}
+
+      {/* what the previous-period columns compare with, and who isn't in the table */}
+      <div className="mt-4 grid gap-1 text-[12.5px] leading-relaxed text-muted">
+        {mode === "ranked" && (
+          <p>{previous
+            ? <>Previous ranking and movement compare {rankLabel.toLowerCase()} ranks with the {formatAsOfShort(previous.as_of)} assessment. Movement is shown only when the same countries were ranked in both.</>
+            : <>Previous ranking and movement will appear once an earlier assessment period has been published.</>}</p>
+        )}
+        {mode === "ranked" && unranked > 0 && <p>{nCountries(unranked)} without a {rankLabel.toLowerCase()} score {unranked === 1 ? "is" : "are"} not ranked.</p>}
+        {notAssessed.length > 0 && <p>In the assessment scope, not yet assessed: {notAssessed.map((x) => x.name).join(", ")}. {notAssessed.length === 1 ? "It has" : "They have"} no scores or rankings yet.</p>}
+      </div>
 
       {/* footer: how much is showing, and more */}
       {rows.length > 0 && (
@@ -388,6 +424,26 @@ function ScoreChipCell({ value, fill, ink, composite }: { value: string; fill: s
   // .rank-score: a soft band-tinted chip; the number is its most prominent element
   return (
     <span className={`rank-score num ${composite ? "is-composite" : ""}`} style={{ "--chip": fill, "--chip-ink": ink } as React.CSSProperties}>{value}</span>
+  );
+}
+
+/** The country's rank on the active measure in the previous period, or "—" with the reason. */
+function PreviousRank({ change }: { change?: RankChange }) {
+  if (!change || change.previous == null) return <span className="text-[13px] text-muted" title={change?.reason ?? "Previous ranking unavailable."}>—<span className="sr-only">{change?.reason ?? "Previous ranking unavailable."}</span></span>;
+  return <span className="text-[13px] text-ink-2 num" title={change.reason ?? undefined}>{change.previous}<span className="sr-only"> of {change.previousOf}</span></span>;
+}
+
+/** Rank movement: previous − current. An arrow and the number of places, with the direction in
+ *  words for screen readers (never colour alone); "—" when there is no valid comparison. */
+function Movement({ change }: { change?: RankChange }) {
+  const m = change?.movement;
+  if (m == null) return <span className="text-[13px] text-muted" title={change?.reason ?? "Previous ranking unavailable."}>—<span className="sr-only">{change?.reason ?? "Movement unavailable."}</span></span>;
+  if (m === 0) return <span className="rank-move is-same num"><span aria-hidden>–</span>0<span className="sr-only"> places, unchanged</span></span>;
+  const up = m > 0;
+  return (
+    <span className={`rank-move num ${up ? "is-up" : "is-down"}`}>
+      {up ? <ArrowUp size={13} /> : <ArrowDown size={13} />}{Math.abs(m)}<span className="sr-only"> {Math.abs(m) === 1 ? "place" : "places"} {up ? "up" : "down"}</span>
+    </span>
   );
 }
 

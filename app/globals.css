@@ -828,3 +828,21 @@ button.score-cell:hover .rank-score { box-shadow: inset 0 0 0 1px color-mix(in s
 .tap, .ver-link, .admin-link, .login-back, .hero-metric, .rank-table .sort-btn, .rank-sort { position: relative; }
 :is(.tap, .ver-link, .admin-link, .login-back, .hero-metric, .rank-table .sort-btn, .rank-sort)::after {
   content: ""; position: absolute; left: 50%; top: 50%; width: max(100% + 8px, 44px); height: max(100%, 44px); transform: translate(-50%, -50%); }
+
+/* Country panel: the breakdown under the score swaps with the assessment tab — a short fade,
+   no movement (and none at all with reduced motion) */
+.panel-swap { animation: panel-swap 180ms ease-out; }
+@keyframes panel-swap { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .panel-swap { animation: none; } }
+
+/* Rank movement vs. the previous period: a small arrow and the number of places. Restrained
+   green up, muted orange down, neutral when unchanged; the direction is also in words for
+   screen readers, so colour is never the only signal. Both pass AA on the page background. */
+.rank-move { display: inline-flex; align-items: center; gap: 3px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.rank-move.is-up { color: var(--move-up); }
+.rank-move.is-down { color: var(--move-down); }
+.rank-move.is-same { color: var(--muted); font-weight: 500; gap: 4px; }
+:root { --move-up: #2f7a3e; --move-down: #a4561b; }
+:root[data-theme="dark"] { --move-up: #7cc98a; --move-down: #e0a06a; }
+.hist-col { white-space: nowrap; width: 1%; }
+.rank-table th.hist-col { white-space: normal; min-width: 84px; max-width: 104px; }

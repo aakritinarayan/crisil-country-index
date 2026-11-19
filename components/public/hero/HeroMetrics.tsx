@@ -19,10 +19,10 @@ export function HeroMetrics({ count, pillars, asOf }: HeroMetricData) {
   return (
     <dl className="grid grid-cols-2 sm:grid-cols-3">
       <div className={`${cell} border-r border-white/[0.07]`}>
-        <dt className="order-2"><span className={label}>Countries assessed</span></dt>
+        <dt className="order-2"><span className={label}>{count === 1 ? "Country assessed" : "Countries assessed"}</span></dt>
         <dd className="order-1">
           <a href="#map" onClick={(e) => { e.preventDefault(); enterExplorer(); }} className={`${hit} ${value} block`}
-            aria-label={`${count} countries assessed. Explore them on the map`}>{count}</a>
+            aria-label={`${count} ${count === 1 ? "country" : "countries"} assessed. Explore them on the map`}>{count}</a>
         </dd>
       </div>
 

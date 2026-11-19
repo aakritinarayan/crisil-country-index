@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { cookies, draftMode } from "next/headers";
 import { auth } from "@/lib/auth";
-import { getPublishedSnapshot } from "@/lib/data";
+import { getPublishedSnapshot, withPrevious } from "@/lib/data";
 import { dataSource, getVersion, previewPayload } from "@/lib/admin/store";
 import type { VersionRecord } from "@/lib/admin/types";
 import type { Payload } from "./types";
@@ -45,10 +45,10 @@ export const previewState = cache(async (): Promise<Preview | null> => {
  *  getPublishedSnapshot — there is no request, and so no preview, at build time.) */
 export async function getSiteSnapshot(): Promise<Payload | null> {
   const preview = await previewState();
-  if (preview?.kind === "share") return preview.payload;
+  if (preview?.kind === "share") return withPrevious(preview.payload);
   if (preview) {
     const payload = await previewPayload(preview.version.id);
-    if (payload) return payload;
+    if (payload) return withPrevious(payload);
   }
   return getPublishedSnapshot();
 }

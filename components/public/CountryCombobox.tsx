@@ -1,7 +1,7 @@
 "use client";
 import { useId, useMemo, useState } from "react";
 import { bandFor, fmtScore } from "@/lib/bands";
-import type { ScoreBand } from "@/lib/types";
+import type { ScopeCountry, ScoreBand } from "@/lib/types";
 import { Search } from "@/components/ui/icons";
 import { nCountries } from "@/lib/plural";
 
@@ -9,11 +9,13 @@ export type CountryOption = { country_id: string; name: string; slug: string; is
 
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-/** Accessible country search (ARIA 1.2 combobox). Matches name or ISO code. */
+/** Accessible country search (ARIA 1.2 combobox). Matches name or ISO code. Countries in the
+ *  assessment scope without scores (`unavailable`) are listed after the assessed matches, as
+ *  "Assessment not yet available" — shown, but not selectable: there is nothing to open. */
 export function CountryCombobox({
-  countries, bands, onSelect, autoFocus, placeholder = "Find a country", className = "", size = "md", showCount = true,
+  countries, unavailable = [], bands, onSelect, autoFocus, placeholder = "Find a country", className = "", size = "md", showCount = true,
 }: {
-  countries: CountryOption[]; bands: ScoreBand[]; onSelect: (c: CountryOption) => void;
+  countries: CountryOption[]; unavailable?: ScopeCountry[]; bands: ScoreBand[]; onSelect: (c: CountryOption) => void;
   autoFocus?: boolean; placeholder?: string; className?: string; size?: "md" | "lg" | "toolbar"; showCount?: boolean;
 }) {
   const id = useId();
@@ -28,6 +30,10 @@ export function CountryCombobox({
     const rest = countries.filter((c) => !starts.includes(c) && norm(c.name).includes(n));
     return [...starts, ...rest].slice(0, 8);
   }, [q, countries]);
+  const pending = useMemo(() => {
+    const n = norm(q.trim());
+    return n ? unavailable.filter((c) => norm(c.name).includes(n) || c.iso_code.toLowerCase() === n) : [];
+  }, [q, unavailable]);
 
   const pick = (c: CountryOption) => { onSelect(c); setQ(""); setOpen(false); };
   const showList = open && q.trim().length > 0;
@@ -56,7 +62,7 @@ export function CountryCombobox({
       </div>
       {showList && (
         <ul id={`${id}-list`} role="listbox" aria-label="Countries" className="absolute inset-x-0 top-full z-30 mt-1 max-h-80 overflow-auto border border-line bg-raised py-1 shadow-lift">
-          {results.length === 0 && <li className="px-4 py-3 text-sm text-muted">No country matches “{q}”. Try another spelling or the ISO code.</li>}
+          {results.length === 0 && pending.length === 0 && <li className="px-4 py-3 text-sm text-muted">No country matches “{q}”. Try another spelling or the ISO code.</li>}
           {results.map((c, i) => {
             const b = c.composite_score != null ? bandFor(c.composite_score, bands) : null;
             return (
@@ -74,6 +80,13 @@ export function CountryCombobox({
               </li>
             );
           })}
+          {pending.map((c) => (
+            <li key={c.country_id} role="option" aria-selected={false} aria-disabled="true" className="flex cursor-default items-center gap-3 px-4 py-2.5">
+              <span className="w-9 text-[11px] font-semibold tracking-wider text-muted">{c.iso_code}</span>
+              <span className="flex-1 truncate font-medium text-ink-2">{c.name}</span>
+              <span className="text-[12px] text-muted">Assessment not yet available</span>
+            </li>
+          ))}
         </ul>
       )}
     </div>

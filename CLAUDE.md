@@ -81,6 +81,19 @@ load-bearing subset that must never be silently violated.
   anyone with the link, data carried in the private `SHARE_PAYLOAD` env var (made by
   `npm run share:link`), never in the repo. The cookie holds a digest of the token, so
   rotating the token revokes every browser.
+- **Assessment scope (client feedback 2026-11-19):** the initial assessment is India,
+  Indonesia and the Philippines — the countries on the workbook's countries tab. Only
+  countries with validated scores are ranked, coloured, counted and given profiles; the rest
+  of the scope travels as `payload.not_assessed` and is shown as "not yet assessed" (search,
+  panel, rankings note, `/country/<slug>`). As of 2026-11-19 only India has scores — never
+  fill the others in. The site no longer falls back to the 196-country sample unless
+  `DATASET` is set explicitly.
+- **Explorer panel follows the assessment tab:** Overview/Composite → composite + pillars;
+  a pillar → that pillar's score, band, rank and its KPIs ("parameters", 1–5).
+- **Rank history** (`lib/ranking.ts`, tested; `lib/admin/history.ts`): "Previous ranking" and
+  "Movement vs. previous" on the active measure, from the latest earlier *published*
+  reporting period of the same kind (real vs sample). Movement only when both periods ranked
+  the same countries on that measure; otherwise "—" with the reason. Nothing is inferred.
 - The sample-data notice shows only when `SHOW_SAMPLE_DATA_BANNER` is on **and**
   the data is a sample (`meta.sample !== false`) — real assessments never carry it.
 

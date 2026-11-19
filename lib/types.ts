@@ -62,7 +62,26 @@ export type KpiScore = {
 };
 export type FrameworkDetail = { scale: { min: number; max: number }; levels: KpiLevel[]; kpis: KpiDef[]; kpi_scores: KpiScore[] };
 
-export type Payload = { meta: Meta; countries: Country[]; pillars: Pillar[]; scores: Score[]; framework?: FrameworkDetail };
+/** A country in the configured assessment scope (on the workbook's countries tab) that has no
+ *  validated scores yet. Listed so the site can say its assessment isn't available — it is
+ *  never ranked, coloured or given a profile, and nothing is inferred for it. */
+export type ScopeCountry = { country_id: string; name: string; iso_code: string; slug: string };
+
+/** The previous comparable assessment period, for rank movement (lib/ranking.ts). Not stored
+ *  in a version: attached when the published data is read (lib/admin/history.ts). Scores
+ *  only — ranks are recalculated here the same way as the current ones. */
+export type PreviousPeriod = {
+  as_of: string;                      // YYYY-MM, earlier than the current period
+  version: number | null;
+  pillars: string[];                  // pillar ids assessed then
+  countries: { country_id: string; composite_score: number | null; scores: Record<string, number> }[];
+};
+
+export type Payload = {
+  meta: Meta; countries: Country[]; pillars: Pillar[]; scores: Score[]; framework?: FrameworkDetail;
+  not_assessed?: ScopeCountry[];      // in scope, no validated record (framework data only)
+  previous?: PreviousPeriod | null;   // attached on read, never part of an upload
+};
 
 /** What the landing page ships to the browser: numbers only, no rationale text.
  *  Rationale and references load per country when a score is opened, so the page
@@ -70,5 +89,13 @@ export type Payload = { meta: Meta; countries: Country[]; pillars: Pillar[]; sco
 export type IndexSummary = {
   meta: Meta;
   pillars: Pillar[];
-  countries: (Country & { scores: Record<string, number>; rank: number })[];
+  /** Countries with a validated record only — what is ranked, coloured and counted. */
+  countries: (Country & { scores: Record<string, number>; rank: number; kpis: Record<string, number | null> })[];
+  /** In the assessment scope but without validated scores yet. */
+  notAssessed: ScopeCountry[];
+  /** KPI ("parameter") definitions, without their text, for the explorer's pillar breakdown;
+   *  empty when the data has no KPI detail. */
+  kpis: { kpi_id: string; pillar_id: string; name: string; by_route: boolean; display_order: number }[];
+  kpiScale: { min: number; max: number; levels: KpiLevel[] } | null;
+  previous: PreviousPeriod | null;
 };

@@ -12,6 +12,9 @@ import type { KpiDef, KpiLevel, KpiScore } from "@/lib/types";
 export type KpiView = { def: KpiDef; score: KpiScore | null };
 
 const levelOf = (levels: KpiLevel[], s: number | null) => (s == null ? null : levels.find((l) => l.score === s)?.label ?? null);
+/** What a KPI score is called: the level it names (Low / Moderate / High) when it is exactly a
+ *  defined level of a single judgement; "route average" for a by-route KPI; else nothing. */
+export const kpiScoreLabel = (levels: KpiLevel[], byRoute: boolean, s: number | null) => (byRoute ? (s == null ? null : "route average") : levelOf(levels, s));
 const share = (w: number) => `${Math.round(w * 1000) / 10}%`;
 
 export function KpiBreakdown({ kpis, levels, max, compact = false }: { kpis: KpiView[]; levels: KpiLevel[]; max: number; compact?: boolean }) {

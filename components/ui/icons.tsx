@@ -4,6 +4,8 @@ const base = (size = 18) => ({ width: size, height: size, viewBox: "0 0 24 24", 
 
 export const ArrowUpRight = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M7 17 17 7M9 7h8v8" /></svg>);
 export const ArrowRight = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M5 12h14M13 6l6 6-6 6" /></svg>);
+export const ArrowUp = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M12 19V5M6 11l6-6 6 6" /></svg>);
+export const ArrowDown = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M12 5v14M6 13l6 6 6-6" /></svg>);
 export const ArrowLeft = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M19 12H5M11 6l-6 6 6 6" /></svg>);
 export const Search = ({ size, className }: P) => (<svg {...base(size)} className={className}><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>);
 export const Close = ({ size, className }: P) => (<svg {...base(size)} className={className}><path d="M6 6l12 12M18 6 6 18" /></svg>);

@@ -117,7 +117,8 @@ async function Unpublished() {
       <div className="pub-wide min-w-0">
         <p className="text-[14.5px] font-semibold text-ink">Nothing has been published from the admin yet</p>
         <p className="mt-0.5 text-[13.5px] text-muted">
-          The public site shows the bundled sample dataset{p ? ` (${formatAsOf(p.meta.as_of)}, ${p.countries.length} countries, ${p.pillars.length} pillars)` : ""}{sample ? " with the sample-data notice" : ""}.
+          {p ? <>The public site shows the bundled sample dataset ({formatAsOf(p.meta.as_of)}, {p.countries.length} countries, {p.pillars.length} pillars){sample ? " with the sample-data notice" : ""}, because DATASET is set.</>
+            : <>The public site says the index hasn&apos;t been published yet.</>}
         </p>
       </div>
       <PublicLink />

@@ -9,7 +9,7 @@ import type { Reference } from "@/lib/types";
 import { ArrowLeft, ArrowRight } from "@/components/ui/icons";
 import { CountryShape } from "@/components/public/explorer/CountryShape";
 import { CountrySkeleton } from "@/components/public/country/CountrySkeleton";
-import ALPHA2 from "@/data/iso-alpha3-to-alpha2.json";
+import { flagOf } from "@/lib/flag";
 import { PillarExplorer, type PillarRow } from "@/components/public/country/PillarExplorer";
 import { NotPublished } from "@/components/public/NotPublished";
 import { CompositeHistogram, HISTOGRAM_MIN_COUNTRIES } from "@/components/public/country/CompositeHistogram";
@@ -25,13 +25,16 @@ import { nCountries } from "@/lib/plural";
 const UNPUBLISHED = "__unpublished";
 export async function generateStaticParams() {
   const p = await getPublishedSnapshot();
-  return p && p.countries.length ? p.countries.map((c) => ({ slug: c.slug })) : [{ slug: UNPUBLISHED }];
+  const slugs = p ? [...p.countries, ...(p.not_assessed ?? [])].map((c) => ({ slug: c.slug })) : [];
+  return slugs.length ? slugs : [{ slug: UNPUBLISHED }];
 }
 
 export async function generateMetadata({ params }: PageProps<"/country/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const p = await getSiteSnapshot();
   const c = p?.countries.find((x) => x.slug === slug);
+  const pending = p?.not_assessed?.find((x) => x.slug === slug);
+  if (p && pending) return { title: `${pending.name} · ${p.meta.index_name}` };
   if (!p || !c) return { title: "Country not found" };
   return { title: `${c.name} · ${p.meta.index_name}`, description: c.summary.slice(0, 160) || undefined };
 }
@@ -61,6 +64,8 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
   const snapshot = await getSiteSnapshot();
   if (!snapshot || slug === UNPUBLISHED) return <NotPublished />;
   const detail = countryDetail(snapshot, slug);
+  const pending = snapshot.not_assessed?.find((x) => x.slug === slug);
+  if (!detail && pending) return <NotYetAssessed name={pending.name} iso={pending.iso_code} />;
   if (!detail) notFound();
 
   const { meta, pillars, countries } = summarise(snapshot);
@@ -124,9 +129,7 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
   });
   const period = formatAsOf(meta.as_of);
   const sample = showSampleNotice(meta);
-  // flag from the 2-letter code (regional-indicator pair); decorative, the name carries meaning
-  const a2 = (ALPHA2 as Record<string, string>)[country.iso_code];
-  const flag = a2 ? String.fromCodePoint(...[...a2].map((ch) => 0x1f1e6 + ch.charCodeAt(0) - 65)) : null;
+  const flag = flagOf(country.iso_code);
 
   return (
     <article>
@@ -249,5 +252,23 @@ async function CountryProfile({ params }: { params: Promise<{ slug: string }> })
         </section>
       </div>
     </article>
+  );
+}
+
+/** A country in the assessment scope without validated scores: says so, and nothing more —
+ *  no scores, ranks or rationale are shown or inferred. */
+function NotYetAssessed({ name, iso }: { name: string; iso: string }) {
+  const flag = flagOf(iso);
+  return (
+    <section className="wrap grid min-h-[60vh] place-items-center py-24 text-center">
+      <div>
+        <p className="eyebrow">In the assessment scope</p>
+        <h1 className="t-h2 mt-3 flex items-center justify-center gap-3 text-ink">{flag && <span aria-hidden className="text-[0.8em]">{flag}</span>}{name}</h1>
+        <p className="t-lead mx-auto mt-4 max-w-[52ch] text-muted">{name}&apos;s assessment isn&apos;t available yet. Its scores, rankings and evidence will appear here once they are published.</p>
+        <div className="mt-8 flex justify-center">
+          <Link href="/#map" className="btn">Explore assessed countries<span className="box"><ArrowLeft size={16} /></span></Link>
+        </div>
+      </div>
+    </section>
   );
 }

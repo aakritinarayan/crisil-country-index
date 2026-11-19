@@ -43,8 +43,9 @@ const refsFor = (f: Framework, countryId: string, kpiId: string): Reference[] =>
   f.sources.filter((s) => s.country_id === countryId && s.kpi_id === kpiId)
     .map((s) => ({ title: s.title, publisher: s.publisher, url: s.url, published_date: s.published_date }));
 
-/** The full payload. Countries with no assessments at all are left out of the index (they
- *  appear once they are scored). */
+/** The full payload. Countries with no scores at all are not part of the index (they are
+ *  ranked, coloured and given a profile once they are scored) — they are listed as
+ *  `not_assessed`, so the site can say their assessment isn't available yet. */
 export function toPayload(f: Framework): Payload {
   const byOrder = <T extends { display_order: number }>(xs: T[]) => [...xs].sort((a, b) => a.display_order - b.display_order);
   const assessed = byOrder(f.countries).filter((c) => f.assessments.some((a) => a.country_id === c.country_id && a.score != null));
@@ -86,6 +87,7 @@ export function toPayload(f: Framework): Payload {
       score_min: 0, score_max: 100, score_bands: f.meta.bands, show_composite: f.meta.show_composite, sample: f.meta.sample,
     },
     countries,
+    not_assessed: byOrder(f.countries).filter((c) => !assessed.includes(c)).map((c) => ({ country_id: c.country_id, name: c.name, iso_code: c.iso_code, slug: c.slug })),
     pillars: byOrder(f.pillars).map((p) => ({ pillar_id: p.pillar_id, name: p.name, description: p.description, display_order: p.display_order,
       weight: totalWeight > 0 ? p.weight / totalWeight : null })),
     scores,

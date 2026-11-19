@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { bandFor } from "@/lib/bands";
+import { COMPOSITE, measureValue, ranksOn } from "@/lib/ranking";
 import type { IndexSummary } from "@/lib/types";
 import { ScoreDrawer } from "./ScoreDrawer";
 
@@ -8,7 +9,7 @@ export type SummaryCountry = IndexSummary["countries"][number];
 type DrawerTarget = { countryId: string; pillarId: string; from?: HTMLElement | null };
 
 /** The workbook's composite option, when meta.show_composite is on. */
-export const COMPOSITE = "__composite";
+export { COMPOSITE };
 
 type Ctx = {
   summary: IndexSummary;
@@ -29,8 +30,10 @@ type Ctx = {
   clearBands: () => void;
   /** value of the active measure for a country */
   valueOf: (c: SummaryCountry) => number | null;
-  /** rank (1 = highest, ties share a rank) on the active measure */
+  /** rank (1 = highest, ties share a rank) on the active measure; 0 = not ranked on it */
   rankOf: (id: string) => number;
+  /** how many countries are ranked on the active measure (those with a score on it) */
+  rankedCount: number;
   /** true when the country's band on the active measure passes the band filter */
   passesFilter: (c: SummaryCountry) => boolean;
   // ── score drawer ──
@@ -61,16 +64,8 @@ export function ExplorerProvider({ summary, children }: { summary: IndexSummary;
   // Overview has no bands, so a band filter would hide rows with no visible reason.
   const showOverview = useCallback(() => { setOverview(true); setMeasureState(defaultMeasure); setBandFilter(null); }, [defaultMeasure]);
 
-  const valueOf = useCallback(
-    (c: SummaryCountry) => (measure === COMPOSITE ? c.composite_score : c.scores[measure] ?? null),
-    [measure],
-  );
-  const ranks = useMemo(() => {
-    const sorted = countries.map((c) => ({ id: c.country_id, v: valueOf(c) })).filter((x) => x.v != null).sort((a, b) => b.v! - a.v!);
-    const m = new Map<string, number>();
-    sorted.forEach((x, i) => m.set(x.id, i > 0 && sorted[i - 1].v === x.v ? m.get(sorted[i - 1].id)! : i + 1));
-    return m;
-  }, [countries, valueOf]);
+  const valueOf = useCallback((c: SummaryCountry) => measureValue(c, measure), [measure]);
+  const ranks = useMemo(() => ranksOn(countries, measure), [countries, measure]);
   const rankOf = useCallback((id: string) => ranks.get(id) ?? 0, [ranks]);
   const passesFilter = useCallback((c: SummaryCountry) => {
     if (!bandFilter) return true;
@@ -123,7 +118,7 @@ export function ExplorerProvider({ summary, children }: { summary: IndexSummary;
   return (
     <ExplorerCtx.Provider value={{
       summary, byId, selectedId, select: setSelectedId, overview, showOverview, measure, setMeasure, measureLabel,
-      bandFilter, toggleBand, setBands: setBandFilter, clearBands: () => setBandFilter(null), valueOf, rankOf, passesFilter, openScore,
+      bandFilter, toggleBand, setBands: setBandFilter, clearBands: () => setBandFilter(null), valueOf, rankOf, rankedCount: ranks.size, passesFilter, openScore,
       activeScore: target ? { countryId: target.countryId, pillarId: target.pillarId } : null,
     }}>
       {children}

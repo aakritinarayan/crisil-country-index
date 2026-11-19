@@ -126,7 +126,7 @@ export function validate(wb: RawWorkbook): { framework: Framework | null; valida
   // by-route KPIs: every route present for an assessed country
   for (const c of countries) {
     const mine = assessments.filter((a) => a.country_id === c.country_id);
-    if (!mine.some((a) => a.score != null)) { if (countries.length) warn({ code: "countries.unscored", message: `${c.name} has no scores yet, so it won’t appear on the site.`, tab: "countries", row: c._row, column: "country_id" }); continue; }
+    if (!mine.some((a) => a.score != null)) { if (countries.length) warn({ code: "countries.unscored", message: `${c.name} has no scores yet: the site will list it as not yet assessed, with no scores or ranking.`, tab: "countries", row: c._row, column: "country_id" }); continue; }
     for (const k of kpis) {
       const rowsK = mine.filter((a) => a.kpi_id === k.kpi_id);
       if (!rowsK.length) { warn({ code: "assessments.kpi_missing", message: `${c.name} has no row for “${k.name}”; it is treated as not assessed.`, tab: "assessments" }); continue; }
