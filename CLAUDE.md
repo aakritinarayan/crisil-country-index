@@ -89,7 +89,11 @@ load-bearing subset that must never be silently violated.
   (2026-11-19) the live Version 12 carries *placeholder* scores for Indonesia and the
   Philippines (rationale says "Placeholder", no sources, made with a seeded generator — not
   copied from India), so the whole dataset is `sample: true` and shows the sample notice.
-  Replace them with Crisil's assessments when they arrive; then set sample_data to false. The site no longer falls back to the 196-country sample unless
+  Replace them with Crisil's assessments when they arrive; then set sample_data to false.
+  Also at the user's request, a placeholder **May 2026** period (Version 13, all three
+  countries placeholder, no sources) was published briefly and Version 12 re-published, so
+  the rank-history columns have a previous period to compare with. When real data replaces
+  the sample, that placeholder period stops counting (real is never compared with sample). The site no longer falls back to the 196-country sample unless
   `DATASET` is set explicitly.
 - **Explorer panel follows the assessment tab:** Overview/Composite → composite + pillars;
   a pillar → that pillar's score, band, rank and its KPIs ("parameters", 1–5).
