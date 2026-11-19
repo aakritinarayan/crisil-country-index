@@ -179,7 +179,7 @@ export function Rankings() {
         {mode === "ranked" && <td className="sticky-col left-0 w-12 py-1.5 pr-2 text-right text-[13px] text-muted num">{r ?? "–"}</td>}
         <th scope="row" className={`sticky-col ${mode === "ranked" ? "left-12" : "left-0"} min-w-[124px] max-w-[240px] py-1.5 pl-3 pr-3 text-left font-normal lg:min-w-[180px]`}>{countryCell(c)}</th>
         {mode === "ranked" && <>
-          <td className="hist-col px-2 py-1.5 text-right"><PreviousRank change={changes.get(c.country_id)} /></td>
+          <td className="hist-col px-2 py-1.5"><PreviousRank change={changes.get(c.country_id)} /></td>
           <td className="hist-col px-2 py-1.5"><Movement change={changes.get(c.country_id)} /></td>
         </>}
         {columns.map((col) => (
@@ -292,7 +292,7 @@ export function Rankings() {
             <thead className="z-10 xl:sticky xl:top-0">
               <tr className="border-b border-line-strong">
                 {mode === "ranked" && (
-                  <th scope="col" className="sticky-col left-0 w-12 pb-2 pr-1 text-right align-bottom text-[12px] font-medium text-muted">
+                  <th scope="col" className="sticky-col left-0 w-12 pb-2 pr-1 text-right align-bottom text-[12.5px] font-medium leading-tight text-ink-2">
                     {/* rank order is the measure's order: rank 1 first = highest score first */}
                     <button type="button" onClick={() => setDir((d) => (d === "desc" ? "asc" : "desc"))} title="Sort by rank"
                       className="rank-sort" aria-label={`Rank on ${rankLabel}, ${dir === "desc" ? "1 first" : "last first"}. Select to show ${dir === "desc" ? "the last rank" : "rank 1"} first`}>
@@ -300,15 +300,15 @@ export function Rankings() {
                     </button>
                   </th>
                 )}
-                <th scope="col" className={`sticky-col ${mode === "ranked" ? "left-12" : "left-0"} pb-2 pl-3 text-left align-bottom text-[12.5px] font-medium text-muted`}>Country</th>
+                <th scope="col" className={`sticky-col ${mode === "ranked" ? "left-12" : "left-0"} pb-2 pl-3 text-left align-bottom text-[12.5px] font-medium leading-tight text-ink-2`}>Country</th>
                 {mode === "ranked" && <>
-                  <th scope="col" className="hist-col px-2 pb-2 text-right align-bottom text-[12.5px] font-medium leading-tight text-muted">Previous ranking</th>
-                  <th scope="col" className="hist-col px-2 pb-2 text-left align-bottom text-[12.5px] font-medium leading-tight text-muted">Movement vs. previous</th>
+                  <th scope="col" className="hist-col px-2 pb-2 text-left align-bottom text-[12.5px] font-medium leading-tight text-ink-2"><span className="th-label">Previous ranking</span></th>
+                  <th scope="col" className="hist-col px-2 pb-2 text-left align-bottom text-[12.5px] font-medium leading-tight text-ink-2"><span className="th-label">Movement vs. previous</span></th>
                 </>}
                 {columns.map((col) => (
                   <th key={col.key} scope="col" aria-sort={ariaSort(col.key)} className={`px-1 pb-2 text-left align-bottom ${col.key === COMPOSITE ? "composite-col" : ""}`}>
                     <button type="button" onClick={() => sortBy(col.key)} className={`sort-btn group/s inline-flex items-end gap-1 pl-1 text-left text-[12.5px] leading-tight ${sortedCol === col.key ? "is-sorted font-semibold text-ink" : "font-medium text-ink-2 hover:text-ink"}`}>
-                      <span>{col.label}</span>
+                      <span className="th-label">{col.label}</span>
                       <ChevronDown size={13} className={`mb-px shrink-0 transition-transform ${sortedCol === col.key ? "text-ink" : "text-transparent group-hover/s:text-muted"} ${sortedCol === col.key && dir === "asc" ? "rotate-180" : ""}`} />
                       <span className="sr-only">{sortedCol === col.key ? `, sorted ${dir === "desc" ? "highest first" : "lowest first"}. Select to reverse` : ". Select to rank by this"}</span>
                     </button>
