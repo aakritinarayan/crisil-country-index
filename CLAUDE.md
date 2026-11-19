@@ -85,8 +85,11 @@ load-bearing subset that must never be silently violated.
   Indonesia and the Philippines — the countries on the workbook's countries tab. Only
   countries with validated scores are ranked, coloured, counted and given profiles; the rest
   of the scope travels as `payload.not_assessed` and is shown as "not yet assessed" (search,
-  panel, rankings note, `/country/<slug>`). As of 2026-11-19 only India has scores — never
-  fill the others in. The site no longer falls back to the 196-country sample unless
+  panel, rankings note, `/country/<slug>`). Only India has real scores. At the user's request
+  (2026-11-19) the live Version 12 carries *placeholder* scores for Indonesia and the
+  Philippines (rationale says "Placeholder", no sources, made with a seeded generator — not
+  copied from India), so the whole dataset is `sample: true` and shows the sample notice.
+  Replace them with Crisil's assessments when they arrive; then set sample_data to false. The site no longer falls back to the 196-country sample unless
   `DATASET` is set explicitly.
 - **Explorer panel follows the assessment tab:** Overview/Composite → composite + pillars;
   a pillar → that pillar's score, band, rank and its KPIs ("parameters", 1–5).
