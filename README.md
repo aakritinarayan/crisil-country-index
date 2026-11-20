@@ -1,5 +1,9 @@
 # Country Index Dashboard
 
+> **Start with [`docs/HANDOVER.md`](docs/HANDOVER.md)** — current status, live URLs, workflow,
+> code map and open items. Some sections below (seeding, demo files, embedding, MongoDB-only
+> hosting) describe the earlier prototype and are out of date.
+
 A public-facing dashboard publishing a country index (currently placeholder
 data — see `docs/CONTEXT.md`). Editors upload a monthly Excel workbook through
 an admin area; uploads are validated, previewed, and published as immutable,
